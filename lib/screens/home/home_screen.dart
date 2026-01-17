@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:karang_taruna/commons/widgets/buttons/button_fitur.dart';
+import 'package:karang_taruna/commons/widgets/containers/announcement_card.dart';
+import 'package:karang_taruna/commons/widgets/containers/aspiration_card.dart';
+import 'package:karang_taruna/commons/widgets/containers/banner.dart';
 import 'package:karang_taruna/commons/widgets/containers/post_container.dart';
 import 'package:karang_taruna/commons/widgets/texts/section_heading.dart';
 
@@ -21,24 +24,36 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               HeaderHome(),
               NewsHome(),
+              AnnouncementHome(),
               Container(
                 margin: const EdgeInsets.only(top: 20),
                 padding: const EdgeInsets.symmetric(horizontal: 30),
                 child: Column(
                   children: [
-                    KTSectionHeading(
-                      title: "Artikel Terbaru",
-                      onPressed: () {},
-                    ),
-                    SizedBox(height: 10),
-                    GridView.count(
-                      crossAxisCount: 2,
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      mainAxisSpacing: 16,
-                      crossAxisSpacing: 16,
-                      childAspectRatio: 9 / 11,
-                      children: [],
+                    KTSectionHeading(title: "Pojok Kampung", onPressed: () {}),
+                    const SizedBox(height: 10),
+                    Column(
+                      children: [
+                        KTAspirationCard(
+                          author: "Budi",
+                          content:
+                              "Mohon dipertimbangkan penambahan lampu jalan di RT 03 karena masih gelap saat malam hari.",
+                          createdAt: DateTime(2026, 1, 10),
+                          status: "Menunggu Tindak Lanjut",
+                          onTap: () {},
+                        ),
+                        const SizedBox(height: 10),
+                        KTAspirationCard(
+                          author: "Siti",
+                          content:
+                              "Usul diadakan kegiatan pelatihan keterampilan digital untuk pemuda karang taruna.",
+                          createdAt: DateTime(2026, 1, 8),
+                          status: "Sedang Ditinjau",
+                          onTap: () {},
+                        ),
+                        const SizedBox(height: 10),
+                        KTAspirationBanner(onTap: () {}),
+                      ],
                     ),
                   ],
                 ),
@@ -46,6 +61,43 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class AnnouncementHome extends StatelessWidget {
+  const AnnouncementHome({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(top: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 30),
+      child: Column(
+        children: [
+          KTSectionHeading(title: "Pengumuman Terbaru", onPressed: () {}),
+          SizedBox(height: 10),
+          ListView(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            children: [
+              KTAnnouncementCard(
+                title: "Bank Sampah",
+                description: "Tanggal 18 januari 2026 ada kegiatan bank sampah",
+                badgeText: "Penting",
+                onTap: () {},
+              ),
+              const SizedBox(height: 12),
+              KTAnnouncementCard(
+                title: "Bank Sampah",
+                description: "Tanggal 18 januari 2026 ada kegiatan bank sampah",
+                badgeText: "Penting",
+                onTap: () {},
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -73,7 +125,8 @@ class NewsHome extends StatelessWidget {
             children: [
               KTPostContainer(
                 imageUrl: "https://picsum.photos/400/300",
-                title: "Halo Dunia",
+                title:
+                    "Halo Dunia lorem ipsum dolor sit amet consectetur adipiscing elit",
                 author: "Ketua",
                 createdAt: DateTime(2025, 1, 15),
                 content:

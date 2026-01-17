@@ -33,7 +33,7 @@ class KTPostContainer extends StatelessWidget {
 
     Widget card = Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Color(0xff79CDB0),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -73,7 +73,7 @@ class KTPostContainer extends StatelessWidget {
                       category,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 11,
+                        fontSize: 8,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -86,7 +86,7 @@ class KTPostContainer extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
             child: Text(
               title,
-              maxLines: 2,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontSize: 10,
