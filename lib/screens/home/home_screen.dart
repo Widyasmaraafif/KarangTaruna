@@ -3,6 +3,7 @@ import 'package:karang_taruna/commons/widgets/buttons/button_fitur.dart';
 import 'package:karang_taruna/commons/widgets/containers/announcement_card.dart';
 import 'package:karang_taruna/commons/widgets/containers/aspiration_card.dart';
 import 'package:karang_taruna/commons/widgets/containers/banner.dart';
+import 'package:karang_taruna/commons/widgets/containers/pooling_card.dart';
 import 'package:karang_taruna/commons/widgets/containers/post_container.dart';
 import 'package:karang_taruna/commons/widgets/texts/section_heading.dart';
 
@@ -20,40 +21,48 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: const Color(0xFF00BA9B),
       body: SafeArea(
         child: SingleChildScrollView(
+          padding: EdgeInsets.only(bottom: 30),
           child: Column(
             children: [
               HeaderHome(),
               NewsHome(),
               AnnouncementHome(),
+              PojokKampungHome(),
               Container(
                 margin: const EdgeInsets.only(top: 20),
                 padding: const EdgeInsets.symmetric(horizontal: 30),
                 child: Column(
                   children: [
-                    KTSectionHeading(title: "Pojok Kampung", onPressed: () {}),
-                    const SizedBox(height: 10),
-                    Column(
-                      children: [
-                        KTAspirationCard(
-                          author: "Budi",
-                          content:
-                              "Mohon dipertimbangkan penambahan lampu jalan di RT 03 karena masih gelap saat malam hari.",
-                          createdAt: DateTime(2026, 1, 10),
-                          status: "Menunggu Tindak Lanjut",
-                          onTap: () {},
+                    KTSectionHeading(title: "Pooling", onPressed: () {}),
+                    SizedBox(height: 10),
+                    KTPoolingCard(
+                      title: "Kegiatan apa yang kamu pilih minggu ini?",
+                      options: const [
+                        KTPoolingOption(
+                          label: "Kerja bakti lingkungan",
+                          value: 40,
                         ),
-                        const SizedBox(height: 10),
-                        KTAspirationCard(
-                          author: "Siti",
-                          content:
-                              "Usul diadakan kegiatan pelatihan keterampilan digital untuk pemuda karang taruna.",
-                          createdAt: DateTime(2026, 1, 8),
-                          status: "Sedang Ditinjau",
-                          onTap: () {},
+                        KTPoolingOption(
+                          label: "Pelatihan keterampilan",
+                          value: 25,
                         ),
-                        const SizedBox(height: 10),
-                        KTAspirationBanner(onTap: () {}),
+                        KTPoolingOption(label: "Lomba olahraga", value: 35),
                       ],
+                      onOptionTap: (option) {
+                        // TODO: logika ketika user memilih salah satu opsi
+                      },
+                    ),
+                    const SizedBox(height: 10),
+                    KTPoolingCard(
+                      title: "Bukber dimana ?",
+                      options: const [
+                        KTPoolingOption(label: "Kopi Kenangan", value: 40),
+                        KTPoolingOption(label: "Beli Kopi", value: 25),
+                        KTPoolingOption(label: "Kedai Mudjur", value: 35),
+                      ],
+                      onOptionTap: (option) {
+                        // TODO: logika ketika user memilih salah satu opsi
+                      },
                     ),
                   ],
                 ),
@@ -61,6 +70,47 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class PojokKampungHome extends StatelessWidget {
+  const PojokKampungHome({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(top: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 30),
+      child: Column(
+        children: [
+          KTSectionHeading(title: "Pojok Kampung", onPressed: () {}),
+          const SizedBox(height: 10),
+          Column(
+            children: [
+              KTAspirationCard(
+                author: "Budi",
+                content:
+                    "Mohon dipertimbangkan penambahan lampu jalan di RT 03 karena masih gelap saat malam hari.",
+                createdAt: DateTime(2026, 1, 10),
+                status: "Menunggu Tindak Lanjut",
+                onTap: () {},
+              ),
+              const SizedBox(height: 10),
+              KTAspirationCard(
+                author: "Siti",
+                content:
+                    "Usul diadakan kegiatan pelatihan keterampilan digital untuk pemuda karang taruna.",
+                createdAt: DateTime(2026, 1, 8),
+                status: "Sedang Ditinjau",
+                onTap: () {},
+              ),
+              const SizedBox(height: 10),
+              KTAspirationBanner(onTap: () {}),
+            ],
+          ),
+        ],
       ),
     );
   }

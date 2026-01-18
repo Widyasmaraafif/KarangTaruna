@@ -10,6 +10,14 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(backgroundColor: const Color(0xFF00BA9B));
+    return Scaffold(
+      backgroundColor: const Color(0xFF00BA9B),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 30),
+          child: Column(children: [const SizedBox(height: 16)]),
+        ),
+      ),
+    );
   }
 }

@@ -19,7 +19,7 @@ class KTAspirationBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF00BA9B),
+        color: Color(0xff79CDB0),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -42,9 +42,9 @@ class KTAspirationBanner extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 11,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    color: Colors.black,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -53,10 +53,8 @@ class KTAspirationBanner extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.white.withValues(
-                      alpha: 0.9,
-                    ),
+                    fontSize: 10,
+                    color: Colors.black.withValues(alpha: 0.87),
                   ),
                 ),
               ],
@@ -80,7 +78,7 @@ class KTAspirationBanner extends StatelessWidget {
                     Text(
                       actionText,
                       style: const TextStyle(
-                        fontSize: 11,
+                        fontSize: 10,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF00BA9B),
                       ),

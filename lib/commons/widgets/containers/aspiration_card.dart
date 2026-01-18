@@ -109,7 +109,7 @@ class KTAspirationCard extends StatelessWidget {
                       horizontal: 8,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF00BA9B).withValues(alpha: 0.12),
+                      color: const Color(0xFF00BA9B),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
@@ -117,7 +117,7 @@ class KTAspirationCard extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.w500,
-                        color: Color(0xFF00BA9B),
+                        color: Color.fromARGB(255, 255, 255, 255),
                       ),
                     ),
                   ),
