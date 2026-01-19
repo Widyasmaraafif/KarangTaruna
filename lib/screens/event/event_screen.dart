@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:karang_taruna/commons/widgets/containers/event_card.dart';
 import 'package:karang_taruna/commons/widgets/texts/event_heading.dart';
+import 'package:karang_taruna/services/supabase_service.dart';
 
 class EventScreen extends StatefulWidget {
   const EventScreen({super.key});
@@ -14,162 +15,143 @@ class _EventScreenState extends State<EventScreen> {
   bool showOngoing = false;
   bool showCompleted = false;
 
-  final List<_EventItem> upcomingEvents = [
-    _EventItem(
-      title: 'Kerja Bakti Lingkungan',
-      description:
-          'Kegiatan kerja bakti membersihkan selokan dan lingkungan sekitar RT 03.',
-      date: DateTime(2026, 1, 20),
-      time: TimeOfDay(hour: 8, minute: 0),
-      status: KTEventStatus.upcoming,
-    ),
-    _EventItem(
-      title: 'Rapat Koordinasi Bulanan',
-      description:
-          'Rapat koordinasi pengurus karang taruna untuk evaluasi kegiatan bulan ini.',
-      date: DateTime(2026, 1, 25),
-      time: TimeOfDay(hour: 19, minute: 30),
-      status: KTEventStatus.upcoming,
-    ),
-  ];
+  final SupabaseService _supabaseService = SupabaseService();
+  late Future<List<Map<String, dynamic>>> _eventsFuture;
 
-  final List<_EventItem> ongoingEvents = [
-    _EventItem(
-      title: 'Pelatihan Keterampilan Digital',
-      description:
-          'Pelatihan dasar desain grafis dan pengelolaan media sosial untuk pemuda.',
-      date: DateTime(2026, 1, 18),
-      time: TimeOfDay(hour: 9, minute: 0),
-      status: KTEventStatus.ongoing,
-    ),
-  ];
-
-  final List<_EventItem> completedEvents = [
-    _EventItem(
-      title: 'Lomba Kebersihan Lingkungan',
-      description:
-          'Penilaian lomba kebersihan lingkungan antar RT yang telah selesai dilaksanakan.',
-      date: DateTime(2025, 12, 30),
-      time: TimeOfDay(hour: 16, minute: 0),
-      status: KTEventStatus.completed,
-    ),
-    _EventItem(
-      title: 'Donor Darah',
-      description:
-          'Kegiatan donor darah bekerja sama dengan PMI di balai RW 05.',
-      date: DateTime(2025, 11, 15),
-      time: TimeOfDay(hour: 8, minute: 30),
-      status: KTEventStatus.completed,
-    ),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _eventsFuture = _supabaseService.getEvents();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF00BA9B),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.only(bottom: 30),
-          child: Column(
-            children: [
-              const SizedBox(height: 16),
-              Container(
-                margin: const EdgeInsets.only(top: 20),
-                padding: const EdgeInsets.symmetric(horizontal: 30),
-                child: Column(
-                  children: [
-                    KTEventHeader(
-                      title: 'Event Mendatang',
-                      isExpanded: showUpcoming,
-                      onToggle: () {
-                        setState(() {
-                          showUpcoming = !showUpcoming;
-                        });
-                      },
-                    ),
-                    if (showUpcoming)
-                      Column(
-                        children: upcomingEvents
-                            .map(
-                              (event) => KTEventCard(
-                                title: event.title,
-                                description: event.description,
-                                date: event.date,
-                                time: event.time,
-                                status: event.status,
-                              ),
-                            )
-                            .toList(),
-                      ),
-                  ],
-                ),
+        child: FutureBuilder<List<Map<String, dynamic>>>(
+          future: _eventsFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              );
+            }
+
+            if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            }
+
+            final events = snapshot.data ?? [];
+            final upcomingEvents = _filterEvents(events, 'upcoming');
+            final ongoingEvents = _filterEvents(events, 'ongoing');
+            final completedEvents = _filterEvents(events, 'completed');
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.only(bottom: 30),
+              child: Column(
+                children: [
+                  const SizedBox(height: 16),
+                  _buildSection(
+                    title: 'Event Mendatang',
+                    events: upcomingEvents,
+                    isExpanded: showUpcoming,
+                    onToggle: () =>
+                        setState(() => showUpcoming = !showUpcoming),
+                  ),
+                  _buildSection(
+                    title: 'Event Berjalan',
+                    events: ongoingEvents,
+                    isExpanded: showOngoing,
+                    onToggle: () => setState(() => showOngoing = !showOngoing),
+                  ),
+                  _buildSection(
+                    title: 'Event Selesai',
+                    events: completedEvents,
+                    isExpanded: showCompleted,
+                    onToggle: () =>
+                        setState(() => showCompleted = !showCompleted),
+                  ),
+                  const SizedBox(height: 10),
+                ],
               ),
-              Container(
-                margin: const EdgeInsets.only(top: 20),
-                padding: const EdgeInsets.symmetric(horizontal: 30),
-                child: Column(
-                  children: [
-                    KTEventHeader(
-                      title: 'Event Berjalan',
-                      isExpanded: showOngoing,
-                      onToggle: () {
-                        setState(() {
-                          showOngoing = !showOngoing;
-                        });
-                      },
-                    ),
-                    if (showOngoing)
-                      Column(
-                        children: ongoingEvents
-                            .map(
-                              (event) => KTEventCard(
-                                title: event.title,
-                                description: event.description,
-                                date: event.date,
-                                time: event.time,
-                                status: event.status,
-                              ),
-                            )
-                            .toList(),
-                      ),
-                  ],
-                ),
-              ),
-              Container(
-                margin: const EdgeInsets.only(top: 20),
-                padding: const EdgeInsets.symmetric(horizontal: 30),
-                child: Column(
-                  children: [
-                    KTEventHeader(
-                      title: 'Event Selesai',
-                      isExpanded: showCompleted,
-                      onToggle: () {
-                        setState(() {
-                          showCompleted = !showCompleted;
-                        });
-                      },
-                    ),
-                    if (showCompleted)
-                      Column(
-                        children: completedEvents
-                            .map(
-                              (event) => KTEventCard(
-                                title: event.title,
-                                description: event.description,
-                                date: event.date,
-                                time: event.time,
-                                status: event.status,
-                              ),
-                            )
-                            .toList(),
-                      ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 10),
-            ],
-          ),
+            );
+          },
         ),
+      ),
+    );
+  }
+
+  List<_EventItem> _filterEvents(
+    List<Map<String, dynamic>> events,
+    String status,
+  ) {
+    return events.where((e) => e['status'] == status).map((e) {
+      final date = DateTime.parse(e['event_date']);
+      return _EventItem(
+        title: e['title'],
+        description: e['description'] ?? '',
+        date: date,
+        time: TimeOfDay.fromDateTime(date),
+        status: _parseStatus(status),
+      );
+    }).toList();
+  }
+
+  KTEventStatus _parseStatus(String status) {
+    switch (status) {
+      case 'upcoming':
+        return KTEventStatus.upcoming;
+      case 'ongoing':
+        return KTEventStatus.ongoing;
+      case 'completed':
+        return KTEventStatus.completed;
+      default:
+        return KTEventStatus.upcoming;
+    }
+  }
+
+  Widget _buildSection({
+    required String title,
+    required List<_EventItem> events,
+    required bool isExpanded,
+    required VoidCallback onToggle,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(top: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 30),
+      child: Column(
+        children: [
+          KTEventHeader(
+            title: title,
+            isExpanded: isExpanded,
+            onToggle: onToggle,
+          ),
+          if (isExpanded)
+            Column(
+              children: events.isEmpty
+                  ? [
+                      const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          "Tidak ada event",
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                      ),
+                    ]
+                  : events
+                        .map(
+                          (event) => KTEventCard(
+                            title: event.title,
+                            description: event.description,
+                            date: event.date,
+                            time: event.time,
+                            status: event.status,
+                          ),
+                        )
+                        .toList(),
+            ),
+        ],
       ),
     );
   }

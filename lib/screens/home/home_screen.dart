@@ -6,6 +6,7 @@ import 'package:karang_taruna/commons/widgets/containers/banner.dart';
 import 'package:karang_taruna/commons/widgets/containers/pooling_card.dart';
 import 'package:karang_taruna/commons/widgets/containers/post_container.dart';
 import 'package:karang_taruna/commons/widgets/texts/section_heading.dart';
+import 'package:karang_taruna/services/supabase_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -35,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     KTSectionHeading(title: "Pooling", onPressed: () {}),
                     SizedBox(height: 10),
+                    // TODO: Implement Pooling dynamically later
                     KTPoolingCard(
                       title: "Kegiatan apa yang kamu pilih minggu ini?",
                       options: const [
@@ -52,18 +54,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         // TODO: logika ketika user memilih salah satu opsi
                       },
                     ),
-                    const SizedBox(height: 10),
-                    KTPoolingCard(
-                      title: "Bukber dimana ?",
-                      options: const [
-                        KTPoolingOption(label: "Kopi Kenangan", value: 40),
-                        KTPoolingOption(label: "Beli Kopi", value: 25),
-                        KTPoolingOption(label: "Kedai Mudjur", value: 35),
-                      ],
-                      onOptionTap: (option) {
-                        // TODO: logika ketika user memilih salah satu opsi
-                      },
-                    ),
                   ],
                 ),
               ),
@@ -75,8 +65,22 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class PojokKampungHome extends StatelessWidget {
+class PojokKampungHome extends StatefulWidget {
   const PojokKampungHome({super.key});
+
+  @override
+  State<PojokKampungHome> createState() => _PojokKampungHomeState();
+}
+
+class _PojokKampungHomeState extends State<PojokKampungHome> {
+  final SupabaseService _supabaseService = SupabaseService();
+  late Future<List<Map<String, dynamic>>> _aspirationsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _aspirationsFuture = _supabaseService.getAspirations();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,28 +91,47 @@ class PojokKampungHome extends StatelessWidget {
         children: [
           KTSectionHeading(title: "Pojok Kampung", onPressed: () {}),
           const SizedBox(height: 10),
-          Column(
-            children: [
-              KTAspirationCard(
-                author: "Budi",
-                content:
-                    "Mohon dipertimbangkan penambahan lampu jalan di RT 03 karena masih gelap saat malam hari.",
-                createdAt: DateTime(2026, 1, 10),
-                status: "Menunggu Tindak Lanjut",
-                onTap: () {},
-              ),
-              const SizedBox(height: 10),
-              KTAspirationCard(
-                author: "Siti",
-                content:
-                    "Usul diadakan kegiatan pelatihan keterampilan digital untuk pemuda karang taruna.",
-                createdAt: DateTime(2026, 1, 8),
-                status: "Sedang Ditinjau",
-                onTap: () {},
-              ),
-              const SizedBox(height: 10),
-              KTAspirationBanner(onTap: () {}),
-            ],
+          FutureBuilder<List<Map<String, dynamic>>>(
+            future: _aspirationsFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(color: Colors.white),
+                );
+              }
+              if (snapshot.hasError) {
+                return Text('Error loading aspirations');
+              }
+
+              final aspirations = snapshot.data ?? [];
+
+              if (aspirations.isEmpty) {
+                return const Text(
+                  'Belum ada aspirasi',
+                  style: TextStyle(color: Colors.white),
+                );
+              }
+
+              return Column(
+                children: [
+                  ...aspirations
+                      .take(3)
+                      .map(
+                        (item) => Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: KTAspirationCard(
+                            author: item['author'],
+                            content: item['content'],
+                            createdAt: DateTime.parse(item['created_at']),
+                            status: item['status'],
+                            onTap: () {},
+                          ),
+                        ),
+                      ),
+                  KTAspirationBanner(onTap: () {}),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -116,8 +139,22 @@ class PojokKampungHome extends StatelessWidget {
   }
 }
 
-class AnnouncementHome extends StatelessWidget {
+class AnnouncementHome extends StatefulWidget {
   const AnnouncementHome({super.key});
+
+  @override
+  State<AnnouncementHome> createState() => _AnnouncementHomeState();
+}
+
+class _AnnouncementHomeState extends State<AnnouncementHome> {
+  final SupabaseService _supabaseService = SupabaseService();
+  late Future<List<Map<String, dynamic>>> _announcementsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _announcementsFuture = _supabaseService.getAnnouncements();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -128,24 +165,40 @@ class AnnouncementHome extends StatelessWidget {
         children: [
           KTSectionHeading(title: "Pengumuman Terbaru", onPressed: () {}),
           SizedBox(height: 10),
-          ListView(
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            children: [
-              KTAnnouncementCard(
-                title: "Bank Sampah",
-                description: "Tanggal 18 januari 2026 ada kegiatan bank sampah",
-                badgeText: "Penting",
-                onTap: () {},
-              ),
-              const SizedBox(height: 12),
-              KTAnnouncementCard(
-                title: "Bank Sampah",
-                description: "Tanggal 18 januari 2026 ada kegiatan bank sampah",
-                badgeText: "Penting",
-                onTap: () {},
-              ),
-            ],
+          FutureBuilder<List<Map<String, dynamic>>>(
+            future: _announcementsFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(color: Colors.white),
+                );
+              }
+              final announcements = snapshot.data ?? [];
+
+              if (announcements.isEmpty) {
+                return const Text(
+                  'Tidak ada pengumuman',
+                  style: TextStyle(color: Colors.white),
+                );
+              }
+
+              return ListView.separated(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: announcements.length,
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final item = announcements[index];
+                  return KTAnnouncementCard(
+                    title: item['title'],
+                    description: item['description'] ?? '',
+                    badgeText: item['badge_text'] ?? 'Info',
+                    onTap: () {},
+                  );
+                },
+              );
+            },
           ),
         ],
       ),
@@ -153,8 +206,22 @@ class AnnouncementHome extends StatelessWidget {
   }
 }
 
-class NewsHome extends StatelessWidget {
+class NewsHome extends StatefulWidget {
   const NewsHome({super.key});
+
+  @override
+  State<NewsHome> createState() => _NewsHomeState();
+}
+
+class _NewsHomeState extends State<NewsHome> {
+  final SupabaseService _supabaseService = SupabaseService();
+  late Future<List<Map<String, dynamic>>> _newsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _newsFuture = _supabaseService.getNews();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -165,34 +232,47 @@ class NewsHome extends StatelessWidget {
         children: [
           KTSectionHeading(title: "Berita Terbaru", onPressed: () {}),
           SizedBox(height: 10),
-          GridView.count(
-            crossAxisCount: 2,
-            shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
-            childAspectRatio: 9 / 11,
-            children: [
-              KTPostContainer(
-                imageUrl: "https://picsum.photos/400/300",
-                title:
-                    "Halo Dunia lorem ipsum dolor sit amet consectetur adipiscing elit",
-                author: "Ketua",
-                createdAt: DateTime(2025, 1, 15),
-                content:
-                    'lorem ipsum dolor sit amet consectetur adipiscing elit. sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-                category: 'News',
-              ),
-              KTPostContainer(
-                imageUrl: "https://picsum.photos/400/300",
-                title: "Halo Dunia",
-                author: "Ketua",
-                createdAt: DateTime(2025, 1, 15),
-                content:
-                    'lorem ipsum dolor sit amet consectetur adipiscing elit. sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.',
-                category: 'News',
-              ),
-            ],
+          FutureBuilder<List<Map<String, dynamic>>>(
+            future: _newsFuture,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(
+                  child: CircularProgressIndicator(color: Colors.white),
+                );
+              }
+              final newsList = snapshot.data ?? [];
+
+              if (newsList.isEmpty) {
+                return const Text(
+                  'Tidak ada berita',
+                  style: TextStyle(color: Colors.white),
+                );
+              }
+
+              return GridView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 16,
+                  childAspectRatio: 9 / 11,
+                ),
+                itemCount: newsList.length,
+                itemBuilder: (context, index) {
+                  final item = newsList[index];
+                  return KTPostContainer(
+                    imageUrl:
+                        item['image_url'] ?? "https://picsum.photos/400/300",
+                    title: item['title'],
+                    author: item['author'] ?? 'Admin',
+                    createdAt: DateTime.parse(item['created_at']),
+                    content: item['content'] ?? '',
+                    category: item['category'] ?? 'News',
+                  );
+                },
+              );
+            },
           ),
         ],
       ),
@@ -240,38 +320,34 @@ class HeaderHome extends StatelessWidget {
                 onTap: () {},
               ),
               KTButtonFitur(
-                icon: Icons.people,
-                label: "Pengurus",
+                icon: Icons.photo_library,
+                label: "Galeri",
                 onTap: () {},
               ),
               KTButtonFitur(
-                icon: Icons.people,
-                label: "Pengurus",
+                icon: Icons.attach_money,
+                label: "Keuangan",
+                onTap: () {},
+              ),
+              KTButtonFitur(icon: Icons.event, label: "Event", onTap: () {}),
+              KTButtonFitur(
+                icon: Icons.newspaper,
+                label: "Berita",
                 onTap: () {},
               ),
               KTButtonFitur(
-                icon: Icons.people,
-                label: "Pengurus",
+                icon: Icons.people_alt,
+                label: "Pooling",
                 onTap: () {},
               ),
               KTButtonFitur(
-                icon: Icons.people,
-                label: "Pengurus",
+                icon: Icons.feedback,
+                label: "Aspirasi",
                 onTap: () {},
               ),
               KTButtonFitur(
-                icon: Icons.people,
-                label: "Pengurus",
-                onTap: () {},
-              ),
-              KTButtonFitur(
-                icon: Icons.people,
-                label: "Pengurus",
-                onTap: () {},
-              ),
-              KTButtonFitur(
-                icon: Icons.people,
-                label: "Pengurus",
+                icon: Icons.settings,
+                label: "Pengaturan",
                 onTap: () {},
               ),
             ],
