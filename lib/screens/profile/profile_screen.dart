@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:karang_taruna/commons/widgets/buttons/profile_menu_tile.dart';
+import 'package:karang_taruna/services/supabase_service.dart';
+import 'package:karang_taruna/screens/auth/login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -9,6 +12,52 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  final _service = SupabaseService();
+  String _name = 'User';
+  String _role = 'Anggota Karang Taruna';
+  String _avatarUrl = 'https://ui-avatars.com/api/?name=User&background=random';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      final user = _service.currentUser;
+      if (user != null) {
+        setState(() {
+          _name =
+              user.userMetadata?['full_name'] ??
+              user.email?.split('@')[0] ??
+              'User';
+          _avatarUrl =
+              'https://ui-avatars.com/api/?name=${Uri.encodeComponent(_name)}&background=random';
+        });
+
+        // Try to fetch from profiles table if needed
+        final profile = await _service.getCurrentUserProfile();
+        if (profile != null) {
+          setState(() {
+            if (profile['full_name'] != null) _name = profile['full_name'];
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error loading profile: $e');
+    }
+  }
+
+  Future<void> _logout() async {
+    try {
+      await _service.signOut();
+      Get.offAll(() => const LoginScreen());
+    } catch (e) {
+      Get.snackbar('Error', 'Gagal keluar: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,7 +82,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                       IconButton(
-                        onPressed: () {},
+                        onPressed: _logout,
                         icon: const Icon(Icons.logout, color: Colors.white),
                         tooltip: 'Keluar',
                       ),
@@ -49,10 +98,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(color: Colors.white, width: 2),
-                          image: const DecorationImage(
-                            image: NetworkImage(
-                              'https://ui-avatars.com/api/?name=Ahmad+Fulan&background=random',
-                            ),
+                          image: DecorationImage(
+                            image: NetworkImage(_avatarUrl),
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -62,9 +109,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Ahmad Fulan',
-                              style: TextStyle(
+                            Text(
+                              _name,
+                              style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -72,7 +119,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Anggota Karang Taruna',
+                              _role,
                               style: TextStyle(
                                 color: Colors.white.withValues(alpha: 0.9),
                                 fontSize: 14,
@@ -169,7 +216,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         title: 'Keluar',
                         isDestructive: true,
                         showTrailing: false,
-                        onTap: () {},
+                        onTap: _logout,
                       ),
                       const SizedBox(height: 20), // Bottom padding
                     ],

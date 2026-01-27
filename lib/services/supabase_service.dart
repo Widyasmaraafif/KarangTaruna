@@ -3,6 +3,34 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class SupabaseService {
   final SupabaseClient _client = Supabase.instance.client;
 
+  // --- Authentication ---
+  Future<AuthResponse> signIn(String email, String password) async {
+    return await _client.auth.signInWithPassword(
+      email: email,
+      password: password,
+    );
+  }
+
+  Future<AuthResponse> signUp(
+    String email,
+    String password, {
+    Map<String, dynamic>? data,
+  }) async {
+    return await _client.auth.signUp(
+      email: email,
+      password: password,
+      data: data,
+    );
+  }
+
+  Future<void> signOut() async {
+    await _client.auth.signOut();
+  }
+
+  Stream<AuthState> get authStateChanges => _client.auth.onAuthStateChange;
+
+  User? get currentUser => _client.auth.currentUser;
+
   // --- Events ---
   Future<List<Map<String, dynamic>>> getEvents() async {
     final response = await _client
@@ -73,7 +101,7 @@ class SupabaseService {
         .select()
         .eq('id', user.id)
         .maybeSingle();
-    
+
     return response;
   }
 
