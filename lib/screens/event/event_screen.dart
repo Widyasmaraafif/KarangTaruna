@@ -100,6 +100,7 @@ class _EventScreenState extends State<EventScreen> {
         date: date,
         time: TimeOfDay.fromDateTime(date),
         status: _parseStatus(status),
+        location: e['location'] ?? '',
       );
     }).toList();
   }
@@ -153,6 +154,8 @@ class _EventScreenState extends State<EventScreen> {
                             date: event.date,
                             time: event.time,
                             status: event.status,
+                            location: event
+                                .location, // Pass location if your card supports it
                           ),
                         )
                         .toList(),
@@ -169,6 +172,7 @@ class _EventItem {
   final DateTime date;
   final TimeOfDay time;
   final KTEventStatus status;
+  final String location; // Add location field
 
   const _EventItem({
     required this.title,
@@ -176,5 +180,6 @@ class _EventItem {
     required this.date,
     required this.time,
     required this.status,
+    required this.location, // Add location parameter
   });
 }

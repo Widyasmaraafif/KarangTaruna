@@ -8,6 +8,7 @@ class KTEventCard extends StatelessWidget {
   final DateTime date;
   final TimeOfDay time;
   final KTEventStatus status;
+  final String location;
 
   const KTEventCard({
     super.key,
@@ -16,6 +17,7 @@ class KTEventCard extends StatelessWidget {
     required this.date,
     required this.time,
     required this.status,
+    required this.location,
   });
 
   String get formattedDate {
@@ -95,6 +97,22 @@ class KTEventCard extends StatelessWidget {
                   color: Colors.grey[700],
                 ),
               ),
+              if (location != null && location!.isNotEmpty) ...[
+                const SizedBox(width: 16),
+                const Icon(Icons.location_on, size: 14, color: Colors.grey),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    location!,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontSize: 10,
+                      color: Colors.grey[700],
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ],
           ),
         ],

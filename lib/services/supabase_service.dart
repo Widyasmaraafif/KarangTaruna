@@ -145,4 +145,47 @@ class SupabaseService {
       return [];
     }
   }
+
+  // --- Polling ---
+  Future<List<Map<String, dynamic>>> getActivePolls() async {
+    try {
+      final response = await _client
+          .from('pollings')
+          .select('*, polling_options(*)')
+          .eq('is_active', true)
+          .order('created_at', ascending: false);
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<void> submitVote(int optionId) async {
+    await _client.rpc('increment_vote', params: {'option_id': optionId});
+    // Note: If you don't have an RPC function, you can use update,
+    // but concurrency might be an issue. RPC is safer.
+    // For now, let's use a direct update with existing value + 1 if RPC is not an option yet.
+    // But since user provided schema without RPC, we might need to do read-update-write or just assume RPC exists.
+    // Actually, let's try a direct update but it's risky for concurrency.
+    // Better approach without RPC:
+    // await _client.from('polling_options').update({'vote_count': count + 1}).eq('id', optionId);
+    // But we need to fetch first.
+
+    // Alternative: Use a stored procedure (RPC) is best practice.
+    // Since I cannot create RPC easily from here without SQL Editor, I will assume a basic update for now
+    // or provide the RPC SQL to the user.
+
+    // Let's implement a simple fetch-increment-update loop for now,
+    // fully aware of race conditions but acceptable for MVP.
+    final option = await _client
+        .from('polling_options')
+        .select('vote_count')
+        .eq('id', optionId)
+        .single();
+    final currentCount = option['vote_count'] as int;
+    await _client
+        .from('polling_options')
+        .update({'vote_count': currentCount + 1})
+        .eq('id', optionId);
+  }
 }

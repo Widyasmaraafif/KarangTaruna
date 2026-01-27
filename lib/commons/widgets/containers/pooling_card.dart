@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
 class KTPoolingOption {
+  final int? id; // added id for voting
   final String label;
   final int value;
 
-  const KTPoolingOption({required this.label, required this.value});
+  const KTPoolingOption({this.id, required this.label, required this.value});
 }
 
 class KTPoolingCard extends StatelessWidget {
