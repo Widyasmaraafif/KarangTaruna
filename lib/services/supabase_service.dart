@@ -76,11 +76,15 @@ class SupabaseService {
 
   // --- Aspirations ---
   Future<List<Map<String, dynamic>>> getAspirations() async {
-    final response = await _client
-        .from('aspirations')
-        .select()
-        .order('created_at', ascending: false);
-    return List<Map<String, dynamic>>.from(response);
+    try {
+      final response = await _client
+          .from('aspirations')
+          .select()
+          .order('created_at', ascending: false);
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      return [];
+    }
   }
 
   Future<void> submitAspiration(String author, String content) async {
@@ -110,5 +114,35 @@ class SupabaseService {
     if (user == null) throw Exception('Not authenticated');
 
     await _client.from('profiles').update(updates).eq('id', user.id);
+  }
+
+  // --- Management ---
+  Future<List<Map<String, dynamic>>> getManagement() async {
+    try {
+      final response = await _client
+          .from('management')
+          .select()
+          .order(
+            'rank',
+            ascending: true,
+          ); // Assuming 'rank' for ordering hierarchy
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      // Fallback if table doesn't exist or error occurs, return empty list
+      return [];
+    }
+  }
+
+  // --- Gallery ---
+  Future<List<Map<String, dynamic>>> getGallery() async {
+    try {
+      final response = await _client
+          .from('gallery')
+          .select()
+          .order('created_at', ascending: false);
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      return [];
+    }
   }
 }

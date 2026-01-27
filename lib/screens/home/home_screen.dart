@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:karang_taruna/commons/widgets/buttons/button_fitur.dart';
 import 'package:karang_taruna/commons/widgets/containers/announcement_card.dart';
 import 'package:karang_taruna/commons/widgets/containers/aspiration_card.dart';
@@ -6,6 +7,14 @@ import 'package:karang_taruna/commons/widgets/containers/banner.dart';
 import 'package:karang_taruna/commons/widgets/containers/pooling_card.dart';
 import 'package:karang_taruna/commons/widgets/containers/post_container.dart';
 import 'package:karang_taruna/commons/widgets/texts/section_heading.dart';
+import 'package:karang_taruna/screens/aspiration/aspiration_screen.dart';
+import 'package:karang_taruna/screens/event/event_screen.dart';
+import 'package:karang_taruna/screens/finance/finance_screen.dart';
+import 'package:karang_taruna/screens/gallery/gallery_screen.dart';
+import 'package:karang_taruna/screens/management/management_screen.dart';
+import 'package:karang_taruna/screens/news/news_screen.dart';
+import 'package:karang_taruna/screens/polling/polling_screen.dart';
+import 'package:karang_taruna/screens/settings/settings_screen.dart';
 import 'package:karang_taruna/services/supabase_service.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -29,37 +38,40 @@ class _HomeScreenState extends State<HomeScreen> {
               NewsHome(),
               AnnouncementHome(),
               PojokKampungHome(),
-              Container(
-                margin: const EdgeInsets.only(top: 20),
-                padding: const EdgeInsets.symmetric(horizontal: 30),
-                child: Column(
-                  children: [
-                    KTSectionHeading(title: "Pooling", onPressed: () {}),
-                    SizedBox(height: 10),
-                    // TODO: Implement Pooling dynamically later
-                    KTPoolingCard(
-                      title: "Kegiatan apa yang kamu pilih minggu ini?",
-                      options: const [
-                        KTPoolingOption(
-                          label: "Kerja bakti lingkungan",
-                          value: 40,
-                        ),
-                        KTPoolingOption(
-                          label: "Pelatihan keterampilan",
-                          value: 25,
-                        ),
-                        KTPoolingOption(label: "Lomba olahraga", value: 35),
-                      ],
-                      onOptionTap: (option) {
-                        // TODO: logika ketika user memilih salah satu opsi
-                      },
-                    ),
-                  ],
-                ),
-              ),
+              PoolingHome(),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class PoolingHome extends StatelessWidget {
+  const PoolingHome({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(top: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 30),
+      child: Column(
+        children: [
+          KTSectionHeading(title: "Pooling", onPressed: () {}),
+          SizedBox(height: 10),
+          // TODO: Implement Pooling dynamically later
+          KTPoolingCard(
+            title: "Kegiatan apa yang kamu pilih minggu ini?",
+            options: const [
+              KTPoolingOption(label: "Kerja bakti lingkungan", value: 40),
+              KTPoolingOption(label: "Pelatihan keterampilan", value: 25),
+              KTPoolingOption(label: "Lomba olahraga", value: 35),
+            ],
+            onOptionTap: (option) {
+              // TODO: logika ketika user memilih salah satu opsi
+            },
+          ),
+        ],
       ),
     );
   }
@@ -317,38 +329,42 @@ class HeaderHome extends StatelessWidget {
               KTButtonFitur(
                 icon: Icons.people,
                 label: "Pengurus",
-                onTap: () {},
+                onTap: () => Get.to(() => const ManagementScreen()),
               ),
               KTButtonFitur(
                 icon: Icons.photo_library,
                 label: "Galeri",
-                onTap: () {},
+                onTap: () => Get.to(() => const GalleryScreen()),
               ),
               KTButtonFitur(
                 icon: Icons.attach_money,
                 label: "Keuangan",
-                onTap: () {},
+                onTap: () => Get.to(() => const FinanceScreen()),
               ),
-              KTButtonFitur(icon: Icons.event, label: "Event", onTap: () {}),
+              KTButtonFitur(
+                icon: Icons.event,
+                label: "Event",
+                onTap: () => Get.to(() => const EventScreen()),
+              ),
               KTButtonFitur(
                 icon: Icons.newspaper,
                 label: "Berita",
-                onTap: () {},
+                onTap: () => Get.to(() => const NewsScreen()),
               ),
               KTButtonFitur(
                 icon: Icons.people_alt,
                 label: "Pooling",
-                onTap: () {},
+                onTap: () => Get.to(() => const PollingScreen()),
               ),
               KTButtonFitur(
                 icon: Icons.feedback,
                 label: "Aspirasi",
-                onTap: () {},
+                onTap: () => Get.to(() => const AspirationScreen()),
               ),
               KTButtonFitur(
                 icon: Icons.settings,
                 label: "Pengaturan",
-                onTap: () {},
+                onTap: () => Get.to(() => const SettingsScreen()),
               ),
             ],
           ),

@@ -27,6 +27,12 @@ class _EventScreenState extends State<EventScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text("Event"),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: Colors.white,
+      ),
       backgroundColor: const Color(0xFF00BA9B),
       body: SafeArea(
         child: FutureBuilder<List<Map<String, dynamic>>>(
