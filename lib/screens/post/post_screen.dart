@@ -12,53 +12,69 @@ class PostScreen extends StatelessWidget {
     DataController controller,
   ) {
     final contentController = TextEditingController();
-    Get.defaultDialog(
-      title: "Buat Aspirasi",
-      content: Column(
-        children: [
-          TextField(
-            controller: contentController,
-            decoration: const InputDecoration(
-              hintText: "Tulis aspirasi Anda...",
-              border: OutlineInputBorder(),
-            ),
-            maxLines: 3,
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text("Buat Aspirasi"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: contentController,
+                decoration: const InputDecoration(
+                  hintText: "Tulis aspirasi Anda...",
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
+              ),
+            ],
           ),
-        ],
-      ),
-      textConfirm: "Kirim",
-      textCancel: "Batal",
-      confirmTextColor: Colors.white,
-      onConfirm: () async {
-        if (contentController.text.isNotEmpty) {
-          try {
-            // We need current user ID
-            final user = SupabaseService().currentUser;
-            if (user == null) {
-              Get.back();
-              Get.snackbar("Error", "Anda harus login");
-              return;
-            }
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text("Batal", style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (contentController.text.isNotEmpty) {
+                  try {
+                    // We need current user ID
+                    final user = SupabaseService().currentUser;
+                    if (user == null) {
+                      Navigator.of(dialogContext).pop();
+                      Get.snackbar("Error", "Anda harus login");
+                      return;
+                    }
 
-            // Try to get name from metadata, fallback to email
-            final authorName =
-                user.userMetadata?['full_name'] ??
-                user.email?.split('@')[0] ??
-                "Anonymous";
+                    // Try to get name from metadata, fallback to email
+                    final authorName =
+                        user.userMetadata?['full_name'] ??
+                        user.email?.split('@')[0] ??
+                        "Anonymous";
 
-            await controller.createAspiration(
-              authorName,
-              contentController.text,
-              user.id,
-            );
+                    await controller.createAspiration(
+                      authorName,
+                      contentController.text,
+                      user.id,
+                    );
 
-            Get.back();
-            Get.snackbar("Sukses", "Aspirasi berhasil dikirim");
-          } catch (e) {
-            Get.back();
-            Get.snackbar("Error", "Gagal mengirim aspirasi: $e");
-          }
-        }
+                    Navigator.of(dialogContext).pop();
+                    Get.snackbar("Sukses", "Aspirasi berhasil dikirim");
+                  } catch (e) {
+                    Navigator.of(dialogContext).pop();
+                    Get.snackbar("Error", "Gagal mengirim aspirasi: $e");
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF00BA9B),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text("Kirim"),
+            ),
+          ],
+        );
       },
     );
   }
@@ -140,7 +156,85 @@ class PostScreen extends StatelessWidget {
                             DateTime.tryParse(item['created_at']) ??
                             DateTime.now(),
                         status: item['status'],
-                        onTap: () {},
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext dialogContext) {
+                              return AlertDialog(
+                                title: const Text("Detail Aspirasi"),
+                                content: Text(item['content'] ?? ''),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      // Konfirmasi hapus
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: const Text("Hapus Aspirasi"),
+                                          content: const Text(
+                                            "Apakah Anda yakin ingin menghapus aspirasi ini?",
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.of(context).pop(),
+                                              child: const Text(
+                                                "Batal",
+                                                style: TextStyle(
+                                                  color: Colors.grey,
+                                                ),
+                                              ),
+                                            ),
+                                            TextButton(
+                                              onPressed: () async {
+                                                Navigator.of(
+                                                  context,
+                                                ).pop(); // Close confirm dialog
+                                                Navigator.of(
+                                                  dialogContext,
+                                                ).pop(); // Close detail dialog
+                                                try {
+                                                  await controller
+                                                      .deleteAspiration(
+                                                        item['id'],
+                                                      );
+                                                  Get.snackbar(
+                                                    "Sukses",
+                                                    "Aspirasi berhasil dihapus",
+                                                  );
+                                                } catch (e) {
+                                                  Get.snackbar(
+                                                    "Error",
+                                                    "Gagal menghapus: $e",
+                                                  );
+                                                }
+                                              },
+                                              child: const Text(
+                                                "Hapus",
+                                                style: TextStyle(
+                                                  color: Colors.red,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                    child: const Text(
+                                      "Hapus",
+                                      style: TextStyle(color: Colors.red),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () =>
+                                        Navigator.of(dialogContext).pop(),
+                                    child: const Text("Tutup"),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
                       ),
                     );
                   },

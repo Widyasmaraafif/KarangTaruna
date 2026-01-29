@@ -28,44 +28,61 @@ class _AspirationScreenState extends State<AspirationScreen> {
 
   void _showAddAspirationDialog() {
     final contentController = TextEditingController();
-    Get.defaultDialog(
-      title: "Tambah Aspirasi",
-      content: Column(
-        children: [
-          TextField(
-            controller: contentController,
-            decoration: const InputDecoration(
-              hintText: "Tulis aspirasi Anda...",
-              border: OutlineInputBorder(),
-            ),
-            maxLines: 3,
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text("Tambah Aspirasi"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: contentController,
+                decoration: const InputDecoration(
+                  hintText: "Tulis aspirasi Anda...",
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
+              ),
+            ],
           ),
-        ],
-      ),
-      textConfirm: "Kirim",
-      textCancel: "Batal",
-      confirmTextColor: Colors.white,
-      onConfirm: () async {
-        if (contentController.text.isNotEmpty) {
-          // In a real app, we would get the current user's name
-          // For now, we'll just show a success message or try to submit if user is logged in
-          try {
-            final user = _supabaseService.currentUser;
-            final authorName = user?.email?.split('@')[0] ?? "Anonymous";
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text("Batal", style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (contentController.text.isNotEmpty) {
+                  // In a real app, we would get the current user's name
+                  // For now, we'll just show a success message or try to submit if user is logged in
+                  try {
+                    final user = _supabaseService.currentUser;
+                    final authorName =
+                        user?.email?.split('@')[0] ?? "Anonymous";
 
-            await _supabaseService.submitAspiration(
-              authorName,
-              contentController.text,
-            );
-            Get.back();
-            Get.snackbar("Sukses", "Aspirasi berhasil dikirim");
-            _refreshAspirations();
-          } catch (e) {
-            // If table doesn't exist or other error, just close and show mock success
-            Get.back();
-            Get.snackbar("Info", "Aspirasi terkirim (Mock)");
-          }
-        }
+                    await _supabaseService.submitAspiration(
+                      authorName,
+                      contentController.text,
+                    );
+                    Navigator.of(dialogContext).pop();
+                    Get.snackbar("Sukses", "Aspirasi berhasil dikirim");
+                    _refreshAspirations();
+                  } catch (e) {
+                    // If table doesn't exist or other error, just close and show mock success
+                    Navigator.of(dialogContext).pop();
+                    Get.snackbar("Info", "Aspirasi terkirim (Mock)");
+                  }
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF00BA9B),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text("Kirim"),
+            ),
+          ],
+        );
       },
     );
   }
@@ -150,12 +167,21 @@ class _AspirationScreenState extends State<AspirationScreen> {
                       : (item['created_at'] as DateTime? ?? DateTime.now()),
                   status: item['status'],
                   onTap: () {
-                    Get.defaultDialog(
-                      title: "Detail Aspirasi",
-                      middleText: item['content'] ?? '',
-                      textConfirm: "Tutup",
-                      confirmTextColor: Colors.white,
-                      onConfirm: () => Get.back(),
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext dialogContext) {
+                        return AlertDialog(
+                          title: const Text("Detail Aspirasi"),
+                          content: Text(item['content'] ?? ''),
+                          actions: [
+                            TextButton(
+                              onPressed: () =>
+                                  Navigator.of(dialogContext).pop(),
+                              child: const Text("Tutup"),
+                            ),
+                          ],
+                        );
+                      },
                     );
                   },
                 );

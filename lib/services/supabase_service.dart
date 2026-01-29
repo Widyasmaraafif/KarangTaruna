@@ -115,6 +115,10 @@ class SupabaseService {
     await _client.from('aspirations').insert(data);
   }
 
+  Future<void> deleteAspiration(int id) async {
+    await _client.from('aspirations').delete().eq('id', id);
+  }
+
   // --- Profile ---
   // Mendapatkan profil user yang sedang login
   Future<Map<String, dynamic>?> getCurrentUserProfile() async {

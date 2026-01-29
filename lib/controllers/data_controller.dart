@@ -233,4 +233,14 @@ class DataController extends GetxController {
       rethrow;
     }
   }
+
+  Future<void> deleteAspiration(int id) async {
+    try {
+      await _supabaseService.deleteAspiration(id);
+      // Refresh aspirations
+      await fetchUserAspirations();
+    } catch (e) {
+      rethrow;
+    }
+  }
 }
