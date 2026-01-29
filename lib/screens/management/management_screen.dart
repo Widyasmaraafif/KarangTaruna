@@ -1,26 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:karang_taruna/services/supabase_service.dart';
+import 'package:karang_taruna/controllers/data_controller.dart';
 
-class ManagementScreen extends StatefulWidget {
+class ManagementScreen extends StatelessWidget {
   const ManagementScreen({super.key});
 
   @override
-  State<ManagementScreen> createState() => _ManagementScreenState();
-}
-
-class _ManagementScreenState extends State<ManagementScreen> {
-  final _service = SupabaseService();
-  late Future<List<Map<String, dynamic>>> _managementFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _managementFuture = _service.getManagement();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final controller = Get.find<DataController>();
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -36,15 +24,12 @@ class _ManagementScreenState extends State<ManagementScreen> {
           onPressed: () => Get.back(),
         ),
       ),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: _managementFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: RefreshIndicator(
+        onRefresh: controller.fetchManagement,
+        child: Obx(() {
+          var members = controller.management.toList();
 
-          // Fallback data if API fails or returns empty (for demo purposes)
-          var members = snapshot.data ?? [];
+          // Fallback data if API returns empty
           if (members.isEmpty) {
             members = [
               {
@@ -99,67 +84,45 @@ class _ManagementScreenState extends State<ManagementScreen> {
                   ],
                 ),
                 child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
+                  contentPadding: const EdgeInsets.all(12),
                   leading: CircleAvatar(
-                    radius: 28,
+                    radius: 30,
                     backgroundImage: NetworkImage(
                       member['image_url'] ??
-                          'https://ui-avatars.com/api/?name=${member['name']}&background=random',
+                          'https://ui-avatars.com/api/?name=${Uri.encodeComponent(member['name'] ?? 'User')}&background=random',
                     ),
                   ),
                   title: Text(
-                    member['name'],
+                    member['name'] ?? 'Nama Tidak Diketahui',
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
                     ),
                   ),
                   subtitle: Text(
-                    member['position'],
+                    member['position'] ?? 'Anggota',
                     style: TextStyle(color: Colors.grey[600], fontSize: 14),
                   ),
-                  trailing: const Icon(
-                    Icons.arrow_forward_ios,
-                    size: 16,
-                    color: Colors.grey,
+                  trailing: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF00BA9B).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Icon(
+                      Icons.verified,
+                      color: Color(0xFF00BA9B),
+                      size: 20,
+                    ),
                   ),
-                  onTap: () {
-                    // Show detail dialog or navigate
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        content: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            CircleAvatar(
-                              radius: 50,
-                              backgroundImage: NetworkImage(
-                                member['image_url'] ??
-                                    'https://ui-avatars.com/api/?name=${member['name']}&background=random',
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              member['name'],
-                              style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
-                            ),
-                            Text(member['position']),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
                 ),
               );
             },
           );
-        },
+        }),
       ),
     );
   }

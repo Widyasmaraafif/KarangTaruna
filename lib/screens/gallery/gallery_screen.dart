@@ -1,26 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:karang_taruna/services/supabase_service.dart';
+import 'package:karang_taruna/controllers/data_controller.dart';
 
-class GalleryScreen extends StatefulWidget {
+class GalleryScreen extends StatelessWidget {
   const GalleryScreen({super.key});
 
   @override
-  State<GalleryScreen> createState() => _GalleryScreenState();
-}
-
-class _GalleryScreenState extends State<GalleryScreen> {
-  final _service = SupabaseService();
-  late Future<List<Map<String, dynamic>>> _galleryFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _galleryFuture = _service.getGallery();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final controller = Get.find<DataController>();
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -36,15 +24,12 @@ class _GalleryScreenState extends State<GalleryScreen> {
           onPressed: () => Get.back(),
         ),
       ),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: _galleryFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: RefreshIndicator(
+        onRefresh: controller.fetchGallery,
+        child: Obx(() {
+          var images = controller.gallery.toList();
 
-          var images = snapshot.data ?? [];
-          // Fallback data
+          // Fallback data if API returns empty
           if (images.isEmpty) {
             images = [
               {
@@ -105,7 +90,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
                             begin: Alignment.bottomCenter,
                             end: Alignment.topCenter,
                             colors: [
-                              Colors.black.withOpacity(0.7),
+                              Colors.black.withValues(alpha: 0.8),
                               Colors.transparent,
                             ],
                           ),
@@ -117,7 +102,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                           ),
-                          maxLines: 1,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
@@ -127,7 +112,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
               );
             },
           );
-        },
+        }),
       ),
     );
   }

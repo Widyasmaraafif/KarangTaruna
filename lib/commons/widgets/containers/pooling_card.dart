@@ -1,41 +1,29 @@
 import 'package:flutter/material.dart';
 
-class KTPoolingOption {
-  final int? id; // added id for voting
-  final String label;
-  final int value;
+class KTPollingCard extends StatelessWidget {
+  final String question;
+  final List<Map<String, dynamic>> options;
+  final int totalVotes;
+  final bool isVoted;
+  final Function(int optionId, String label)? onVote;
 
-  const KTPoolingOption({this.id, required this.label, required this.value});
-}
-
-class KTPoolingCard extends StatelessWidget {
-  final String title;
-  final List<KTPoolingOption> options;
-  final bool showPercentage;
-  final ValueChanged<KTPoolingOption>? onOptionTap;
-
-  const KTPoolingCard({
+  const KTPollingCard({
     super.key,
-    required this.title,
+    required this.question,
     required this.options,
-    this.showPercentage = true,
-    this.onOptionTap,
+    required this.totalVotes,
+    this.isVoted = false,
+    this.onVote,
   });
-
-  int get _totalValue => options.fold(
-    0,
-    (previousValue, element) => previousValue + element.value,
-  );
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final total = _totalValue;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Color(0xff79CDB0),
+        color: const Color(0xff79CDB0),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -50,83 +38,115 @@ class KTPoolingCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            title,
+            question,
             style: theme.textTheme.titleMedium?.copyWith(
-              fontSize: 11,
+              fontSize: 14,
               fontWeight: FontWeight.w700,
-              color: Colors.black87,
+              color: Colors.white,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
           Column(
             children: options.map((option) {
-              final value = option.value;
-              final ratio = total > 0 ? value / total : 0.0;
+              final optionId = option['id'];
+              final label = option['option_text'] ?? 'Option';
+              final votes = (option['votes'] as num? ?? 0).toInt();
+
+              final ratio = totalVotes > 0 ? votes / totalVotes : 0.0;
               final percent = (ratio * 100).round();
 
-              Widget row = Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          option.label,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black87,
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: InkWell(
+                  onTap: isVoted || onVote == null
+                      ? null
+                      : () => onVote!(optionId, label),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(8),
+                      border: isVoted
+                          ? Border.all(
+                              color: Colors.white.withValues(alpha: 0.5),
+                            )
+                          : null,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                label,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '$percent%',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                fontSize: 12,
+                                color: const Color(0xFF00BA9B),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(999),
+                          child: LinearProgressIndicator(
+                            value: ratio,
+                            minHeight: 8,
+                            backgroundColor: Colors.grey[200],
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                              Color(0xFF00BA9B),
+                            ),
                           ),
                         ),
-                      ),
-                      if (showPercentage) ...[
-                        const SizedBox(width: 8),
-                        Text(
-                          '$percent%',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            fontSize: 9,
-                            color: Colors.grey[700],
+                        if (isVoted)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              '$votes Suara',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                color: Colors.grey,
+                              ),
+                            ),
                           ),
-                        ),
                       ],
-                    ],
+                    ),
                   ),
-                  const SizedBox(height: 6),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(999),
-                    child: LinearProgressIndicator(
-                      minHeight: 8,
-                      value: ratio.clamp(0.0, 1.0),
-                      backgroundColor: const Color(0xFFE0F2F1),
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        const Color(0xFF00BA9B),
-                      ),
+                ),
+              );
+            }).toList(),
+          ),
+          if (isVoted)
+            const Padding(
+              padding: EdgeInsets.only(top: 8),
+              child: Row(
+                children: [
+                  Icon(Icons.check_circle, size: 16, color: Colors.white),
+                  SizedBox(width: 4),
+                  Text(
+                    "Anda sudah memilih",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
-              );
-
-              if (onOptionTap != null) {
-                row = InkWell(
-                  onTap: () => onOptionTap!(option),
-                  borderRadius: BorderRadius.circular(8),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
-                    child: row,
-                  ),
-                );
-              } else {
-                row = Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: row,
-                );
-              }
-
-              return row;
-            }).toList(),
-          ),
+              ),
+            ),
         ],
       ),
     );

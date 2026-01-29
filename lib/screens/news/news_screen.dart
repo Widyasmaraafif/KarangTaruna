@@ -1,27 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:karang_taruna/commons/widgets/containers/post_container.dart';
-import 'package:karang_taruna/services/supabase_service.dart';
+import 'package:karang_taruna/controllers/data_controller.dart';
 
-class NewsScreen extends StatefulWidget {
+class NewsScreen extends StatelessWidget {
   const NewsScreen({super.key});
 
   @override
-  State<NewsScreen> createState() => _NewsScreenState();
-}
-
-class _NewsScreenState extends State<NewsScreen> {
-  final _service = SupabaseService();
-  late Future<List<Map<String, dynamic>>> _newsFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _newsFuture = _service.getNews();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final controller = Get.find<DataController>();
+
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
@@ -37,19 +25,15 @@ class _NewsScreenState extends State<NewsScreen> {
           onPressed: () => Get.back(),
         ),
       ),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
-        future: _newsFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          var newsList = snapshot.data ?? [];
-          // Fallback data
+      body: RefreshIndicator(
+        onRefresh: controller.fetchNews,
+        child: Obx(() {
+          var newsList = controller.news.toList();
+          
+          // Fallback data if empty (and not loading? or just always fallback if empty)
+          // Preserving original logic: if list is empty, show mock data
           if (newsList.isEmpty) {
-            // Usually we'd want to show "No News", but for continuity let's just show "No News" text
-            // OR provide some mock data if that's preferred. Given previous pattern, let's mock if empty.
-            newsList = [
+             newsList = [
               {
                 'title': 'Karang Taruna Mengadakan Lomba Futsal Antar RT',
                 'author': 'Admin',
@@ -82,16 +66,16 @@ class _NewsScreenState extends State<NewsScreen> {
               final item = newsList[index];
               return KTPostContainer(
                 imageUrl: item['image_url'] ?? "https://picsum.photos/400/300",
-                title: item['title'],
+                title: item['title'] ?? 'No Title',
                 author: item['author'] ?? 'Admin',
                 createdAt:
-                    DateTime.tryParse(item['created_at']) ?? DateTime.now(),
+                    DateTime.tryParse(item['created_at'] ?? '') ?? DateTime.now(),
                 content: item['content'] ?? '',
                 category: item['category'] ?? 'News',
               );
             },
           );
-        },
+        }),
       ),
     );
   }

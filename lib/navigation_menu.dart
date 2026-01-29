@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:karang_taruna/controllers/data_controller.dart';
 import 'package:karang_taruna/screens/event/event_screen.dart';
 import 'package:karang_taruna/screens/finance/finance_screen.dart';
 import 'package:karang_taruna/screens/home/home_screen.dart';
@@ -12,6 +13,7 @@ class NavigationMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(NavigationController());
+    Get.put(DataController()); // Initialize DataController to fetch data in background
 
     return Scaffold(
       body: Obx(() => controller.screens[controller.selectedIndex.value]),

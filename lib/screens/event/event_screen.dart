@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:karang_taruna/commons/widgets/containers/event_card.dart';
 import 'package:karang_taruna/commons/widgets/texts/event_heading.dart';
-import 'package:karang_taruna/services/supabase_service.dart';
+import 'package:karang_taruna/controllers/data_controller.dart';
 
 class EventScreen extends StatefulWidget {
   const EventScreen({super.key});
@@ -15,17 +16,11 @@ class _EventScreenState extends State<EventScreen> {
   bool showOngoing = false;
   bool showCompleted = false;
 
-  final SupabaseService _supabaseService = SupabaseService();
-  late Future<List<Map<String, dynamic>>> _eventsFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _eventsFuture = _supabaseService.getEvents();
-  }
-
   @override
   Widget build(BuildContext context) {
+    // Find the controller injected in NavigationMenu
+    final controller = Get.find<DataController>();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text("Event"),
@@ -35,25 +30,23 @@ class _EventScreenState extends State<EventScreen> {
       ),
       backgroundColor: const Color(0xFF00BA9B),
       body: SafeArea(
-        child: FutureBuilder<List<Map<String, dynamic>>>(
-          future: _eventsFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
+        child: RefreshIndicator(
+          onRefresh: controller.fetchEvents,
+          child: Obx(() {
+            // Show loading only if no data is available
+            if (controller.isLoadingEvents.value && controller.events.isEmpty) {
               return const Center(
                 child: CircularProgressIndicator(color: Colors.white),
               );
             }
 
-            if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            }
-
-            final events = snapshot.data ?? [];
+            final events = controller.events;
             final upcomingEvents = _filterEvents(events, 'upcoming');
             final ongoingEvents = _filterEvents(events, 'ongoing');
             final completedEvents = _filterEvents(events, 'completed');
 
             return SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: const EdgeInsets.only(bottom: 30),
               child: Column(
                 children: [
@@ -82,7 +75,7 @@ class _EventScreenState extends State<EventScreen> {
                 ],
               ),
             );
-          },
+          }),
         ),
       ),
     );
@@ -93,14 +86,14 @@ class _EventScreenState extends State<EventScreen> {
     String status,
   ) {
     return events.where((e) => e['status'] == status).map((e) {
-      final date = DateTime.parse(e['event_date']);
+      final date = DateTime.tryParse(e['event_date'] ?? '') ?? DateTime.now();
       return _EventItem(
-        title: e['title'],
+        title: e['title'] ?? 'No Title',
         description: e['description'] ?? '',
         date: date,
-        location: e['location'] ?? '',
         time: TimeOfDay.fromDateTime(date),
         status: _parseStatus(status),
+        location: e['location'] ?? '',
       );
     }).toList();
   }
@@ -154,8 +147,7 @@ class _EventScreenState extends State<EventScreen> {
                             date: event.date,
                             time: event.time,
                             status: event.status,
-                            location: event
-                                .location, // Pass location if your card supports it
+                            location: event.location,
                           ),
                         )
                         .toList(),
@@ -172,7 +164,7 @@ class _EventItem {
   final DateTime date;
   final TimeOfDay time;
   final KTEventStatus status;
-  final String location; // Add location field
+  final String location;
 
   const _EventItem({
     required this.title,
@@ -180,6 +172,6 @@ class _EventItem {
     required this.date,
     required this.time,
     required this.status,
-    required this.location, // Add location parameter
+    required this.location,
   });
 }

@@ -60,14 +60,15 @@ class PoolingHome extends StatelessWidget {
           KTSectionHeading(title: "Pooling", onPressed: () {}),
           SizedBox(height: 10),
           // TODO: Implement Pooling dynamically later
-          KTPoolingCard(
-            title: "Kegiatan apa yang kamu pilih minggu ini?",
+          KTPollingCard(
+            question: "Kegiatan apa yang kamu pilih minggu ini?",
             options: const [
-              KTPoolingOption(label: "Kerja bakti lingkungan", value: 40),
-              KTPoolingOption(label: "Pelatihan keterampilan", value: 25),
-              KTPoolingOption(label: "Lomba olahraga", value: 35),
+              {'id': 1, 'option_text': "Kerja bakti lingkungan", 'votes': 40},
+              {'id': 2, 'option_text': "Pelatihan keterampilan", 'votes': 25},
+              {'id': 3, 'option_text': "Lomba olahraga", 'votes': 35},
             ],
-            onOptionTap: (option) {
+            totalVotes: 100,
+            onVote: (id, label) {
               // TODO: logika ketika user memilih salah satu opsi
             },
           ),
