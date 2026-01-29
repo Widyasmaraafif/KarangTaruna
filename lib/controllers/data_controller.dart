@@ -162,6 +162,11 @@ class DataController extends GetxController {
           'avatar_url':
               'https://ui-avatars.com/api/?name=${Uri.encodeComponent(user.email?.split('@')[0] ?? 'User')}&background=random',
           'role': 'Anggota Karang Taruna', // Default
+          'phone': '',
+          'address': '',
+          'birth_date': '',
+          'bio': '',
+          'gender': '',
         };
 
         // Fetch from DB
@@ -171,6 +176,15 @@ class DataController extends GetxController {
             profileData['full_name'] = dbProfile['full_name'];
           if (dbProfile['role'] != null)
             profileData['role'] = dbProfile['role'];
+          if (dbProfile['phone'] != null)
+            profileData['phone'] = dbProfile['phone'];
+          if (dbProfile['address'] != null)
+            profileData['address'] = dbProfile['address'];
+          if (dbProfile['birth_date'] != null)
+            profileData['birth_date'] = dbProfile['birth_date'];
+          if (dbProfile['bio'] != null) profileData['bio'] = dbProfile['bio'];
+          if (dbProfile['gender'] != null)
+            profileData['gender'] = dbProfile['gender'];
           if (dbProfile['avatar_url'] != null &&
               dbProfile['avatar_url'].toString().isNotEmpty) {
             profileData['avatar_url'] = dbProfile['avatar_url'];
@@ -221,6 +235,49 @@ class DataController extends GetxController {
 
       // Refresh polls to show updated counts
       await fetchPolls();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<void> updateProfile({
+    required String fullName,
+    required String phone,
+    String? address,
+    String? birthDate,
+    String? bio,
+    String? gender,
+    String? avatarUrl,
+  }) async {
+    try {
+      final user = _supabaseService.currentUser;
+      if (user == null) return;
+
+      final updates = {
+        'full_name': fullName,
+        'phone': phone,
+        'updated_at': DateTime.now().toIso8601String(),
+      };
+
+      if (address != null) updates['address'] = address;
+      if (birthDate != null) updates['birth_date'] = birthDate;
+      if (bio != null) updates['bio'] = bio;
+      if (gender != null) updates['gender'] = gender;
+      if (avatarUrl != null) updates['avatar_url'] = avatarUrl;
+
+      await _supabaseService.updateProfile(updates);
+
+      // Update local state
+      userProfile['full_name'] = fullName;
+      userProfile['phone'] = phone;
+      if (address != null) userProfile['address'] = address;
+      if (birthDate != null) userProfile['birth_date'] = birthDate;
+      if (bio != null) userProfile['bio'] = bio;
+      if (gender != null) userProfile['gender'] = gender;
+      if (avatarUrl != null) userProfile['avatar_url'] = avatarUrl;
+
+      userProfile.refresh();
+      await _storage.write('userProfile', userProfile);
     } catch (e) {
       rethrow;
     }

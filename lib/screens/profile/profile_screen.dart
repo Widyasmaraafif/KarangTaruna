@@ -5,6 +5,8 @@ import 'package:karang_taruna/controllers/data_controller.dart';
 import 'package:karang_taruna/services/supabase_service.dart';
 import 'package:karang_taruna/screens/auth/login_screen.dart';
 
+import 'package:karang_taruna/screens/profile/personal_data_screen.dart';
+
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
@@ -144,7 +146,7 @@ class ProfileScreen extends StatelessWidget {
                     KTProfileMenuTile(
                       icon: Icons.person_outline,
                       title: 'Data Diri',
-                      onTap: () {},
+                      onTap: () => Get.to(() => const PersonalDataScreen()),
                     ),
                     KTProfileMenuTile(
                       icon: Icons.notifications_outlined,

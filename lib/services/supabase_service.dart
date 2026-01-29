@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseService {
@@ -142,7 +143,27 @@ class SupabaseService {
     final user = _client.auth.currentUser;
     if (user == null) throw Exception('Not authenticated');
 
-    await _client.from('profiles').update(updates).eq('id', user.id);
+    // Ensure ID is included for upsert
+    final dataToUpsert = Map<String, dynamic>.from(updates);
+    dataToUpsert['id'] = user.id;
+
+    await _client.from('profiles').upsert(dataToUpsert);
+  }
+
+  Future<String> uploadAvatar(File file) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('Not authenticated');
+
+    final fileExt = file.path.split('.').last;
+    final fileName =
+        '${user.id}/${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+
+    await _client.storage
+        .from('avatars')
+        .upload(fileName, file, fileOptions: const FileOptions(upsert: true));
+
+    final imageUrl = _client.storage.from('avatars').getPublicUrl(fileName);
+    return imageUrl;
   }
 
   Future<void> createProfile({
