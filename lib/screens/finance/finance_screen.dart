@@ -31,6 +31,13 @@ class FinanceScreen extends StatelessWidget {
                   margin: const EdgeInsets.only(top: 20),
                   padding: const EdgeInsets.symmetric(horizontal: 30),
                   child: Obx(() {
+                    if (controller.isLoadingBills.value &&
+                        controller.bills.isEmpty) {
+                      return const Center(
+                        child: CircularProgressIndicator(color: Colors.white),
+                      );
+                    }
+
                     final billsData = controller.bills;
                     final bills = billsData.map((e) {
                       return KTBillingItem(

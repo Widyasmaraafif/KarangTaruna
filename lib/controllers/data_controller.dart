@@ -25,6 +25,7 @@ class DataController extends GetxController {
   final RxBool isLoadingManagement = false.obs;
   final RxBool isLoadingGallery = false.obs;
   final RxBool isLoadingPolls = false.obs;
+  final RxBool isLoadingBills = false.obs;
   final RxBool isLoadingAspirations = false.obs;
   final RxBool isLoadingProfile = false.obs;
 
@@ -102,7 +103,12 @@ class DataController extends GetxController {
   }
 
   Future<void> fetchBills() async {
-    await _fetchList('bills', bills, () => _supabaseService.getBills(), null);
+    await _fetchList(
+      'bills',
+      bills,
+      () => _supabaseService.getBills(),
+      isLoadingBills,
+    );
   }
 
   Future<void> fetchManagement() async {
