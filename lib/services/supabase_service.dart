@@ -49,9 +49,13 @@ class SupabaseService {
 
   // --- Finance / Bills ---
   Future<List<Map<String, dynamic>>> getBills() async {
+    final user = _client.auth.currentUser;
+    if (user == null) return [];
+
     final response = await _client
         .from('bills')
         .select()
+        .eq('user_id', user.id)
         .order('due_date', ascending: true);
     return List<Map<String, dynamic>>.from(response);
   }

@@ -48,7 +48,7 @@ class FinanceScreen extends StatelessWidget {
                         padding: EdgeInsets.symmetric(vertical: 24),
                         child: Center(
                           child: Text(
-                            'tidak ada tagihan saat ini',
+                            'tidak ada tagihan untuk anda',
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
