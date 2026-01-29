@@ -5,12 +5,14 @@ class KTBillingItem {
   final String description;
   final int amount;
   final DateTime dueDate;
+  final bool isPaid;
 
   const KTBillingItem({
     required this.title,
     required this.description,
     required this.amount,
     required this.dueDate,
+    this.isPaid = false,
   });
 }
 
@@ -99,16 +101,45 @@ class KTBillingCard extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
-              const SizedBox(width: 6),
-              Text(
-                'Jatuh tempo $formattedDueDate',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontSize: 10,
-                  color: Colors.grey[700],
-                ),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.calendar_today,
+                    size: 14,
+                    color: Colors.grey,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Jatuh Tempo: $formattedDueDate',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontSize: 10,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
               ),
+              if (bill.isPaid)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.white, width: 1),
+                  ),
+                  child: Text(
+                    'LUNAS',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontSize: 9,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
             ],
           ),
         ],

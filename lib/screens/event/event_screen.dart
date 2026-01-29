@@ -98,9 +98,9 @@ class _EventScreenState extends State<EventScreen> {
         title: e['title'],
         description: e['description'] ?? '',
         date: date,
+        location: e['location'] ?? '',
         time: TimeOfDay.fromDateTime(date),
         status: _parseStatus(status),
-        location: e['location'] ?? '',
       );
     }).toList();
   }

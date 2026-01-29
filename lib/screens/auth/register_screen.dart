@@ -53,6 +53,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       if (response.session != null) {
+        // Create profile entry
+        try {
+          await _service.createProfile(
+            userId: response.user!.id,
+            fullName: _nameController.text.trim(),
+            email: _emailController.text.trim(),
+          );
+        } catch (e) {
+          // If profile creation fails, we might still want to proceed but log it
+          // or show a warning. For now, we'll proceed as the user is created.
+          debugPrint('Error creating profile: $e');
+        }
+
         Get.offAll(() => const NavigationMenu());
         Get.snackbar(
           'Sukses',

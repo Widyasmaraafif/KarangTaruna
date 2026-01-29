@@ -87,11 +87,32 @@ class SupabaseService {
     }
   }
 
-  Future<void> submitAspiration(String author, String content) async {
-    await _client.from('aspirations').insert({
-      'author': author,
-      'content': content,
-    });
+  Future<List<Map<String, dynamic>>> getUserAspirations() async {
+    try {
+      final user = _client.auth.currentUser;
+      if (user == null) return [];
+
+      final response = await _client
+          .from('aspirations')
+          .select()
+          .eq('user_id', user.id)
+          .order('created_at', ascending: false);
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<void> submitAspiration(
+    String author,
+    String content, {
+    String? userId,
+  }) async {
+    final data = {'author': author, 'content': content};
+    if (userId != null) {
+      data['user_id'] = userId;
+    }
+    await _client.from('aspirations').insert(data);
   }
 
   // --- Profile ---
@@ -114,6 +135,19 @@ class SupabaseService {
     if (user == null) throw Exception('Not authenticated');
 
     await _client.from('profiles').update(updates).eq('id', user.id);
+  }
+
+  Future<void> createProfile({
+    required String userId,
+    required String fullName,
+    String? email,
+  }) async {
+    await _client.from('profiles').upsert({
+      'id': userId,
+      'full_name': fullName,
+      'role': 'Anggota', // Default role
+      'updated_at': DateTime.now().toIso8601String(),
+    });
   }
 
   // --- Management ---

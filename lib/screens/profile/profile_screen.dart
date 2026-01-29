@@ -41,6 +41,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         if (profile != null) {
           setState(() {
             if (profile['full_name'] != null) _name = profile['full_name'];
+            if (profile['role'] != null) _role = profile['role'];
+            if (profile['avatar_url'] != null &&
+                profile['avatar_url'].toString().isNotEmpty) {
+              _avatarUrl = profile['avatar_url'];
+            }
           });
         }
       }

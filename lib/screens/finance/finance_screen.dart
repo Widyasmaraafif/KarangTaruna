@@ -58,6 +58,7 @@ class _FinanceScreenState extends State<FinanceScreen> {
                         description: e['description'] ?? '',
                         amount: (e['amount'] as num).toInt(),
                         dueDate: DateTime.parse(e['due_date']),
+                        isPaid: e['is_paid'] ?? false,
                       );
                     }).toList();
 
