@@ -48,7 +48,28 @@ class SupabaseService {
         .order('event_date', ascending: true);
   }
 
+  Future<void> createEvent(Map<String, dynamic> eventData) async {
+    await _client.from('events').insert(eventData);
+  }
+
+  Future<void> updateEvent(int id, Map<String, dynamic> eventData) async {
+    await _client.from('events').update(eventData).eq('id', id);
+  }
+
+  Future<void> deleteEvent(int id) async {
+    await _client.from('events').delete().eq('id', id);
+  }
+
   // --- Finance / Bills ---
+  // Get all bills for admin
+  Future<List<Map<String, dynamic>>> getAllBills() async {
+    final response = await _client
+        .from('bills')
+        .select('*, profiles(full_name)')
+        .order('created_at', ascending: false);
+    return List<Map<String, dynamic>>.from(response);
+  }
+
   Future<List<Map<String, dynamic>>> getBills() async {
     final user = _client.auth.currentUser;
     if (user == null) return [];
@@ -61,6 +82,18 @@ class SupabaseService {
     return List<Map<String, dynamic>>.from(response);
   }
 
+  Future<void> createBill(Map<String, dynamic> billData) async {
+    await _client.from('bills').insert(billData);
+  }
+
+  Future<void> updateBill(int id, Map<String, dynamic> billData) async {
+    await _client.from('bills').update(billData).eq('id', id);
+  }
+
+  Future<void> deleteBill(int id) async {
+    await _client.from('bills').delete().eq('id', id);
+  }
+
   // --- News ---
   Future<List<Map<String, dynamic>>> getNews() async {
     final response = await _client
@@ -68,6 +101,30 @@ class SupabaseService {
         .select()
         .order('created_at', ascending: false);
     return List<Map<String, dynamic>>.from(response);
+  }
+
+  Future<void> createNews(Map<String, dynamic> newsData) async {
+    await _client.from('news').insert(newsData);
+  }
+
+  Future<void> updateNews(int id, Map<String, dynamic> newsData) async {
+    await _client.from('news').update(newsData).eq('id', id);
+  }
+
+  Future<void> deleteNews(int id) async {
+    await _client.from('news').delete().eq('id', id);
+  }
+
+  Future<String> uploadNewsImage(File file) async {
+    final fileExt = file.path.split('.').last;
+    final fileName = 'news/${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+
+    await _client.storage
+        .from('news_images')
+        .upload(fileName, file, fileOptions: const FileOptions(upsert: true));
+
+    final imageUrl = _client.storage.from('news_images').getPublicUrl(fileName);
+    return imageUrl;
   }
 
   // --- Announcements ---
@@ -223,6 +280,18 @@ class SupabaseService {
   }
 
   // --- Polling ---
+  Future<List<Map<String, dynamic>>> getAllPolls() async {
+    try {
+      final response = await _client
+          .from('pollings')
+          .select('*, polling_options(*)')
+          .order('created_at', ascending: false);
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      return [];
+    }
+  }
+
   Future<List<Map<String, dynamic>>> getActivePolls() async {
     try {
       final response = await _client
@@ -263,5 +332,42 @@ class SupabaseService {
         .from('polling_options')
         .update({'vote_count': currentCount + 1})
         .eq('id', optionId);
+  }
+
+  Future<void> createPoll(String question, List<String> options) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('Not authenticated');
+
+    // 1. Create the poll
+    final pollResponse = await _client
+        .from('pollings')
+        .insert({
+          'question': question,
+          'created_by': user.id,
+          'is_active': true,
+          'created_at': DateTime.now().toIso8601String(),
+        })
+        .select()
+        .single();
+
+    final pollId = pollResponse['id'];
+
+    // 2. Create options
+    final optionsData = options
+        .map((opt) => {'poll_id': pollId, 'option_text': opt, 'vote_count': 0})
+        .toList();
+
+    await _client.from('polling_options').insert(optionsData);
+  }
+
+  Future<void> deletePoll(int id) async {
+    // Options should cascade delete if set up correctly in DB,
+    // but we can delete them explicitly to be safe if cascade isn't guaranteed.
+    await _client.from('polling_options').delete().eq('poll_id', id);
+    await _client.from('pollings').delete().eq('id', id);
+  }
+
+  Future<void> updatePollStatus(int id, bool isActive) async {
+    await _client.from('pollings').update({'is_active': isActive}).eq('id', id);
   }
 }

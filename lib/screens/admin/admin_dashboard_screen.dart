@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:karang_taruna/screens/admin/manage_events_screen.dart';
+import 'package:karang_taruna/screens/admin/manage_finance_screen.dart';
 import 'package:karang_taruna/screens/admin/manage_members_screen.dart';
+import 'package:karang_taruna/screens/admin/manage_news_screen.dart';
+import 'package:karang_taruna/screens/admin/manage_polling_screen.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
@@ -34,37 +38,25 @@ class AdminDashboardScreen extends StatelessWidget {
             icon: Icons.event_note,
             title: 'Kelola Kegiatan',
             subtitle: 'Tambah dan edit kegiatan Karang Taruna',
-            onTap: () {
-              // TODO: Navigate to event management
-              Get.snackbar('Info', 'Fitur Kelola Kegiatan akan segera hadir');
-            },
+            onTap: () => Get.to(() => const ManageEventsScreen()),
           ),
           _buildAdminMenuTile(
             icon: Icons.article_outlined,
             title: 'Kelola Berita',
             subtitle: 'Publikasi berita dan informasi',
-            onTap: () {
-              // TODO: Navigate to news management
-              Get.snackbar('Info', 'Fitur Kelola Berita akan segera hadir');
-            },
+            onTap: () => Get.to(() => const ManageNewsScreen()),
           ),
           _buildAdminMenuTile(
             icon: Icons.monetization_on_outlined,
             title: 'Kelola Keuangan',
-            subtitle: 'Catat pemasukan dan pengeluaran',
-            onTap: () {
-              // TODO: Navigate to finance management
-              Get.snackbar('Info', 'Fitur Kelola Keuangan akan segera hadir');
-            },
+            subtitle: 'Manajemen iuran dan kas',
+            onTap: () => Get.to(() => const ManageFinanceScreen()),
           ),
           _buildAdminMenuTile(
             icon: Icons.poll_outlined,
             title: 'Kelola Polling',
             subtitle: 'Buat dan pantau pemungutan suara',
-            onTap: () {
-              // TODO: Navigate to poll management
-              Get.snackbar('Info', 'Fitur Kelola Polling akan segera hadir');
-            },
+            onTap: () => Get.to(() => const ManagePollingScreen()),
           ),
         ],
       ),
