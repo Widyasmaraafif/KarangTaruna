@@ -19,6 +19,20 @@ class DataController extends GetxController {
 
   // Observable single objects
   final RxMap<String, dynamic> userProfile = <String, dynamic>{}.obs;
+  final RxMap<String, bool> notificationSettings = <String, bool>{
+    'pushEnabled': true,
+    'emailEnabled': false,
+    'waEnabled': true,
+    'eventReminders': true,
+    'newsUpdates': false,
+  }.obs;
+
+  final RxMap<String, bool> privacySettings = <String, bool>{
+    'showProfile': true,
+    'showPhone': false,
+    'showEmail': false,
+    'allowTagging': true,
+  }.obs;
 
   // Loading states
   final RxBool isLoadingEvents = false.obs;
@@ -56,6 +70,16 @@ class DataController extends GetxController {
     final storedProfile = _storage.read<Map>('userProfile');
     if (storedProfile != null) {
       userProfile.assignAll(Map<String, dynamic>.from(storedProfile));
+    }
+
+    final storedSettings = _storage.read<Map>('notificationSettings');
+    if (storedSettings != null) {
+      notificationSettings.assignAll(Map<String, bool>.from(storedSettings));
+    }
+
+    final storedPrivacy = _storage.read<Map>('privacySettings');
+    if (storedPrivacy != null) {
+      privacySettings.assignAll(Map<String, bool>.from(storedPrivacy));
     }
   }
 
@@ -305,5 +329,21 @@ class DataController extends GetxController {
     } catch (e) {
       rethrow;
     }
+  }
+
+  void updateNotificationSetting(String key, bool value) {
+    notificationSettings[key] = value;
+    _storage.write(
+      'notificationSettings',
+      Map<String, dynamic>.from(notificationSettings),
+    );
+  }
+
+  void updatePrivacySetting(String key, bool value) {
+    privacySettings[key] = value;
+    _storage.write(
+      'privacySettings',
+      Map<String, dynamic>.from(privacySettings),
+    );
   }
 }

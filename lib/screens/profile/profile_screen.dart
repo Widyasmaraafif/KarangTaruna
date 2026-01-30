@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:karang_taruna/commons/widgets/buttons/profile_menu_tile.dart';
 import 'package:karang_taruna/controllers/data_controller.dart';
+import 'package:karang_taruna/screens/profile/about_app_screen.dart';
+import 'package:karang_taruna/screens/profile/help_screen.dart';
+import 'package:karang_taruna/screens/profile/notification_settings_screen.dart';
+import 'package:karang_taruna/screens/profile/privacy_settings_screen.dart';
 import 'package:karang_taruna/services/supabase_service.dart';
 import 'package:karang_taruna/screens/auth/login_screen.dart';
 
@@ -151,12 +155,13 @@ class ProfileScreen extends StatelessWidget {
                     KTProfileMenuTile(
                       icon: Icons.notifications_outlined,
                       title: 'Notifikasi',
-                      onTap: () {},
+                      onTap: () =>
+                          Get.to(() => const NotificationSettingsScreen()),
                     ),
                     KTProfileMenuTile(
                       icon: Icons.privacy_tip_outlined,
                       title: 'Privasi',
-                      onTap: () {},
+                      onTap: () => Get.to(() => const PrivacySettingsScreen()),
                     ),
                     const SizedBox(height: 24),
                     const Text(
@@ -171,12 +176,12 @@ class ProfileScreen extends StatelessWidget {
                     KTProfileMenuTile(
                       icon: Icons.help_outline,
                       title: 'Bantuan',
-                      onTap: () {},
+                      onTap: () => Get.to(() => const HelpScreen()),
                     ),
                     KTProfileMenuTile(
                       icon: Icons.info_outline,
                       title: 'Tentang Aplikasi',
-                      onTap: () {},
+                      onTap: () => Get.to(() => const AboutAppScreen()),
                     ),
                   ],
                 ),
