@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:karang_taruna/commons/widgets/buttons/profile_menu_tile.dart';
 import 'package:karang_taruna/controllers/data_controller.dart';
+import 'package:karang_taruna/screens/admin/admin_dashboard_screen.dart';
 import 'package:karang_taruna/screens/profile/about_app_screen.dart';
 import 'package:karang_taruna/screens/profile/help_screen.dart';
 import 'package:karang_taruna/screens/profile/notification_settings_screen.dart';
@@ -138,6 +139,37 @@ class ProfileScreen extends StatelessWidget {
                 child: ListView(
                   padding: const EdgeInsets.all(24),
                   children: [
+                    Obx(() {
+                      final role =
+                          controller.userProfile['role']
+                              ?.toString()
+                              .toLowerCase() ??
+                          '';
+                      if (role == 'admin') {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Admin',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            KTProfileMenuTile(
+                              icon: Icons.admin_panel_settings_outlined,
+                              title: 'Pengaturan Admin',
+                              onTap: () =>
+                                  Get.to(() => const AdminDashboardScreen()),
+                            ),
+                            const SizedBox(height: 24),
+                          ],
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    }),
                     const Text(
                       'Akun',
                       style: TextStyle(

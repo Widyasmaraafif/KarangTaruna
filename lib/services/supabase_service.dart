@@ -125,6 +125,15 @@ class SupabaseService {
   }
 
   // --- Profile ---
+  // Mendapatkan semua profil user (untuk admin)
+  Future<List<Map<String, dynamic>>> getAllProfiles() async {
+    final response = await _client
+        .from('profiles')
+        .select()
+        .order('full_name', ascending: true);
+    return List<Map<String, dynamic>>.from(response);
+  }
+
   // Mendapatkan profil user yang sedang login
   Future<Map<String, dynamic>?> getCurrentUserProfile() async {
     final user = _client.auth.currentUser;
@@ -137,6 +146,10 @@ class SupabaseService {
         .maybeSingle();
 
     return response;
+  }
+
+  Future<void> updateProfileRole(String userId, String newRole) async {
+    await _client.from('profiles').update({'role': newRole}).eq('id', userId);
   }
 
   Future<void> updateProfile(Map<String, dynamic> updates) async {
