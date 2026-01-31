@@ -63,11 +63,57 @@ class SupabaseService {
   // --- Finance / Bills ---
   // Get all bills for admin
   Future<List<Map<String, dynamic>>> getAllBills() async {
-    final response = await _client
-        .from('bills')
-        .select('*, profiles(full_name)')
-        .order('created_at', ascending: false);
-    return List<Map<String, dynamic>>.from(response);
+    // Try to fetch with explicit relationship hint if standard detection fails
+    // Using profiles!user_id to specify the foreign key column
+    try {
+      final response = await _client
+          .from('bills')
+          .select('*, profiles(full_name)')
+          .order('created_at', ascending: false);
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      // Fallback: fetch bills and profiles separately if join fails
+      // This handles cases where foreign key constraint might be missing or not detected
+      final billsResponse = await _client
+          .from('bills')
+          .select()
+          .order('created_at', ascending: false);
+
+      final bills = List<Map<String, dynamic>>.from(billsResponse);
+
+      if (bills.isEmpty) return [];
+
+      // Get all user IDs from bills
+      final userIds = bills
+          .map((bill) => bill['user_id'] as String?)
+          .where((id) => id != null)
+          .cast<String>()
+          .toSet()
+          .toList();
+
+      if (userIds.isEmpty) return bills;
+
+      // Fetch profiles for these users
+      final profilesResponse = await _client
+          .from('profiles')
+          .select('id, full_name')
+          .filter('id', 'in', userIds);
+
+      final profiles = List<Map<String, dynamic>>.from(profilesResponse);
+      final profilesMap = {for (var p in profiles) p['id']: p};
+
+      // Merge profiles into bills
+      return bills.map((bill) {
+        final userId = bill['user_id'];
+        if (userId != null && profilesMap.containsKey(userId)) {
+          // Create a new map to avoid modifying the original if it's immutable
+          final newBill = Map<String, dynamic>.from(bill);
+          newBill['profiles'] = profilesMap[userId];
+          return newBill;
+        }
+        return bill;
+      }).toList();
+    }
   }
 
   Future<List<Map<String, dynamic>>> getBills() async {
@@ -342,7 +388,7 @@ class SupabaseService {
     final pollResponse = await _client
         .from('pollings')
         .insert({
-          'question': question,
+          'title': question,
           'created_by': user.id,
           'is_active': true,
           'created_at': DateTime.now().toIso8601String(),
@@ -354,7 +400,7 @@ class SupabaseService {
 
     // 2. Create options
     final optionsData = options
-        .map((opt) => {'poll_id': pollId, 'option_text': opt, 'vote_count': 0})
+        .map((opt) => {'polling_id': pollId, 'label': opt, 'vote_count': 0})
         .toList();
 
     await _client.from('polling_options').insert(optionsData);
@@ -363,11 +409,45 @@ class SupabaseService {
   Future<void> deletePoll(int id) async {
     // Options should cascade delete if set up correctly in DB,
     // but we can delete them explicitly to be safe if cascade isn't guaranteed.
-    await _client.from('polling_options').delete().eq('poll_id', id);
+    await _client.from('polling_options').delete().eq('polling_id', id);
     await _client.from('pollings').delete().eq('id', id);
   }
 
   Future<void> updatePollStatus(int id, bool isActive) async {
     await _client.from('pollings').update({'is_active': isActive}).eq('id', id);
+  }
+
+  Future<void> updatePollFull({
+    required int pollId,
+    required String question,
+    required List<Map<String, dynamic>> updatedOptions,
+    required List<int> deletedOptionIds,
+  }) async {
+    // 1. Update Question
+    await _client.from('pollings').update({'title': question}).eq('id', pollId);
+
+    // 2. Delete removed options
+    if (deletedOptionIds.isNotEmpty) {
+      await _client
+          .from('polling_options')
+          .delete()
+          .filter('id', 'in', deletedOptionIds);
+    }
+
+    // 3. Upsert options
+    for (var opt in updatedOptions) {
+      if (opt.containsKey('id')) {
+        await _client
+            .from('polling_options')
+            .update({'label': opt['label']})
+            .eq('id', opt['id']);
+      } else {
+        await _client.from('polling_options').insert({
+          'polling_id': pollId,
+          'label': opt['label'],
+          'vote_count': 0,
+        });
+      }
+    }
   }
 }

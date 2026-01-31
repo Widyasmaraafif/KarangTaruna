@@ -44,14 +44,14 @@ class PollingScreen extends StatelessWidget {
               final isVoted = controller.votedPollIds.contains(pollId);
 
               // Calculate total votes for this poll
-              final options = (poll['options'] as List<dynamic>? ?? []);
+              final options = (poll['polling_options'] as List<dynamic>? ?? []);
               int totalVotes = 0;
               for (var opt in options) {
-                totalVotes += (opt['votes'] as num? ?? 0).toInt();
+                totalVotes += (opt['vote_count'] as num? ?? 0).toInt();
               }
 
               return KTPollingCard(
-                question: poll['question'] ?? 'No Question',
+                question: poll['title'] ?? 'No Question',
                 options: options.map((e) => e as Map<String, dynamic>).toList(),
                 totalVotes: totalVotes,
                 isVoted: isVoted,

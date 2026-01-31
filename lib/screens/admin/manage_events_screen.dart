@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:karang_taruna/commons/widgets/alert_dialog.dart';
 import 'package:karang_taruna/controllers/data_controller.dart';
 import 'package:karang_taruna/services/supabase_service.dart';
 
@@ -35,17 +36,15 @@ class _ManageEventsScreenState extends State<ManageEventsScreen> {
     }
   }
 
-  Future<void> _deleteEvent(int id) async {
-    Get.defaultDialog(
+  void _deleteEvent(int id) {
+    KTAlertDialog.show(
+      context,
       title: 'Hapus Kegiatan',
-      middleText: 'Apakah Anda yakin ingin menghapus kegiatan ini?',
-      textConfirm: 'Ya, Hapus',
-      textCancel: 'Batal',
-      confirmTextColor: Colors.white,
-      buttonColor: Colors.red,
+      content: 'Apakah Anda yakin ingin menghapus kegiatan ini?',
+      confirmText: 'Hapus',
+      confirmColor: Colors.red,
       onConfirm: () async {
         try {
-          Get.back(); // Close dialog
           await _supabaseService.deleteEvent(id);
           await _fetchEvents();
           _dataController.fetchEvents(); // Update global state
@@ -69,15 +68,21 @@ class _ManageEventsScreenState extends State<ManageEventsScreen> {
 
   void _showEventForm({Map<String, dynamic>? event}) {
     final titleController = TextEditingController(text: event?['title']);
-    final descriptionController =
-        TextEditingController(text: event?['description']);
+    final descriptionController = TextEditingController(
+      text: event?['description'],
+    );
     final locationController = TextEditingController(text: event?['location']);
     final dateController = TextEditingController(
       text: event != null
           ? DateFormat('yyyy-MM-dd').format(DateTime.parse(event['event_date']))
           : '',
     );
-    final timeController = TextEditingController(text: event?['time'] ?? '');
+    final timeController = TextEditingController(
+      text: event != null
+          ? DateFormat('HH:mm').format(DateTime.parse(event['event_date']))
+          : '',
+    );
+    final selectedStatus = (event?['status'] ?? 'upcoming').toString().obs;
 
     Get.bottomSheet(
       Container(
@@ -142,11 +147,14 @@ class _ManageEventsScreenState extends State<ManageEventsScreen> {
                           context: Get.context!,
                           initialDate: DateTime.now(),
                           firstDate: DateTime.now(),
-                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                          lastDate: DateTime.now().add(
+                            const Duration(days: 365),
+                          ),
                         );
                         if (date != null) {
-                          dateController.text =
-                              DateFormat('yyyy-MM-dd').format(date);
+                          dateController.text = DateFormat(
+                            'yyyy-MM-dd',
+                          ).format(date);
                         }
                       },
                     ),
@@ -167,12 +175,47 @@ class _ManageEventsScreenState extends State<ManageEventsScreen> {
                           initialTime: TimeOfDay.now(),
                         );
                         if (time != null) {
-                          timeController.text = time.format(Get.context!);
+                          final now = DateTime.now();
+                          final dt = DateTime(
+                            now.year,
+                            now.month,
+                            now.day,
+                            time.hour,
+                            time.minute,
+                          );
+                          timeController.text = DateFormat('HH:mm').format(dt);
                         }
                       },
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 16),
+              Obx(
+                () => DropdownButtonFormField<String>(
+                  value: selectedStatus.value,
+                  decoration: const InputDecoration(
+                    labelText: 'Status',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.info_outline),
+                  ),
+                  items: const [
+                    DropdownMenuItem(
+                      value: 'upcoming',
+                      child: Text('Mendatang'),
+                    ),
+                    DropdownMenuItem(value: 'ongoing', child: Text('Berjalan')),
+                    DropdownMenuItem(
+                      value: 'completed',
+                      child: Text('Selesai'),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      selectedStatus.value = value;
+                    }
+                  },
+                ),
               ),
               const SizedBox(height: 24),
               SizedBox(
@@ -193,23 +236,49 @@ class _ManageEventsScreenState extends State<ManageEventsScreen> {
                     }
 
                     try {
+                      final dateTime = DateTime.parse(
+                        '${dateController.text} ${timeController.text}',
+                      );
+
+                      if (selectedStatus.value == 'upcoming' &&
+                          dateTime.isBefore(DateTime.now())) {
+                        Get.snackbar(
+                          'Error',
+                          'Status "Mendatang" tidak valid untuk waktu yang sudah lewat',
+                          backgroundColor: Colors.orange,
+                          colorText: Colors.white,
+                        );
+                        return;
+                      }
+
                       final data = {
                         'title': titleController.text,
                         'description': descriptionController.text,
                         'location': locationController.text,
-                        'event_date': dateController.text,
-                        'time': timeController.text,
+                        'event_date': dateTime.toIso8601String(),
+                        'status': selectedStatus.value,
                       };
 
                       if (event == null) {
                         await _supabaseService.createEvent(data);
-                        Get.snackbar('Sukses', 'Kegiatan berhasil ditambahkan');
+                        Get.back(); // Close bottom sheet
+                        Get.snackbar(
+                          'Sukses',
+                          'Kegiatan berhasil ditambahkan',
+                          backgroundColor: Colors.green,
+                          colorText: Colors.white,
+                        );
                       } else {
                         await _supabaseService.updateEvent(event['id'], data);
-                        Get.snackbar('Sukses', 'Kegiatan berhasil diperbarui');
+                        Get.back(); // Close bottom sheet
+                        Get.snackbar(
+                          'Sukses',
+                          'Kegiatan berhasil diperbarui',
+                          backgroundColor: Colors.green,
+                          colorText: Colors.white,
+                        );
                       }
 
-                      Get.back(); // Close bottom sheet
                       _fetchEvents(); // Refresh list
                       _dataController.fetchEvents(); // Update global state
                     } catch (e) {
@@ -245,10 +314,7 @@ class _ManageEventsScreenState extends State<ManageEventsScreen> {
       appBar: AppBar(
         title: const Text(
           'Kelola Kegiatan',
-          style: TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
@@ -269,18 +335,11 @@ class _ManageEventsScreenState extends State<ManageEventsScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.event_busy,
-                  size: 64,
-                  color: Colors.grey.shade400,
-                ),
+                Icon(Icons.event_busy, size: 64, color: Colors.grey.shade400),
                 const SizedBox(height: 16),
                 Text(
                   'Belum ada kegiatan',
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
                 ),
               ],
             ),
@@ -361,7 +420,7 @@ class _ManageEventsScreenState extends State<ManageEventsScreen> {
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    event['time'] ?? '-',
+                                    DateFormat('HH:mm').format(date),
                                     style: const TextStyle(
                                       color: Colors.grey,
                                       fontSize: 12,
@@ -407,9 +466,16 @@ class _ManageEventsScreenState extends State<ManageEventsScreen> {
                               value: 'delete',
                               child: Row(
                                 children: [
-                                  Icon(Icons.delete, size: 20, color: Colors.red),
+                                  Icon(
+                                    Icons.delete,
+                                    size: 20,
+                                    color: Colors.red,
+                                  ),
                                   SizedBox(width: 8),
-                                  Text('Hapus', style: TextStyle(color: Colors.red)),
+                                  Text(
+                                    'Hapus',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
                                 ],
                               ),
                             ),

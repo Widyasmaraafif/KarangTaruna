@@ -49,8 +49,8 @@ class KTPollingCard extends StatelessWidget {
           Column(
             children: options.map((option) {
               final optionId = option['id'];
-              final label = option['option_text'] ?? 'Option';
-              final votes = (option['votes'] as num? ?? 0).toInt();
+              final label = option['label'] ?? 'Option';
+              final votes = (option['vote_count'] as num? ?? 0).toInt();
 
               final ratio = totalVotes > 0 ? votes / totalVotes : 0.0;
               final percent = (ratio * 100).round();

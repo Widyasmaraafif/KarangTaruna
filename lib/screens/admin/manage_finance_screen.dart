@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:karang_taruna/commons/widgets/alert_dialog.dart';
 import 'package:karang_taruna/controllers/data_controller.dart';
 import 'package:karang_taruna/services/supabase_service.dart';
 
@@ -32,7 +33,7 @@ class _ManageFinanceScreenState extends State<ManageFinanceScreen> {
         _supabaseService.getAllBills(),
         _supabaseService.getAllProfiles(),
       ]);
-      
+
       _bills.assignAll(results[0] as List<Map<String, dynamic>>);
       _users.assignAll(results[1] as List<Map<String, dynamic>>);
     } catch (e) {
@@ -43,16 +44,12 @@ class _ManageFinanceScreenState extends State<ManageFinanceScreen> {
   }
 
   Future<void> _deleteBill(int id) async {
-    Get.defaultDialog(
+    KTAlertDialog.show(
+      context,
       title: 'Hapus Tagihan',
-      middleText: 'Apakah Anda yakin ingin menghapus tagihan ini?',
-      textConfirm: 'Ya, Hapus',
-      textCancel: 'Batal',
-      confirmTextColor: Colors.white,
-      buttonColor: Colors.red,
+      content: 'Apakah Anda yakin ingin menghapus tagihan ini?',
       onConfirm: () async {
         try {
-          Get.back(); // Close dialog
           await _supabaseService.deleteBill(id);
           await _fetchData();
           _dataController.fetchBills(); // Update global state
@@ -79,8 +76,9 @@ class _ManageFinanceScreenState extends State<ManageFinanceScreen> {
     final amountController = TextEditingController(
       text: bill != null ? bill['amount'].toString() : '',
     );
-    final descriptionController =
-        TextEditingController(text: bill?['description']);
+    final descriptionController = TextEditingController(
+      text: bill?['description'],
+    );
     final dueDateController = TextEditingController(
       text: bill != null
           ? DateFormat('yyyy-MM-dd').format(DateTime.parse(bill['due_date']))
@@ -88,179 +86,218 @@ class _ManageFinanceScreenState extends State<ManageFinanceScreen> {
     );
 
     String? selectedUserId = bill?['user_id'];
-    String? selectedStatus = bill?['status'] ?? 'pending';
+    String? selectedStatus = (bill?['is_paid'] == true) ? 'paid' : 'pending';
+    bool isSaving = false;
 
     Get.bottomSheet(
-      StatefulBuilder(builder: (context, setState) {
-        return Container(
-          padding: const EdgeInsets.all(24),
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  bill == null ? 'Buat Tagihan Baru' : 'Edit Tagihan',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF00BA9B),
+      StatefulBuilder(
+        builder: (context, setState) {
+          return Container(
+            padding: const EdgeInsets.all(24),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    bill == null ? 'Buat Tagihan Baru' : 'Edit Tagihan',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF00BA9B),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 24),
-                DropdownButtonFormField<String>(
-                  value: selectedUserId,
-                  decoration: const InputDecoration(
-                    labelText: 'Pilih Anggota',
-                    border: OutlineInputBorder(),
+                  const SizedBox(height: 24),
+                  DropdownButtonFormField<String>(
+                    value: selectedUserId,
+                    decoration: const InputDecoration(
+                      labelText: 'Pilih Anggota',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: _users.map((user) {
+                      return DropdownMenuItem<String>(
+                        value: user['id'],
+                        child: Text(user['full_name'] ?? 'No Name'),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedUserId = value;
+                      });
+                    },
                   ),
-                  items: _users.map((user) {
-                    return DropdownMenuItem<String>(
-                      value: user['id'],
-                      child: Text(user['full_name'] ?? 'No Name'),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      selectedUserId = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: titleController,
-                  decoration: const InputDecoration(
-                    labelText: 'Judul Tagihan',
-                    border: OutlineInputBorder(),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: titleController,
+                    decoration: const InputDecoration(
+                      labelText: 'Judul Tagihan',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: amountController,
-                  decoration: const InputDecoration(
-                    labelText: 'Jumlah (Rp)',
-                    border: OutlineInputBorder(),
-                    prefixText: 'Rp ',
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: amountController,
+                    decoration: const InputDecoration(
+                      labelText: 'Jumlah (Rp)',
+                      border: OutlineInputBorder(),
+                      prefixText: 'Rp ',
+                    ),
+                    keyboardType: TextInputType.number,
                   ),
-                  keyboardType: TextInputType.number,
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: dueDateController,
-                  readOnly: true,
-                  decoration: const InputDecoration(
-                    labelText: 'Jatuh Tempo',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.calendar_today),
-                  ),
-                  onTap: () async {
-                    final date = await showDatePicker(
-                      context: Get.context!,
-                      initialDate: DateTime.now(),
-                      firstDate: DateTime.now(),
-                      lastDate: DateTime.now().add(const Duration(days: 365)),
-                    );
-                    if (date != null) {
-                      dueDateController.text =
-                          DateFormat('yyyy-MM-dd').format(date);
-                    }
-                  },
-                ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  value: selectedStatus,
-                  decoration: const InputDecoration(
-                    labelText: 'Status Pembayaran',
-                    border: OutlineInputBorder(),
-                  ),
-                  items: const [
-                    DropdownMenuItem(value: 'pending', child: Text('Belum Lunas')),
-                    DropdownMenuItem(value: 'paid', child: Text('Lunas')),
-                  ],
-                  onChanged: (value) {
-                    setState(() {
-                      selectedStatus = value;
-                    });
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: descriptionController,
-                  decoration: const InputDecoration(
-                    labelText: 'Keterangan (Opsional)',
-                    border: OutlineInputBorder(),
-                  ),
-                  maxLines: 2,
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      if (selectedUserId == null ||
-                          titleController.text.isEmpty ||
-                          amountController.text.isEmpty ||
-                          dueDateController.text.isEmpty) {
-                        Get.snackbar(
-                          'Error',
-                          'Mohon lengkapi data wajib',
-                          backgroundColor: Colors.orange,
-                          colorText: Colors.white,
-                        );
-                        return;
-                      }
-
-                      try {
-                        final data = {
-                          'user_id': selectedUserId,
-                          'title': titleController.text,
-                          'amount': int.tryParse(amountController.text) ?? 0,
-                          'due_date': dueDateController.text,
-                          'status': selectedStatus,
-                          'description': descriptionController.text,
-                          'updated_at': DateTime.now().toIso8601String(),
-                        };
-
-                        if (bill == null) {
-                          data['created_at'] = DateTime.now().toIso8601String();
-                          await _supabaseService.createBill(data);
-                          Get.snackbar('Sukses', 'Tagihan berhasil dibuat');
-                        } else {
-                          await _supabaseService.updateBill(bill['id'], data);
-                          Get.snackbar('Sukses', 'Tagihan berhasil diperbarui');
-                        }
-
-                        Get.back(); // Close bottom sheet
-                        _fetchData(); // Refresh list
-                        _dataController.fetchBills(); // Update global state
-                      } catch (e) {
-                        Get.snackbar(
-                          'Error',
-                          'Gagal menyimpan tagihan: $e',
-                          backgroundColor: Colors.red,
-                          colorText: Colors.white,
-                        );
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: dueDateController,
+                    readOnly: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Jatuh Tempo',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.calendar_today),
+                    ),
+                    onTap: () async {
+                      final date = await showDatePicker(
+                        context: Get.context!,
+                        initialDate: DateTime.now(),
+                        firstDate: DateTime.now(),
+                        lastDate: DateTime.now().add(const Duration(days: 365)),
+                      );
+                      if (date != null) {
+                        dueDateController.text = DateFormat(
+                          'yyyy-MM-dd',
+                        ).format(date);
                       }
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00BA9B),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(bill == null ? 'Simpan' : 'Update'),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: selectedStatus,
+                    decoration: const InputDecoration(
+                      labelText: 'Status Pembayaran',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'pending',
+                        child: Text('Belum Lunas'),
+                      ),
+                      DropdownMenuItem(value: 'paid', child: Text('Lunas')),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        selectedStatus = value;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: descriptionController,
+                    decoration: const InputDecoration(
+                      labelText: 'Keterangan (Opsional)',
+                      border: OutlineInputBorder(),
+                    ),
+                    maxLines: 2,
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: isSaving
+                          ? null
+                          : () async {
+                              if (selectedUserId == null ||
+                                  titleController.text.isEmpty ||
+                                  amountController.text.isEmpty ||
+                                  dueDateController.text.isEmpty) {
+                                Get.snackbar(
+                                  'Error',
+                                  'Mohon lengkapi data wajib',
+                                  backgroundColor: Colors.orange,
+                                  colorText: Colors.white,
+                                );
+                                return;
+                              }
+
+                              setState(() {
+                                isSaving = true;
+                              });
+
+                              try {
+                                final data = {
+                                  'user_id': selectedUserId,
+                                  'title': titleController.text,
+                                  'amount':
+                                      int.tryParse(amountController.text) ?? 0,
+                                  'due_date': dueDateController.text,
+                                  'is_paid': selectedStatus == 'paid',
+                                  'description': descriptionController.text,
+                                  'updated_at': DateTime.now()
+                                      .toIso8601String(),
+                                };
+
+                                if (bill == null) {
+                                  data['created_at'] = DateTime.now()
+                                      .toIso8601String();
+                                  await _supabaseService.createBill(data);
+                                  Get.back(); // Close bottom sheet
+                                  Get.snackbar(
+                                    'Sukses',
+                                    'Tagihan berhasil dibuat',
+                                  );
+                                } else {
+                                  await _supabaseService.updateBill(
+                                    bill['id'],
+                                    data,
+                                  );
+                                  Get.back(); // Close bottom sheet
+                                  Get.snackbar(
+                                    'Sukses',
+                                    'Tagihan berhasil diperbarui',
+                                  );
+                                }
+
+                                _fetchData(); // Refresh list
+                                _dataController
+                                    .fetchBills(); // Update global state
+                              } catch (e) {
+                                setState(() {
+                                  isSaving = false;
+                                });
+                                Get.snackbar(
+                                  'Error',
+                                  'Gagal menyimpan tagihan: $e',
+                                  backgroundColor: Colors.red,
+                                  colorText: Colors.white,
+                                );
+                              }
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF00BA9B),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: isSaving
+                          ? const SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text(bill == null ? 'Simpan' : 'Update'),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        );
-      }),
+          );
+        },
+      ),
       isScrollControlled: true,
     );
   }
@@ -272,10 +309,7 @@ class _ManageFinanceScreenState extends State<ManageFinanceScreen> {
       appBar: AppBar(
         title: const Text(
           'Kelola Keuangan',
-          style: TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
@@ -304,10 +338,7 @@ class _ManageFinanceScreenState extends State<ManageFinanceScreen> {
                 const SizedBox(height: 16),
                 Text(
                   'Belum ada data keuangan',
-                  style: TextStyle(
-                    color: Colors.grey.shade600,
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
                 ),
               ],
             ),
@@ -319,14 +350,14 @@ class _ManageFinanceScreenState extends State<ManageFinanceScreen> {
           itemCount: _bills.length,
           itemBuilder: (context, index) {
             final bill = _bills[index];
-            final isPaid = bill['status'] == 'paid';
+            final isPaid = bill['is_paid'] == true;
             final dueDate = DateTime.parse(bill['due_date']);
             final amount = NumberFormat.currency(
               locale: 'id',
               symbol: 'Rp ',
               decimalDigits: 0,
             ).format(bill['amount']);
-            
+
             // Handle join data if available (Supabase returns related data in nested map)
             final memberName = bill['profiles']?['full_name'] ?? 'Unknown User';
 
@@ -393,14 +424,22 @@ class _ManageFinanceScreenState extends State<ManageFinanceScreen> {
                           color: Colors.grey,
                         ),
                         const SizedBox(width: 4),
-                        Text(
-                          memberName,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
+                        Expanded(
+                          child: Text(
+                            memberName,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
                         ),
-                        const SizedBox(width: 12),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
                         const Icon(
                           Icons.calendar_today_outlined,
                           size: 14,

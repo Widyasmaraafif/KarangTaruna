@@ -63,9 +63,9 @@ class PoolingHome extends StatelessWidget {
           KTPollingCard(
             question: "Kegiatan apa yang kamu pilih minggu ini?",
             options: const [
-              {'id': 1, 'option_text': "Kerja bakti lingkungan", 'votes': 40},
-              {'id': 2, 'option_text': "Pelatihan keterampilan", 'votes': 25},
-              {'id': 3, 'option_text': "Lomba olahraga", 'votes': 35},
+              {'id': 1, 'label': "Kerja bakti lingkungan", 'vote_count': 40},
+              {'id': 2, 'label': "Pelatihan keterampilan", 'vote_count': 25},
+              {'id': 3, 'label': "Lomba olahraga", 'vote_count': 35},
             ],
             totalVotes: 100,
             onVote: (id, label) {
