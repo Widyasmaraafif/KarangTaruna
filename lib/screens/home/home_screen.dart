@@ -160,11 +160,11 @@ class PojokKampungHome extends StatelessWidget {
               );
             }
 
-            // Show top 3 aspirations
+            // Show top 2 aspirations
             return Column(
               children: [
                 ...controller.allAspirations
-                    .take(3)
+                    .take(2)
                     .map(
                       (item) => Padding(
                         padding: const EdgeInsets.only(bottom: 10),
@@ -222,8 +222,8 @@ class AnnouncementHome extends StatelessWidget {
             return ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemCount: controller.announcements.length > 3
-                  ? 3
+              itemCount: controller.announcements.length > 2
+                  ? 2
                   : controller.announcements.length,
               separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
@@ -277,8 +277,8 @@ class NewsHome extends StatelessWidget {
                 crossAxisSpacing: 16,
                 childAspectRatio: 9 / 11,
               ),
-              itemCount: controller.news.length > 4
-                  ? 4
+              itemCount: controller.news.length > 2
+                  ? 2
                   : controller.news.length,
               itemBuilder: (context, index) {
                 final item = controller.news[index];

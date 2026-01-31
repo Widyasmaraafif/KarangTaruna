@@ -401,7 +401,51 @@ class SupabaseService {
           .order('created_at', ascending: false);
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
-      return [];
+      // Fallback: fetch polls and options separately if join fails
+      try {
+        final pollsResponse = await _client
+            .from('pollings')
+            .select()
+            .eq('is_active', true)
+            .order('created_at', ascending: false);
+
+        final polls = List<Map<String, dynamic>>.from(pollsResponse);
+        if (polls.isEmpty) return [];
+
+        final pollIds = polls.map((p) => p['id']).toList();
+
+        // Try to fetch options
+        List<Map<String, dynamic>> options = [];
+        try {
+          final optionsResponse = await _client
+              .from('polling_options')
+              .select()
+              .filter('polling_id', 'in', pollIds);
+          options = List<Map<String, dynamic>>.from(optionsResponse);
+        } catch (_) {
+          // Ignore if options table missing or error
+        }
+
+        // Group options by polling_id
+        final optionsMap = <dynamic, List<Map<String, dynamic>>>{};
+        for (var opt in options) {
+          final pid = opt['polling_id'];
+          if (!optionsMap.containsKey(pid)) {
+            optionsMap[pid] = [];
+          }
+          optionsMap[pid]!.add(opt);
+        }
+
+        // Merge back
+        return polls.map((poll) {
+          final pid = poll['id'];
+          final newPoll = Map<String, dynamic>.from(poll);
+          newPoll['polling_options'] = optionsMap[pid] ?? [];
+          return newPoll;
+        }).toList();
+      } catch (e2) {
+        return [];
+      }
     }
   }
 
