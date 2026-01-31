@@ -8,59 +8,61 @@ import 'package:karang_taruna/commons/widgets/alert_dialog.dart';
 import 'package:karang_taruna/controllers/data_controller.dart';
 import 'package:karang_taruna/services/supabase_service.dart';
 
-class ManageNewsScreen extends StatefulWidget {
-  const ManageNewsScreen({super.key});
+class ManagePojokKampungScreen extends StatefulWidget {
+  const ManagePojokKampungScreen({super.key});
 
   @override
-  State<ManageNewsScreen> createState() => _ManageNewsScreenState();
+  State<ManagePojokKampungScreen> createState() =>
+      _ManagePojokKampungScreenState();
 }
 
-class _ManageNewsScreenState extends State<ManageNewsScreen> {
+class _ManagePojokKampungScreenState extends State<ManagePojokKampungScreen> {
   final SupabaseService _supabaseService = SupabaseService();
   final DataController _dataController = Get.find<DataController>();
-  final RxList<Map<String, dynamic>> _newsList = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> _aspirationsList =
+      <Map<String, dynamic>>[].obs;
   final RxBool _isLoading = true.obs;
 
   @override
   void initState() {
     super.initState();
-    _fetchNews();
+    _fetchAspirations();
   }
 
-  Future<void> _fetchNews({bool silent = false}) async {
+  Future<void> _fetchAspirations({bool silent = false}) async {
     try {
       if (!silent) _isLoading.value = true;
-      final news = await _supabaseService.getNews();
-      _newsList.assignAll(news);
+      final aspirations = await _supabaseService.getAspirations();
+      _aspirationsList.assignAll(aspirations);
     } catch (e) {
-      Get.snackbar('Error', 'Gagal memuat berita: $e');
+      Get.snackbar('Error', 'Gagal memuat data Pojok Kampung: $e');
     } finally {
       if (!silent) _isLoading.value = false;
     }
   }
 
-  void _deleteNews(int id) {
+  void _deleteAspiration(int id) {
     KTAlertDialog.show(
       context,
-      title: 'Hapus Berita',
-      content: 'Apakah Anda yakin ingin menghapus berita ini?',
+      title: 'Hapus Item',
+      content: 'Apakah Anda yakin ingin menghapus item ini?',
       confirmText: 'Hapus',
       confirmColor: Colors.red,
       onConfirm: () async {
         try {
-          await _supabaseService.deleteNews(id);
-          await _fetchNews();
-          _dataController.fetchNews(); // Update global state
+          await _supabaseService.deleteAspiration(id);
+          await _fetchAspirations();
+          _dataController.fetchAspirations(); // Update global state
           Get.snackbar(
             'Sukses',
-            'Berita berhasil dihapus',
+            'Item berhasil dihapus',
             backgroundColor: Colors.green,
             colorText: Colors.white,
           );
         } catch (e) {
           Get.snackbar(
             'Error',
-            'Gagal menghapus berita: $e',
+            'Gagal menghapus item: $e',
             backgroundColor: Colors.red,
             colorText: Colors.white,
           );
@@ -69,18 +71,30 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
     );
   }
 
-  void _showNewsForm({Map<String, dynamic>? news}) {
-    final titleController = TextEditingController(text: news?['title']);
-    final contentController = TextEditingController(text: news?['content']);
+  void _showForm({Map<String, dynamic>? item}) {
+    final titleController = TextEditingController(text: item?['title']);
+    final contentController = TextEditingController(text: item?['content']);
     final authorController = TextEditingController(
       text:
-          news?['author'] ??
+          item?['author'] ??
           _dataController.userProfile['full_name'] ??
           'Admin',
     );
+    final List<String> categories = [
+      'Umum',
+      'Aspirasi',
+      'Berita Warga',
+      'Kegiatan',
+      'Lainnya',
+    ];
+    String selectedCategory = item?['category'] ?? 'Umum';
+    // Ensure selected category is in the list, if not add it temporarily or fallback
+    if (!categories.contains(selectedCategory)) {
+      categories.add(selectedCategory);
+    }
 
     File? imageFile;
-    String? imageUrl = news?['image_url'];
+    String? imageUrl = item?['image_url'];
     bool isSaving = false;
 
     Get.bottomSheet(
@@ -98,7 +112,9 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    news == null ? 'Tambah Berita' : 'Edit Berita',
+                    item == null
+                        ? 'Tambah Pojok Kampung'
+                        : 'Edit Pojok Kampung',
                     style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -166,7 +182,7 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
                   TextField(
                     controller: titleController,
                     decoration: const InputDecoration(
-                      labelText: 'Judul Berita',
+                      labelText: 'Judul',
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -186,6 +202,27 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
                       labelText: 'Penulis',
                       border: OutlineInputBorder(),
                     ),
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: selectedCategory,
+                    decoration: const InputDecoration(
+                      labelText: 'Kategori',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: categories.map((String category) {
+                      return DropdownMenuItem<String>(
+                        value: category,
+                        child: Text(category),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      if (newValue != null) {
+                        setState(() {
+                          selectedCategory = newValue;
+                        });
+                      }
+                    },
                   ),
                   const SizedBox(height: 24),
                   SizedBox(
@@ -213,7 +250,7 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
                                 if (imageFile != null) {
                                   try {
                                     imageUrl = await _supabaseService
-                                        .uploadNewsImage(imageFile!);
+                                        .uploadAspirationImage(imageFile!);
                                   } catch (e) {
                                     setState(() => isSaving = false);
                                     Get.snackbar(
@@ -230,26 +267,14 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
                                   'title': titleController.text,
                                   'content': contentController.text,
                                   'author': authorController.text,
+                                  'category': selectedCategory,
                                   'image_url': imageUrl,
-                                  'update_at': DateTime.now().toIso8601String(),
                                 };
 
-                                if (news == null) {
+                                if (item == null) {
                                   data['created_at'] = DateTime.now()
                                       .toIso8601String();
-                                  await _supabaseService.createNews(data);
-
-                                  Get.back(); // Close bottom sheet
-
-                                  Get.snackbar(
-                                    'Sukses',
-                                    'Berita berhasil ditambahkan',
-                                    backgroundColor: Colors.green,
-                                    colorText: Colors.white,
-                                  );
-                                } else {
-                                  await _supabaseService.updateNews(
-                                    news['id'],
+                                  await _supabaseService.createAspirationFull(
                                     data,
                                   );
 
@@ -257,22 +282,36 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
 
                                   Get.snackbar(
                                     'Sukses',
-                                    'Berita berhasil diperbarui',
+                                    'Data berhasil ditambahkan',
+                                    backgroundColor: Colors.green,
+                                    colorText: Colors.white,
+                                  );
+                                } else {
+                                  await _supabaseService.updateAspiration(
+                                    item['id'],
+                                    data,
+                                  );
+
+                                  Get.back(); // Close bottom sheet
+
+                                  Get.snackbar(
+                                    'Sukses',
+                                    'Data berhasil diperbarui',
                                     backgroundColor: Colors.green,
                                     colorText: Colors.white,
                                   );
                                 }
 
-                                await _fetchNews(
+                                await _fetchAspirations(
                                   silent: true,
                                 ); // Refresh list silently
                                 _dataController
-                                    .fetchNews(); // Update global state
+                                    .fetchAspirations(); // Update global state
                               } catch (e) {
                                 setState(() => isSaving = false);
                                 Get.snackbar(
                                   'Error',
-                                  'Gagal menyimpan berita: $e',
+                                  'Gagal menyimpan data: $e',
                                   backgroundColor: Colors.red,
                                   colorText: Colors.white,
                                 );
@@ -293,7 +332,7 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
                                 strokeWidth: 2,
                               ),
                             )
-                          : Text(news == null ? 'Publikasi' : 'Update'),
+                          : Text(item == null ? 'Simpan' : 'Update'),
                     ),
                   ),
                 ],
@@ -312,7 +351,7 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
-          'Kelola Berita',
+          'Kelola Pojok Kampung',
           style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
@@ -329,19 +368,19 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
           );
         }
 
-        if (_newsList.isEmpty) {
+        if (_aspirationsList.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  Icons.newspaper_outlined,
+                  Icons.storefront_outlined,
                   size: 64,
                   color: Colors.grey.shade400,
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Belum ada berita',
+                  'Belum ada data Pojok Kampung',
                   style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
                 ),
               ],
@@ -351,10 +390,11 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
 
         return ListView.builder(
           padding: const EdgeInsets.all(16),
-          itemCount: _newsList.length,
+          itemCount: _aspirationsList.length,
           itemBuilder: (context, index) {
-            final news = _newsList[index];
-            final date = DateTime.parse(news['created_at']);
+            final item = _aspirationsList[index];
+            final date =
+                DateTime.tryParse(item['created_at'] ?? '') ?? DateTime.now();
 
             return Card(
               margin: const EdgeInsets.only(bottom: 16),
@@ -366,13 +406,13 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (news['image_url'] != null)
+                  if (item['image_url'] != null)
                     ClipRRect(
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(16),
                       ),
                       child: Image.network(
-                        news['image_url'],
+                        item['image_url'],
                         height: 150,
                         width: double.infinity,
                         fit: BoxFit.cover,
@@ -396,7 +436,7 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
                           children: [
                             Expanded(
                               child: Text(
-                                news['title'],
+                                item['title'] ?? 'Tanpa Judul',
                                 style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -436,9 +476,9 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
                               ],
                               onSelected: (value) {
                                 if (value == 'edit') {
-                                  _showNewsForm(news: news);
+                                  _showForm(item: item);
                                 } else if (value == 'delete') {
-                                  _deleteNews(news['id']);
+                                  _deleteAspiration(item['id']);
                                 }
                               },
                             ),
@@ -446,7 +486,7 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          news['content'] ?? '',
+                          item['content'] ?? '',
                           style: TextStyle(
                             color: Colors.grey.shade600,
                             fontSize: 14,
@@ -457,20 +497,43 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
                         const SizedBox(height: 12),
                         Row(
                           children: [
-                            const Icon(
-                              Icons.person_outline,
-                              size: 14,
-                              color: Colors.grey,
-                            ),
-                            const SizedBox(width: 4),
                             Expanded(
-                              child: Text(
-                                news['author'] ?? 'Admin',
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 12,
-                                ),
-                                overflow: TextOverflow.ellipsis,
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.person_outline,
+                                    size: 14,
+                                    color: Colors.grey,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Flexible(
+                                    child: Text(
+                                      item['author'] ?? 'Admin',
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 12,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  const Icon(
+                                    Icons.category_outlined,
+                                    size: 14,
+                                    color: Colors.grey,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Flexible(
+                                    child: Text(
+                                      item['category'] ?? 'Umum',
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 12,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -499,7 +562,7 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
         );
       }),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _showNewsForm(),
+        onPressed: () => _showForm(),
         backgroundColor: const Color(0xFF00BA9B),
         child: const Icon(Icons.add, color: Colors.white),
       ),

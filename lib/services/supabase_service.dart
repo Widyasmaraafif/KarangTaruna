@@ -182,6 +182,18 @@ class SupabaseService {
     return List<Map<String, dynamic>>.from(response);
   }
 
+  Future<void> createAnnouncement(Map<String, dynamic> data) async {
+    await _client.from('announcements').insert(data);
+  }
+
+  Future<void> updateAnnouncement(int id, Map<String, dynamic> data) async {
+    await _client.from('announcements').update(data).eq('id', id);
+  }
+
+  Future<void> deleteAnnouncement(int id) async {
+    await _client.from('announcements').delete().eq('id', id);
+  }
+
   // --- Aspirations ---
   Future<List<Map<String, dynamic>>> getAspirations() async {
     try {
@@ -223,8 +235,29 @@ class SupabaseService {
     await _client.from('aspirations').insert(data);
   }
 
+  Future<void> createAspirationFull(Map<String, dynamic> data) async {
+    await _client.from('aspirations').insert(data);
+  }
+
+  Future<void> updateAspiration(int id, Map<String, dynamic> data) async {
+    await _client.from('aspirations').update(data).eq('id', id);
+  }
+
   Future<void> deleteAspiration(int id) async {
     await _client.from('aspirations').delete().eq('id', id);
+  }
+
+  Future<String> uploadAspirationImage(File file) async {
+    final fileExt = file.path.split('.').last;
+    final fileName =
+        'aspirations/${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+
+    await _client.storage
+        .from('news_images') // Using same bucket for now
+        .upload(fileName, file, fileOptions: const FileOptions(upsert: true));
+
+    final imageUrl = _client.storage.from('news_images').getPublicUrl(fileName);
+    return imageUrl;
   }
 
   // --- Profile ---
@@ -323,6 +356,27 @@ class SupabaseService {
     } catch (e) {
       return [];
     }
+  }
+
+  Future<void> createGalleryItem(Map<String, dynamic> data) async {
+    await _client.from('gallery').insert(data);
+  }
+
+  Future<void> deleteGalleryItem(int id) async {
+    await _client.from('gallery').delete().eq('id', id);
+  }
+
+  Future<String> uploadGalleryImage(File file) async {
+    final fileExt = file.path.split('.').last;
+    final fileName =
+        'gallery/${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+
+    await _client.storage
+        .from('news_images') // Reusing existing bucket
+        .upload(fileName, file, fileOptions: const FileOptions(upsert: true));
+
+    final imageUrl = _client.storage.from('news_images').getPublicUrl(fileName);
+    return imageUrl;
   }
 
   // --- Polling ---

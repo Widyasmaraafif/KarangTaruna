@@ -145,13 +145,21 @@ class ProfileScreen extends StatelessWidget {
                               ?.toString()
                               .toLowerCase() ??
                           '';
-                      if (role == 'admin') {
+                      final allowedRoles = [
+                        'admin',
+                        'bendahara',
+                        'ketua',
+                        'sekretaris',
+                        'pubdekdok',
+                      ];
+
+                      if (allowedRoles.contains(role)) {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Admin',
-                              style: TextStyle(
+                            Text(
+                              role == 'admin' ? 'Admin' : 'Pengurus',
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.black87,
@@ -160,7 +168,9 @@ class ProfileScreen extends StatelessWidget {
                             const SizedBox(height: 16),
                             KTProfileMenuTile(
                               icon: Icons.admin_panel_settings_outlined,
-                              title: 'Pengaturan Admin',
+                              title: role == 'admin'
+                                  ? 'Pengaturan Admin'
+                                  : 'Menu Pengurus',
                               onTap: () =>
                                   Get.to(() => const AdminDashboardScreen()),
                             ),

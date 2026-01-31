@@ -9,10 +9,14 @@ class DataController extends GetxController {
   // Observable lists
   final RxList<Map<String, dynamic>> events = <Map<String, dynamic>>[].obs;
   final RxList<Map<String, dynamic>> news = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> announcements =
+      <Map<String, dynamic>>[].obs;
   final RxList<Map<String, dynamic>> bills = <Map<String, dynamic>>[].obs;
   final RxList<Map<String, dynamic>> management = <Map<String, dynamic>>[].obs;
   final RxList<Map<String, dynamic>> gallery = <Map<String, dynamic>>[].obs;
   final RxList<Map<String, dynamic>> polls = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> allAspirations =
+      <Map<String, dynamic>>[].obs;
   final RxList<Map<String, dynamic>> userAspirations =
       <Map<String, dynamic>>[].obs;
   final RxList<int> votedPollIds = <int>[].obs;
@@ -99,6 +103,7 @@ class DataController extends GetxController {
       fetchManagement(),
       fetchGallery(),
       fetchPolls(),
+      fetchAspirations(),
     ]);
 
     // Fetch user specific data
@@ -123,6 +128,15 @@ class DataController extends GetxController {
       news,
       () => _supabaseService.getNews(),
       null, // No specific loading state needed for news yet
+    );
+  }
+
+  Future<void> fetchAnnouncements() async {
+    await _fetchList(
+      'announcements',
+      announcements,
+      () => _supabaseService.getAnnouncements(),
+      null,
     );
   }
 
@@ -159,6 +173,15 @@ class DataController extends GetxController {
       polls,
       () => _supabaseService.getActivePolls(),
       isLoadingPolls,
+    );
+  }
+
+  Future<void> fetchAspirations() async {
+    await _fetchList(
+      'allAspirations',
+      allAspirations,
+      () => _supabaseService.getAspirations(),
+      isLoadingAspirations,
     );
   }
 
