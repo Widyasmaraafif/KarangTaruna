@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:karang_taruna/commons/widgets/buttons/button_fitur.dart';
 import 'package:karang_taruna/commons/widgets/containers/announcement_card.dart';
 import 'package:karang_taruna/commons/widgets/containers/aspiration_card.dart';
@@ -7,6 +8,7 @@ import 'package:karang_taruna/commons/widgets/containers/banner.dart';
 import 'package:karang_taruna/commons/widgets/containers/pooling_card.dart';
 import 'package:karang_taruna/commons/widgets/containers/post_container.dart';
 import 'package:karang_taruna/commons/widgets/texts/section_heading.dart';
+import 'package:karang_taruna/controllers/data_controller.dart';
 import 'package:karang_taruna/screens/aspiration/aspiration_screen.dart';
 import 'package:karang_taruna/screens/event/event_screen.dart';
 import 'package:karang_taruna/screens/finance/finance_screen.dart';
@@ -15,31 +17,33 @@ import 'package:karang_taruna/screens/management/management_screen.dart';
 import 'package:karang_taruna/screens/news/news_screen.dart';
 import 'package:karang_taruna/screens/polling/polling_screen.dart';
 import 'package:karang_taruna/screens/settings/settings_screen.dart';
-import 'package:karang_taruna/services/supabase_service.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  @override
   Widget build(BuildContext context) {
+    final DataController controller = Get.find<DataController>();
+
     return Scaffold(
       backgroundColor: const Color(0xFF00BA9B),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.only(bottom: 30),
-          child: Column(
-            children: [
-              HeaderHome(),
-              NewsHome(),
-              AnnouncementHome(),
-              PojokKampungHome(),
-              PoolingHome(),
-            ],
+        child: RefreshIndicator(
+          onRefresh: () => controller.refreshData(),
+          color: const Color(0xFF00BA9B),
+          backgroundColor: Colors.white,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.only(bottom: 30),
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              children: [
+                const HeaderHome(),
+                const NewsHome(),
+                const AnnouncementHome(),
+                const PojokKampungHome(),
+                const PoolingHome(),
+              ],
+            ),
           ),
         ),
       ),
@@ -52,241 +56,245 @@ class PoolingHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final DataController controller = Get.find<DataController>();
+
     return Container(
       margin: const EdgeInsets.only(top: 20),
       padding: const EdgeInsets.symmetric(horizontal: 30),
       child: Column(
         children: [
-          KTSectionHeading(title: "Pooling", onPressed: () {}),
-          SizedBox(height: 10),
-          // TODO: Implement Pooling dynamically later
-          KTPollingCard(
-            question: "Kegiatan apa yang kamu pilih minggu ini?",
-            options: const [
-              {'id': 1, 'label': "Kerja bakti lingkungan", 'vote_count': 40},
-              {'id': 2, 'label': "Pelatihan keterampilan", 'vote_count': 25},
-              {'id': 3, 'label': "Lomba olahraga", 'vote_count': 35},
-            ],
-            totalVotes: 100,
-            onVote: (id, label) {
-              // TODO: logika ketika user memilih salah satu opsi
-            },
+          KTSectionHeading(
+            title: "Pooling",
+            onPressed: () => Get.to(() => const PollingScreen()),
           ),
+          const SizedBox(height: 10),
+          Obx(() {
+            if (controller.isLoadingPolls.value && controller.polls.isEmpty) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
+                  child: CircularProgressIndicator(color: Colors.white),
+                ),
+              );
+            }
+
+            if (controller.polls.isEmpty) {
+              return const SizedBox.shrink();
+            }
+
+            // Get the latest active poll
+            final poll = controller.polls.first;
+            final options = List<Map<String, dynamic>>.from(
+              poll['polling_options'] ?? [],
+            );
+            final totalVotes = options.fold<int>(
+              0,
+              (sum, item) => sum + (item['vote_count'] as int? ?? 0),
+            );
+            final pollId = poll['id'];
+            final hasVoted = controller.votedPollIds.contains(pollId);
+
+            return KTPollingCard(
+              question: poll['title'],
+              options: options,
+              totalVotes: totalVotes,
+              isVoted: hasVoted,
+              onVote: (optionId, label) async {
+                if (hasVoted) {
+                  Get.snackbar(
+                    'Info',
+                    'Anda sudah memilih pada polling ini',
+                    backgroundColor: Colors.orange,
+                    colorText: Colors.white,
+                  );
+                  return;
+                }
+                await controller.votePoll(pollId, optionId);
+                Get.snackbar(
+                  'Sukses',
+                  'Terima kasih atas partisipasi Anda!',
+                  backgroundColor: Colors.green,
+                  colorText: Colors.white,
+                );
+              },
+            );
+          }),
         ],
       ),
     );
   }
 }
 
-class PojokKampungHome extends StatefulWidget {
+class PojokKampungHome extends StatelessWidget {
   const PojokKampungHome({super.key});
 
   @override
-  State<PojokKampungHome> createState() => _PojokKampungHomeState();
-}
-
-class _PojokKampungHomeState extends State<PojokKampungHome> {
-  final SupabaseService _supabaseService = SupabaseService();
-  late Future<List<Map<String, dynamic>>> _aspirationsFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _aspirationsFuture = _supabaseService.getAspirations();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final DataController controller = Get.find<DataController>();
+
     return Container(
       margin: const EdgeInsets.only(top: 20),
       padding: const EdgeInsets.symmetric(horizontal: 30),
       child: Column(
         children: [
-          KTSectionHeading(title: "Pojok Kampung", onPressed: () {}),
+          KTSectionHeading(
+            title: "Pojok Kampung",
+            onPressed: () => Get.to(() => const AspirationScreen()),
+          ),
           const SizedBox(height: 10),
-          FutureBuilder<List<Map<String, dynamic>>>(
-            future: _aspirationsFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
+          Obx(() {
+            if (controller.isLoadingAspirations.value &&
+                controller.allAspirations.isEmpty) {
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16.0),
                   child: CircularProgressIndicator(color: Colors.white),
-                );
-              }
-              if (snapshot.hasError) {
-                return Text('Error loading aspirations');
-              }
+                ),
+              );
+            }
 
-              final aspirations = snapshot.data ?? [];
+            if (controller.allAspirations.isEmpty) {
+              return const Text(
+                'Belum ada aspirasi',
+                style: TextStyle(color: Colors.white),
+              );
+            }
 
-              if (aspirations.isEmpty) {
-                return const Text(
-                  'Belum ada aspirasi',
-                  style: TextStyle(color: Colors.white),
-                );
-              }
-
-              return Column(
-                children: [
-                  ...aspirations
-                      .take(3)
-                      .map(
-                        (item) => Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: KTAspirationCard(
-                            author: item['author'],
-                            content: item['content'],
-                            createdAt: DateTime.parse(item['created_at']),
-                            status: item['status'],
-                            onTap: () {},
-                          ),
+            // Show top 3 aspirations
+            return Column(
+              children: [
+                ...controller.allAspirations
+                    .take(3)
+                    .map(
+                      (item) => Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: KTAspirationCard(
+                          author: item['author'] ?? 'Anonim',
+                          content: item['content'],
+                          createdAt:
+                              DateTime.tryParse(item['created_at']) ??
+                              DateTime.now(),
+                          status: item['status'] ?? 'pending',
+                          onTap: () {}, // Detail view could be added later
                         ),
                       ),
-                  KTAspirationBanner(onTap: () {}),
-                ],
-              );
-            },
-          ),
+                    ),
+                KTAspirationBanner(
+                  onTap: () => Get.to(() => const AspirationScreen()),
+                ),
+              ],
+            );
+          }),
         ],
       ),
     );
   }
 }
 
-class AnnouncementHome extends StatefulWidget {
+class AnnouncementHome extends StatelessWidget {
   const AnnouncementHome({super.key});
 
   @override
-  State<AnnouncementHome> createState() => _AnnouncementHomeState();
-}
-
-class _AnnouncementHomeState extends State<AnnouncementHome> {
-  final SupabaseService _supabaseService = SupabaseService();
-  late Future<List<Map<String, dynamic>>> _announcementsFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _announcementsFuture = _supabaseService.getAnnouncements();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final DataController controller = Get.find<DataController>();
+
     return Container(
       margin: const EdgeInsets.only(top: 20),
       padding: const EdgeInsets.symmetric(horizontal: 30),
       child: Column(
         children: [
-          KTSectionHeading(title: "Pengumuman Terbaru", onPressed: () {}),
-          SizedBox(height: 10),
-          FutureBuilder<List<Map<String, dynamic>>>(
-            future: _announcementsFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: CircularProgressIndicator(color: Colors.white),
-                );
-              }
-              final announcements = snapshot.data ?? [];
-
-              if (announcements.isEmpty) {
-                return const Text(
-                  'Tidak ada pengumuman',
-                  style: TextStyle(color: Colors.white),
-                );
-              }
-
-              return ListView.separated(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount: announcements.length,
-                separatorBuilder: (context, index) =>
-                    const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  final item = announcements[index];
-                  return KTAnnouncementCard(
-                    title: item['title'],
-                    description: item['description'] ?? '',
-                    badgeText: item['badge_text'] ?? 'Info',
-                    onTap: () {},
-                  );
-                },
-              );
+          KTSectionHeading(
+            title: "Pengumuman Terbaru",
+            onPressed: () {
+              // Navigate to full list if needed, currently no dedicated screen
+              // defaulting to nothing or maybe a dialog
             },
           ),
+          const SizedBox(height: 10),
+          Obx(() {
+            if (controller.announcements.isEmpty) {
+              return const Text(
+                'Tidak ada pengumuman',
+                style: TextStyle(color: Colors.white),
+              );
+            }
+
+            return ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: controller.announcements.length > 3
+                  ? 3
+                  : controller.announcements.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final item = controller.announcements[index];
+                return KTAnnouncementCard(
+                  title: item['title'],
+                  description: item['description'] ?? '',
+                  badgeText: item['badge_text'] ?? 'Info',
+                  onTap: () {},
+                );
+              },
+            );
+          }),
         ],
       ),
     );
   }
 }
 
-class NewsHome extends StatefulWidget {
+class NewsHome extends StatelessWidget {
   const NewsHome({super.key});
 
   @override
-  State<NewsHome> createState() => _NewsHomeState();
-}
-
-class _NewsHomeState extends State<NewsHome> {
-  final SupabaseService _supabaseService = SupabaseService();
-  late Future<List<Map<String, dynamic>>> _newsFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _newsFuture = _supabaseService.getNews();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final DataController controller = Get.find<DataController>();
+
     return Container(
       margin: const EdgeInsets.only(top: 20),
       padding: const EdgeInsets.symmetric(horizontal: 30),
       child: Column(
         children: [
-          KTSectionHeading(title: "Berita Terbaru", onPressed: () {}),
-          SizedBox(height: 10),
-          FutureBuilder<List<Map<String, dynamic>>>(
-            future: _newsFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: CircularProgressIndicator(color: Colors.white),
-                );
-              }
-              final newsList = snapshot.data ?? [];
-
-              if (newsList.isEmpty) {
-                return const Text(
-                  'Tidak ada berita',
-                  style: TextStyle(color: Colors.white),
-                );
-              }
-
-              return GridView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 16,
-                  crossAxisSpacing: 16,
-                  childAspectRatio: 9 / 11,
-                ),
-                itemCount: newsList.length,
-                itemBuilder: (context, index) {
-                  final item = newsList[index];
-                  return KTPostContainer(
-                    imageUrl:
-                        item['image_url'] ?? "https://picsum.photos/400/300",
-                    title: item['title'],
-                    author: item['author'] ?? 'Admin',
-                    createdAt: DateTime.parse(item['created_at']),
-                    content: item['content'] ?? '',
-                    category: item['category'] ?? 'News',
-                  );
-                },
-              );
-            },
+          KTSectionHeading(
+            title: "Berita Terbaru",
+            onPressed: () => Get.to(() => const NewsScreen()),
           ),
+          const SizedBox(height: 10),
+          Obx(() {
+            if (controller.news.isEmpty) {
+              return const Text(
+                'Tidak ada berita',
+                style: TextStyle(color: Colors.white),
+              );
+            }
+
+            return GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
+                childAspectRatio: 9 / 11,
+              ),
+              itemCount: controller.news.length > 4
+                  ? 4
+                  : controller.news.length,
+              itemBuilder: (context, index) {
+                final item = controller.news[index];
+                return KTPostContainer(
+                  imageUrl:
+                      item['image_url'] ?? "https://picsum.photos/400/300",
+                  title: item['title'],
+                  author: item['author'] ?? 'Admin',
+                  createdAt:
+                      DateTime.tryParse(item['created_at']) ?? DateTime.now(),
+                  content: item['content'] ?? '',
+                  category: item['category'] ?? 'News',
+                );
+              },
+            );
+          }),
         ],
       ),
     );
@@ -298,10 +306,12 @@ class HeaderHome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final DataController controller = Get.find<DataController>();
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.only(left: 30, right: 30, bottom: 30, top: 20),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Color(0xff79CDB0),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(50),
@@ -311,19 +321,23 @@ class HeaderHome extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Hi, Welcome Back!',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 10),
+          Obx(() {
+            final name =
+                controller.userProfile['full_name']?.toString() ?? 'User';
+            return Text(
+              'Hi, $name!',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            );
+          }),
+          const SizedBox(height: 10),
           GridView.count(
             crossAxisCount: 5,
             shrinkWrap: true,
-            physics: NeverScrollableScrollPhysics(),
+            physics: const NeverScrollableScrollPhysics(),
             mainAxisSpacing: 16,
             crossAxisSpacing: 16,
             children: [
