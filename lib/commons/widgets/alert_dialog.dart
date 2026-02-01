@@ -9,6 +9,8 @@ class KTAlertDialog extends StatelessWidget {
   final VoidCallback? onCancel;
   final Color confirmColor;
 
+  final bool showCancel;
+
   const KTAlertDialog({
     super.key,
     required this.title,
@@ -18,6 +20,7 @@ class KTAlertDialog extends StatelessWidget {
     this.cancelText = 'Batal',
     this.onCancel,
     this.confirmColor = Colors.red,
+    this.showCancel = true,
   });
 
   static void show(
@@ -29,6 +32,7 @@ class KTAlertDialog extends StatelessWidget {
     String cancelText = 'Batal',
     Color confirmColor = Colors.red,
     VoidCallback? onCancel,
+    bool showCancel = true,
   }) {
     showDialog(
       context: context,
@@ -40,6 +44,7 @@ class KTAlertDialog extends StatelessWidget {
         cancelText: cancelText,
         confirmColor: confirmColor,
         onCancel: onCancel,
+        showCancel: showCancel,
       ),
     );
   }
@@ -48,25 +53,23 @@ class KTAlertDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text(title),
-      content: Text(content),
+      content: SingleChildScrollView(child: Text(content)),
       actions: [
-        TextButton(
-          onPressed: () {
-            Navigator.pop(context);
-            if (onCancel != null) onCancel!();
-          },
-          child: Text(cancelText),
-        ),
+        if (showCancel)
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              if (onCancel != null) onCancel!();
+            },
+            child: Text(cancelText),
+          ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(backgroundColor: confirmColor),
           onPressed: () {
             Navigator.pop(context);
             onConfirm();
           },
-          child: Text(
-            confirmText,
-            style: const TextStyle(color: Colors.white),
-          ),
+          child: Text(confirmText, style: const TextStyle(color: Colors.white)),
         ),
       ],
     );

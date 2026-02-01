@@ -99,6 +99,7 @@ class DataController extends GetxController {
     await Future.wait([
       fetchEvents(),
       fetchNews(),
+      fetchAnnouncements(),
       fetchBills(),
       fetchManagement(),
       fetchGallery(),
