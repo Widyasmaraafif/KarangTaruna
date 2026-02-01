@@ -128,6 +128,68 @@ class SupabaseService {
     return List<Map<String, dynamic>>.from(response);
   }
 
+  // Get all paid bills for organization transparency
+  Future<List<Map<String, dynamic>>> getOrganizationFinances() async {
+    try {
+      final response = await _client
+          .from('bills')
+          .select('*, profiles(full_name)')
+          .eq('is_paid', true)
+          .order('updated_at', ascending: false);
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  // --- Organization Finance Accounts ---
+  Future<List<Map<String, dynamic>>> getFinanceAccounts() async {
+    try {
+      final response = await _client
+          .from('finance_accounts')
+          .select()
+          .order('id', ascending: true);
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getFinanceTransactions(
+    int accountId,
+  ) async {
+    try {
+      final response = await _client
+          .from('finance_transactions')
+          .select()
+          .eq('account_id', accountId)
+          .order('transaction_date', ascending: false);
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<void> addFinanceAccount(Map<String, dynamic> data) async {
+    await _client.from('finance_accounts').insert(data);
+  }
+
+  Future<void> updateFinanceAccount(int id, Map<String, dynamic> data) async {
+    await _client.from('finance_accounts').update(data).eq('id', id);
+  }
+
+  Future<void> deleteFinanceAccount(int id) async {
+    await _client.from('finance_accounts').delete().eq('id', id);
+  }
+
+  Future<void> addFinanceTransaction(Map<String, dynamic> data) async {
+    await _client.from('finance_transactions').insert(data);
+  }
+
+  Future<void> deleteFinanceTransaction(int id) async {
+    await _client.from('finance_transactions').delete().eq('id', id);
+  }
+
   Future<void> createBill(Map<String, dynamic> billData) async {
     await _client.from('bills').insert(billData);
   }
@@ -331,16 +393,40 @@ class SupabaseService {
   // --- Management ---
   Future<List<Map<String, dynamic>>> getManagement() async {
     try {
+      // Fetch directly from profiles, filtering out regular members and admin
       final response = await _client
-          .from('management')
+          .from('profiles')
           .select()
-          .order(
-            'rank',
-            ascending: true,
-          ); // Assuming 'rank' for ordering hierarchy
-      return List<Map<String, dynamic>>.from(response);
+          .neq('role', 'Anggota')
+          .neq('role', 'Admin');
+
+      var members = List<Map<String, dynamic>>.from(response);
+
+      // Define role priority for sorting
+      final rolePriority = {
+        'Ketua': 1,
+        'Wakil Ketua': 2,
+        'Sekretaris': 3,
+        'Bendahara': 4,
+        // Add other roles here with appropriate rank
+      };
+
+      // Sort members
+      members.sort((a, b) {
+        final roleA = a['role'] ?? '';
+        final roleB = b['role'] ?? '';
+
+        final rankA = rolePriority[roleA] ?? 99; // Default low priority
+        final rankB = rolePriority[roleB] ?? 99;
+
+        if (rankA != rankB) {
+          return rankA.compareTo(rankB);
+        }
+        return (a['full_name'] ?? '').compareTo(b['full_name'] ?? '');
+      });
+
+      return members;
     } catch (e) {
-      // Fallback if table doesn't exist or error occurs, return empty list
       return [];
     }
   }

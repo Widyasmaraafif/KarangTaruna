@@ -13,7 +13,9 @@ class NavigationMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(NavigationController());
-    Get.put(DataController()); // Initialize DataController to fetch data in background
+    Get.put(
+      DataController(),
+    ); // Initialize DataController to fetch data in background
 
     return Scaffold(
       body: Obx(() => controller.screens[controller.selectedIndex.value]),
@@ -32,7 +34,7 @@ class NavigationMenu extends StatelessWidget {
             BottomNavigationBarItem(icon: Icon(Icons.event), label: 'Event'),
             BottomNavigationBarItem(
               icon: Icon(Icons.account_balance_wallet),
-              label: 'Keuangan',
+              label: 'Keuangan Pribadi',
             ),
             BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
           ],

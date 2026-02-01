@@ -15,6 +15,7 @@ import 'package:karang_taruna/screens/event/event_screen.dart';
 import 'package:karang_taruna/screens/finance/finance_screen.dart';
 import 'package:karang_taruna/screens/gallery/gallery_screen.dart';
 import 'package:karang_taruna/screens/management/management_screen.dart';
+import 'package:karang_taruna/screens/finance/organization_finance_screen.dart';
 import 'package:karang_taruna/screens/news/news_screen.dart';
 import 'package:karang_taruna/screens/polling/polling_screen.dart';
 import 'package:karang_taruna/screens/settings/settings_screen.dart';
@@ -353,8 +354,8 @@ class HeaderHome extends StatelessWidget {
               ),
               KTButtonFitur(
                 icon: Icons.attach_money,
-                label: "Keuangan",
-                onTap: () => Get.to(() => const FinanceScreen()),
+                label: "Keuangan Organisasi",
+                onTap: () => Get.to(() => const OrganizationFinanceScreen()),
               ),
               KTButtonFitur(
                 icon: Icons.event,

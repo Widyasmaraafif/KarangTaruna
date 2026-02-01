@@ -12,7 +12,7 @@ class FinanceScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Keuangan"),
+        title: const Text("Keuangan Pribadi"),
         backgroundColor: Colors.transparent,
         elevation: 0,
         foregroundColor: Colors.white,

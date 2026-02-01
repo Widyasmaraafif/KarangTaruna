@@ -12,6 +12,10 @@ class DataController extends GetxController {
   final RxList<Map<String, dynamic>> announcements =
       <Map<String, dynamic>>[].obs;
   final RxList<Map<String, dynamic>> bills = <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> organizationFinances =
+      <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> financeAccounts =
+      <Map<String, dynamic>>[].obs;
   final RxList<Map<String, dynamic>> management = <Map<String, dynamic>>[].obs;
   final RxList<Map<String, dynamic>> gallery = <Map<String, dynamic>>[].obs;
   final RxList<Map<String, dynamic>> polls = <Map<String, dynamic>>[].obs;
@@ -44,6 +48,8 @@ class DataController extends GetxController {
   final RxBool isLoadingGallery = false.obs;
   final RxBool isLoadingPolls = false.obs;
   final RxBool isLoadingBills = false.obs;
+  final RxBool isLoadingOrganizationFinances = false.obs;
+  final RxBool isLoadingFinanceAccounts = false.obs;
   final RxBool isLoadingAspirations = false.obs;
   final RxBool isLoadingProfile = false.obs;
 
@@ -61,6 +67,8 @@ class DataController extends GetxController {
     _loadList('events', events);
     _loadList('news', news);
     _loadList('bills', bills);
+    _loadList('organizationFinances', organizationFinances);
+    _loadList('financeAccounts', financeAccounts);
     _loadList('management', management);
     _loadList('gallery', gallery);
     _loadList('polls', polls);
@@ -101,6 +109,8 @@ class DataController extends GetxController {
       fetchNews(),
       fetchAnnouncements(),
       fetchBills(),
+      fetchOrganizationFinances(),
+      fetchFinanceAccounts(),
       fetchManagement(),
       fetchGallery(),
       fetchPolls(),
@@ -147,6 +157,24 @@ class DataController extends GetxController {
       bills,
       () => _supabaseService.getBills(),
       isLoadingBills,
+    );
+  }
+
+  Future<void> fetchOrganizationFinances() async {
+    await _fetchList(
+      'organizationFinances',
+      organizationFinances,
+      () => _supabaseService.getOrganizationFinances(),
+      isLoadingOrganizationFinances,
+    );
+  }
+
+  Future<void> fetchFinanceAccounts() async {
+    await _fetchList(
+      'financeAccounts',
+      financeAccounts,
+      () => _supabaseService.getFinanceAccounts(),
+      isLoadingFinanceAccounts,
     );
   }
 

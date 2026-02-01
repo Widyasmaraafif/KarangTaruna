@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:karang_taruna/controllers/data_controller.dart';
+import 'package:karang_taruna/screens/gallery/widgets/gallery_detail_screen.dart';
 
 class GalleryScreen extends StatelessWidget {
   const GalleryScreen({super.key});
@@ -33,27 +34,27 @@ class GalleryScreen extends StatelessWidget {
           if (images.isEmpty) {
             images = [
               {
-                'url': 'https://picsum.photos/400/400?random=1',
+                'image_url': 'https://picsum.photos/400/400?random=1',
                 'caption': 'Kegiatan 17 Agustus',
               },
               {
-                'url': 'https://picsum.photos/400/400?random=2',
+                'image_url': 'https://picsum.photos/400/400?random=2',
                 'caption': 'Rapat Bulanan',
               },
               {
-                'url': 'https://picsum.photos/400/400?random=3',
+                'image_url': 'https://picsum.photos/400/400?random=3',
                 'caption': 'Kerja Bakti',
               },
               {
-                'url': 'https://picsum.photos/400/400?random=4',
+                'image_url': 'https://picsum.photos/400/400?random=4',
                 'caption': 'Pelatihan Pemuda',
               },
               {
-                'url': 'https://picsum.photos/400/400?random=5',
+                'image_url': 'https://picsum.photos/400/400?random=5',
                 'caption': 'Buka Bersama',
               },
               {
-                'url': 'https://picsum.photos/400/400?random=6',
+                'image_url': 'https://picsum.photos/400/400?random=6',
                 'caption': 'Olahraga Pagi',
               },
             ];
@@ -70,44 +71,59 @@ class GalleryScreen extends StatelessWidget {
             itemCount: images.length,
             itemBuilder: (context, index) {
               final image = images[index];
-              return ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Image.network(
-                      image['url'] ?? 'https://picsum.photos/400/400',
-                      fit: BoxFit.cover,
+              return GestureDetector(
+                onTap: () {
+                  Get.to(
+                    () => GalleryDetailScreen(
+                      imageUrl:
+                          image['image_url'] ?? 'https://picsum.photos/400/400',
+                      caption: image['caption'] ?? '',
                     ),
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                            colors: [
-                              Colors.black.withValues(alpha: 0.8),
-                              Colors.transparent,
-                            ],
-                          ),
-                        ),
-                        child: Text(
-                          image['caption'] ?? '',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                    transition: Transition.fadeIn,
+                  );
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Hero(
+                        tag: image['image_url'] ?? 'image_$index',
+                        child: Image.network(
+                          image['image_url'] ?? 'https://picsum.photos/400/400',
+                          fit: BoxFit.cover,
                         ),
                       ),
-                    ),
-                  ],
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.topCenter,
+                              colors: [
+                                Colors.black.withValues(alpha: 0.8),
+                                Colors.transparent,
+                              ],
+                            ),
+                          ),
+                          child: Text(
+                            image['caption'] ?? '',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:karang_taruna/commons/widgets/containers/management_card.dart';
 import 'package:karang_taruna/controllers/data_controller.dart';
+import 'package:karang_taruna/screens/management/widgets/single_management_page.dart';
 
 class ManagementScreen extends StatelessWidget {
   const ManagementScreen({super.key});
@@ -71,54 +73,16 @@ class ManagementScreen extends StatelessWidget {
             separatorBuilder: (context, index) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               final member = members[index];
-              return Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(12),
-                  leading: CircleAvatar(
-                    radius: 30,
-                    backgroundImage: NetworkImage(
-                      member['image_url'] ??
-                          'https://ui-avatars.com/api/?name=${Uri.encodeComponent(member['name'] ?? 'User')}&background=random',
-                    ),
-                  ),
-                  title: Text(
-                    member['name'] ?? 'Nama Tidak Diketahui',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  subtitle: Text(
-                    member['position'] ?? 'Anggota',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
-                  ),
-                  trailing: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF00BA9B).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Icon(
-                      Icons.verified,
-                      color: Color(0xFF00BA9B),
-                      size: 20,
-                    ),
-                  ),
-                ),
+              // Data comes directly from profiles table now (flat structure)
+              final name = member['full_name'] ?? 'Nama Tidak Diketahui';
+              final imageUrl = member['avatar_url'];
+              final role = member['role'] ?? 'Anggota';
+
+              return KTManagementCard(
+                name: name,
+                position: role,
+                imageUrl: imageUrl,
+                onTap: () => Get.to(() => SingleManagementPage(member: member)),
               );
             },
           );

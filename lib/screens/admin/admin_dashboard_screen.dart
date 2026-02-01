@@ -7,6 +7,7 @@ import 'package:karang_taruna/screens/admin/manage_finance_screen.dart';
 import 'package:karang_taruna/screens/admin/manage_gallery_screen.dart';
 import 'package:karang_taruna/screens/admin/manage_members_screen.dart';
 import 'package:karang_taruna/screens/admin/manage_news_screen.dart';
+import 'package:karang_taruna/screens/admin/manage_organization_finance_screen.dart';
 import 'package:karang_taruna/screens/admin/manage_pojok_kampung_screen.dart';
 import 'package:karang_taruna/screens/admin/manage_polling_screen.dart';
 
@@ -23,8 +24,10 @@ class AdminDashboardScreen extends StatelessWidget {
     bool canAccess(String feature) {
       if (role == 'admin') return true;
 
-      // bendahara: hanya kelola keuangan
-      if (role == 'bendahara' && feature == 'finance') return true;
+      // bendahara: hanya kelola keuangan (iuran dan organisasi)
+      if (role == 'bendahara' && ['finance', 'finance_org'].contains(feature)) {
+        return true;
+      }
 
       // ketua: kelola pengumuman, kegiatan, pojok kampung, polling
       if (role == 'ketua' &&
@@ -116,9 +119,17 @@ class AdminDashboardScreen extends StatelessWidget {
           if (canAccess('finance'))
             _buildAdminMenuTile(
               icon: Icons.monetization_on_outlined,
-              title: 'Kelola Keuangan',
-              subtitle: 'Manajemen iuran dan kas',
+              title: 'Kelola Iuran Anggota',
+              subtitle: 'Manajemen iuran bulanan anggota',
               onTap: () => Get.to(() => const ManageFinanceScreen()),
+            ),
+          if (canAccess('finance_org'))
+            _buildAdminMenuTile(
+              icon: Icons.account_balance_outlined,
+              title: 'Kelola Keuangan Organisasi',
+              subtitle: 'Manajemen kas dan transaksi organisasi',
+              onTap: () =>
+                  Get.to(() => const ManageOrganizationFinanceScreen()),
             ),
           if (canAccess('polling'))
             _buildAdminMenuTile(
