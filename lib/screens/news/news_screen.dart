@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:karang_taruna/commons/widgets/containers/post_container.dart';
 import 'package:karang_taruna/controllers/data_controller.dart';
+import 'package:karang_taruna/screens/news/widgets/news_detail_screen.dart';
+import 'package:karang_taruna/commons/widgets/containers/news_card.dart';
 
 class NewsScreen extends StatelessWidget {
   const NewsScreen({super.key});
@@ -29,11 +30,9 @@ class NewsScreen extends StatelessWidget {
         onRefresh: controller.fetchNews,
         child: Obx(() {
           var newsList = controller.news.toList();
-          
-          // Fallback data if empty (and not loading? or just always fallback if empty)
-          // Preserving original logic: if list is empty, show mock data
+
           if (newsList.isEmpty) {
-             newsList = [
+            newsList = [
               {
                 'title': 'Karang Taruna Mengadakan Lomba Futsal Antar RT',
                 'author': 'Admin',
@@ -64,14 +63,11 @@ class NewsScreen extends StatelessWidget {
             separatorBuilder: (context, index) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
               final item = newsList[index];
-              return KTPostContainer(
-                imageUrl: item['image_url'] ?? "https://picsum.photos/400/300",
-                title: item['title'] ?? 'No Title',
-                author: item['author'] ?? 'Admin',
-                createdAt:
-                    DateTime.tryParse(item['created_at'] ?? '') ?? DateTime.now(),
-                content: item['content'] ?? '',
-                category: item['category'] ?? 'News',
+              return NewsCard(
+                newsItem: item,
+                onTap: () {
+                  Get.to(() => NewsDetailScreen(newsItem: item));
+                },
               );
             },
           );
