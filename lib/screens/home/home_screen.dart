@@ -354,7 +354,7 @@ class HeaderHome extends StatelessWidget {
               ),
               KTButtonFitur(
                 icon: Icons.attach_money,
-                label: "Keuangan Organisasi",
+                label: "Keuangan",
                 onTap: () => Get.to(() => const OrganizationFinanceScreen()),
               ),
               KTButtonFitur(
