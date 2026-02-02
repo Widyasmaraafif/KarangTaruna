@@ -10,6 +10,8 @@ import 'package:karang_taruna/commons/widgets/containers/post_container.dart';
 import 'package:karang_taruna/commons/widgets/texts/section_heading.dart';
 import 'package:karang_taruna/controllers/data_controller.dart';
 import 'package:karang_taruna/screens/announcement/announcement_screen.dart';
+import 'package:karang_taruna/screens/aspiration/all_aspirations_screen.dart';
+import 'package:karang_taruna/screens/aspiration/aspiration_detail_screen.dart';
 import 'package:karang_taruna/screens/aspiration/aspiration_screen.dart';
 import 'package:karang_taruna/screens/event/event_screen.dart';
 import 'package:karang_taruna/screens/finance/finance_screen.dart';
@@ -375,7 +377,7 @@ class HeaderHome extends StatelessWidget {
               KTButtonFitur(
                 icon: Icons.feedback,
                 label: "Aspirasi",
-                onTap: () => Get.to(() => const AspirationScreen()),
+                onTap: () => Get.to(() => const AllAspirationsScreen()),
               ),
               KTButtonFitur(
                 icon: Icons.settings,

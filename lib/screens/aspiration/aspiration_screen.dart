@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:karang_taruna/commons/widgets/containers/aspiration_card.dart';
+import 'package:karang_taruna/screens/aspiration/aspiration_detail_screen.dart';
 import 'package:karang_taruna/services/supabase_service.dart';
 
 class AspirationScreen extends StatefulWidget {
@@ -17,12 +18,12 @@ class _AspirationScreenState extends State<AspirationScreen> {
   @override
   void initState() {
     super.initState();
-    _aspirationsFuture = _supabaseService.getAspirations();
+    _aspirationsFuture = _supabaseService.getUserAspirations();
   }
 
   Future<void> _refreshAspirations() async {
     setState(() {
-      _aspirationsFuture = _supabaseService.getAspirations();
+      _aspirationsFuture = _supabaseService.getUserAspirations();
     });
   }
 
@@ -166,24 +167,8 @@ class _AspirationScreenState extends State<AspirationScreen> {
                       ? DateTime.parse(item['created_at'])
                       : (item['created_at'] as DateTime? ?? DateTime.now()),
                   status: item['status'],
-                  onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (BuildContext dialogContext) {
-                        return AlertDialog(
-                          title: const Text("Detail Aspirasi"),
-                          content: Text(item['content'] ?? ''),
-                          actions: [
-                            TextButton(
-                              onPressed: () =>
-                                  Navigator.of(dialogContext).pop(),
-                              child: const Text("Tutup"),
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  },
+                  onTap: () =>
+                      Get.to(() => AspirationDetailScreen(aspiration: item)),
                 );
               },
             );

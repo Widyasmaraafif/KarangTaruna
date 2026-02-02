@@ -93,6 +93,19 @@ class _ManagePojokKampungScreenState extends State<ManagePojokKampungScreen> {
       categories.add(selectedCategory);
     }
 
+    String selectedStatus = item?['status'] ?? 'pending';
+    final List<String> statusOptions = ['pending', 'approved', 'rejected'];
+    final Map<String, String> statusLabels = {
+      'pending': 'Menunggu',
+      'approved': 'Disetujui',
+      'rejected': 'Ditolak',
+    };
+
+    // Ensure selected status is in the list to avoid DropdownButton error
+    if (!statusOptions.contains(selectedStatus)) {
+      statusOptions.add(selectedStatus);
+    }
+
     File? imageFile;
     String? imageUrl = item?['image_url'];
     bool isSaving = false;
@@ -224,6 +237,27 @@ class _ManagePojokKampungScreenState extends State<ManagePojokKampungScreen> {
                       }
                     },
                   ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: selectedStatus,
+                    decoration: const InputDecoration(
+                      labelText: 'Status',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: statusOptions.map((String status) {
+                      return DropdownMenuItem<String>(
+                        value: status,
+                        child: Text(statusLabels[status] ?? status),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      if (newValue != null) {
+                        setState(() {
+                          selectedStatus = newValue;
+                        });
+                      }
+                    },
+                  ),
                   const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
@@ -268,6 +302,7 @@ class _ManagePojokKampungScreenState extends State<ManagePojokKampungScreen> {
                                   'content': contentController.text,
                                   'author': authorController.text,
                                   'category': selectedCategory,
+                                  'status': selectedStatus,
                                   'image_url': imageUrl,
                                 };
 
