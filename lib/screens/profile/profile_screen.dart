@@ -17,6 +17,10 @@ class ProfileScreen extends StatelessWidget {
 
   Future<void> _logout() async {
     try {
+      // Clear all local data to prevent collisions
+      final controller = Get.find<DataController>();
+      controller.clearData();
+      
       await SupabaseService().signOut();
       Get.offAll(() => const LoginScreen());
     } catch (e) {

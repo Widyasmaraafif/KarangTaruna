@@ -1,6 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:karang_taruna/commons/widgets/containers/aspiration_card.dart';
+import 'package:karang_taruna/commons/widgets/containers/aspiration_form_card.dart';
+import 'package:karang_taruna/controllers/data_controller.dart';
 import 'package:karang_taruna/screens/aspiration/aspiration_detail_screen.dart';
 import 'package:karang_taruna/services/supabase_service.dart';
 
@@ -13,6 +16,7 @@ class AspirationScreen extends StatefulWidget {
 
 class _AspirationScreenState extends State<AspirationScreen> {
   final SupabaseService _supabaseService = SupabaseService();
+  final DataController _dataController = Get.find<DataController>();
   late Future<List<Map<String, dynamic>>> _aspirationsFuture;
 
   @override
@@ -28,61 +32,77 @@ class _AspirationScreenState extends State<AspirationScreen> {
   }
 
   void _showAddAspirationDialog() {
-    final contentController = TextEditingController();
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text("Tambah Aspirasi"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: contentController,
-                decoration: const InputDecoration(
-                  hintText: "Tulis aspirasi Anda...",
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 3,
+        bool isLoading = false;
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text("Batal", style: TextStyle(color: Colors.grey)),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (contentController.text.isNotEmpty) {
-                  // In a real app, we would get the current user's name
-                  // For now, we'll just show a success message or try to submit if user is logged in
-                  try {
-                    final user = _supabaseService.currentUser;
-                    final authorName =
-                        user?.email?.split('@')[0] ?? "Anonymous";
+              child: Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: SingleChildScrollView(
+                  child: AspirationFormCard(
+                    isLoading: isLoading,
+                    onSubmit: (title, content, category, image) async {
+                      setState(() => isLoading = true);
+                      try {
+                        final user = _supabaseService.currentUser;
 
-                    await _supabaseService.submitAspiration(
-                      authorName,
-                      contentController.text,
-                    );
-                    Navigator.of(dialogContext).pop();
-                    Get.snackbar("Sukses", "Aspirasi berhasil dikirim");
-                    _refreshAspirations();
-                  } catch (e) {
-                    // If table doesn't exist or other error, just close and show mock success
-                    Navigator.of(dialogContext).pop();
-                    Get.snackbar("Info", "Aspirasi terkirim (Mock)");
-                  }
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00BA9B),
-                foregroundColor: Colors.white,
+                        // Ensure we have the latest profile data
+                        await _dataController.fetchUserProfile();
+
+                        final profile = _dataController.userProfile;
+                        String authorName = "Anonymous";
+
+                        if (profile['full_name'] != null &&
+                            profile['full_name'].toString().isNotEmpty) {
+                          authorName = profile['full_name'];
+                        } else if (user?.userMetadata?['full_name'] != null) {
+                          authorName = user!.userMetadata!['full_name'];
+                        } else if (user?.email != null) {
+                          authorName = user!.email!.split('@')[0];
+                        }
+
+                        String? imageUrl;
+                        if (image != null) {
+                          imageUrl = await _supabaseService
+                              .uploadAspirationImage(image);
+                        }
+
+                        await _supabaseService.submitAspiration(
+                          authorName,
+                          content,
+                          title: title,
+                          category: category,
+                          imageUrl: imageUrl,
+                        );
+
+                        if (dialogContext.mounted) {
+                          Navigator.of(dialogContext).pop();
+                          Get.snackbar("Sukses", "Aspirasi berhasil dikirim");
+                          _refreshAspirations();
+                        }
+                      } catch (e) {
+                        if (dialogContext.mounted) {
+                          setState(() => isLoading = false);
+                          Get.snackbar(
+                            "Info",
+                            "Aspirasi terkirim (Mock) / Error: $e",
+                          );
+                        }
+                      }
+                    },
+                  ),
+                ),
               ),
-              child: const Text("Kirim"),
-            ),
-          ],
+            );
+          },
         );
       },
     );

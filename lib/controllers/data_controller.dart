@@ -398,4 +398,42 @@ class DataController extends GetxController {
       Map<String, dynamic>.from(privacySettings),
     );
   }
+
+  void clearData() {
+    // Clear lists
+    events.clear();
+    news.clear();
+    announcements.clear();
+    bills.clear();
+    organizationFinances.clear();
+    financeAccounts.clear();
+    management.clear();
+    gallery.clear();
+    polls.clear();
+    allAspirations.clear();
+    userAspirations.clear();
+    votedPollIds.clear();
+
+    // Clear maps
+    userProfile.clear();
+
+    // Reset settings to defaults
+    notificationSettings.assignAll({
+      'pushEnabled': true,
+      'emailEnabled': false,
+      'waEnabled': true,
+      'eventReminders': true,
+      'newsUpdates': false,
+    });
+    
+    privacySettings.assignAll({
+      'showProfile': true,
+      'showPhone': false,
+      'showEmail': false,
+      'allowTagging': true,
+    });
+
+    // Clear local storage
+    _storage.erase();
+  }
 }

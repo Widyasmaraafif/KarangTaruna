@@ -289,8 +289,18 @@ class SupabaseService {
     String author,
     String content, {
     String? userId,
+    String? title,
+    String? category,
+    String? imageUrl,
   }) async {
-    final data = {'author': author, 'content': content};
+    final data = {
+      'author': author,
+      'content': content,
+      'title': title,
+      'category': category ?? 'Umum',
+      'image_url': imageUrl,
+      'status': 'Menunggu Tindak Lanjut', // Default status
+    };
     if (userId != null) {
       data['user_id'] = userId;
     }
@@ -359,6 +369,18 @@ class SupabaseService {
     dataToUpsert['id'] = user.id;
 
     await _client.from('profiles').upsert(dataToUpsert);
+
+    // Sync full_name to auth metadata if present
+    if (updates.containsKey('full_name')) {
+      try {
+        await _client.auth.updateUser(
+          UserAttributes(data: {'full_name': updates['full_name']}),
+        );
+      } catch (e) {
+        // Ignore auth update errors, main profile update succeeded
+        print('Failed to sync auth metadata: $e');
+      }
+    }
   }
 
   Future<String> uploadAvatar(File file) async {
