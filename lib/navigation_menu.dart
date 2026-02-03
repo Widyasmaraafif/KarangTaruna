@@ -25,7 +25,8 @@ class NavigationMenu extends StatelessWidget {
           onTap: (index) {
             controller.selectedIndex.value = index;
           },
-          backgroundColor: Colors.teal,
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Color(0xFF00BA9B),
           selectedItemColor: const Color.fromARGB(255, 255, 255, 255),
           unselectedItemColor: Colors.black,
           items: const [

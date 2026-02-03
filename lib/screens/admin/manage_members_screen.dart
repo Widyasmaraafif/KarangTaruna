@@ -35,11 +35,13 @@ class _ManageMembersScreenState extends State<ManageMembersScreen> {
     if (query.isEmpty) {
       _filteredMembers.assignAll(_members);
     } else {
-      _filteredMembers.assignAll(_members.where((member) {
-        final name = (member['full_name'] ?? '').toString().toLowerCase();
-        final email = (member['email'] ?? '').toString().toLowerCase();
-        return name.contains(query) || email.contains(query);
-      }).toList());
+      _filteredMembers.assignAll(
+        _members.where((member) {
+          final name = (member['full_name'] ?? '').toString().toLowerCase();
+          final email = (member['email'] ?? '').toString().toLowerCase();
+          return name.contains(query) || email.contains(query);
+        }).toList(),
+      );
     }
   }
 
@@ -58,42 +60,58 @@ class _ManageMembersScreenState extends State<ManageMembersScreen> {
 
   Future<void> _updateRole(String userId, String currentRole) async {
     final List<String> roles = [
-      'Anggota Karang Taruna',
-      'Pengurus',
-      'Admin',
+      'Anggota',
+      'Ketua',
+      'Wakil Ketua',
+      'Sekretaris',
       'Bendahara',
-      'Sekretaris'
+      'Admin',
     ];
 
-    String? selectedRole = await Get.dialog<String>(
-      AlertDialog(
-        title: const Text('Ubah Role'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: roles.length,
-            itemBuilder: (context, index) {
-              final role = roles[index];
-              return RadioListTile<String>(
-                title: Text(role),
-                value: role,
-                groupValue: currentRole,
-                onChanged: (value) {
-                  Get.back(result: value);
-                },
-                activeColor: const Color(0xFF00BA9B),
+    String tempRole = currentRole;
+
+    String? selectedRole = await showDialog<String>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Ubah Role'),
+          content: StatefulBuilder(
+            builder: (context, setState) {
+              return SizedBox(
+                width: double.maxFinite,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: roles.length,
+                  itemBuilder: (context, index) {
+                    final role = roles[index];
+                    return RadioListTile<String>(
+                      title: Text(role),
+                      value: role,
+                      groupValue: tempRole,
+                      onChanged: (value) {
+                        setState(() {
+                          tempRole = value!;
+                        });
+                      },
+                      activeColor: const Color(0xFF00BA9B),
+                    );
+                  },
+                ),
               );
             },
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Get.back(),
-            child: const Text('Batal'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Batal'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(tempRole),
+              child: const Text('Simpan'),
+            ),
+          ],
+        );
+      },
     );
 
     if (selectedRole != null && selectedRole != currentRole) {
@@ -124,10 +142,7 @@ class _ManageMembersScreenState extends State<ManageMembersScreen> {
       appBar: AppBar(
         title: const Text(
           'Kelola Anggota',
-          style: TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
@@ -166,9 +181,7 @@ class _ManageMembersScreenState extends State<ManageMembersScreen> {
             child: Obx(() {
               if (_isLoading.value) {
                 return const Center(
-                  child: CircularProgressIndicator(
-                    color: Color(0xFF00BA9B),
-                  ),
+                  child: CircularProgressIndicator(color: Color(0xFF00BA9B)),
                 );
               }
 
@@ -284,7 +297,8 @@ class _ManageMembersScreenState extends State<ManageMembersScreen> {
     switch (role.toLowerCase()) {
       case 'admin':
         return Colors.red;
-      case 'pengurus':
+      case 'ketua':
+      case 'wakil ketua':
       case 'bendahara':
       case 'sekretaris':
         return Colors.blue;

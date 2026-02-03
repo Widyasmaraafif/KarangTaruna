@@ -143,7 +143,7 @@ class PojokKampungHome extends StatelessWidget {
         children: [
           KTSectionHeading(
             title: "Pojok Kampung",
-            onPressed: () => Get.to(() => const AspirationScreen()),
+            onPressed: () => Get.to(() => const AllAspirationsScreen()),
           ),
           const SizedBox(height: 10),
           Obx(() {

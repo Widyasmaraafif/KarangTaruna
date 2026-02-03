@@ -121,45 +121,41 @@ class _AspirationScreenState extends State<AspirationScreen> {
 
             final aspirations = snapshot.data ?? [];
 
-            // Mock data if empty
-            final displayList = aspirations.isEmpty
-                ? [
-                    {
-                      'author': 'Budi Santoso',
-                      'content':
-                          'Mohon diadakan kegiatan kerja bakti rutin setiap minggu pagi agar lingkungan kita tetap bersih dan asri.',
-                      'created_at': DateTime.now()
-                          .subtract(const Duration(days: 1))
-                          .toIso8601String(),
-                      'status': 'Diterima',
-                    },
-                    {
-                      'author': 'Siti Aminah',
-                      'content':
-                          'Usulan untuk mengadakan lomba 17 Agustus yang lebih meriah tahun ini dengan mengundang warga desa sebelah.',
-                      'created_at': DateTime.now()
-                          .subtract(const Duration(days: 3))
-                          .toIso8601String(),
-                      'status': 'Dipertimbangkan',
-                    },
-                    {
-                      'author': 'Rudi Hartono',
-                      'content':
-                          'Perlu perbaikan lampu jalan di RT 05 karena sudah mati selama 2 minggu.',
-                      'created_at': DateTime.now()
-                          .subtract(const Duration(days: 5))
-                          .toIso8601String(),
-                      'status': 'Selesai',
-                    },
-                  ]
-                : aspirations;
+            if (aspirations.isEmpty) {
+              return Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.chat_bubble_outline,
+                      size: 64,
+                      color: Colors.grey[400],
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      "Belum ada aspirasi",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey[600],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "Jadilah yang pertama menyampaikan aspirasi!",
+                      style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                    ),
+                  ],
+                ),
+              );
+            }
 
             return ListView.separated(
               padding: const EdgeInsets.all(16),
-              itemCount: displayList.length,
+              itemCount: aspirations.length,
               separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
-                final item = displayList[index];
+                final item = aspirations[index];
                 return KTAspirationCard(
                   author: item['author'] ?? 'Anonymous',
                   content: item['content'] ?? '',
