@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:karang_taruna/commons/widgets/alert_dialog.dart';
 import 'package:karang_taruna/commons/widgets/buttons/button_fitur.dart';
 import 'package:karang_taruna/commons/widgets/containers/announcement_card.dart';
 import 'package:karang_taruna/commons/widgets/containers/aspiration_card.dart';
@@ -19,6 +20,8 @@ import 'package:karang_taruna/screens/gallery/gallery_screen.dart';
 import 'package:karang_taruna/screens/management/management_screen.dart';
 import 'package:karang_taruna/screens/finance/organization_finance_screen.dart';
 import 'package:karang_taruna/screens/news/news_screen.dart';
+import 'package:karang_taruna/screens/news/widgets/news_detail_screen.dart';
+import 'package:karang_taruna/screens/polling/polling_detail_screen.dart';
 import 'package:karang_taruna/screens/polling/polling_screen.dart';
 import 'package:karang_taruna/screens/settings/settings_screen.dart';
 
@@ -103,6 +106,7 @@ class PoolingHome extends StatelessWidget {
               options: options,
               totalVotes: totalVotes,
               isVoted: hasVoted,
+              onCardTap: () => Get.to(() => PollingDetailScreen(poll: poll)),
               onVote: (optionId, label) async {
                 if (hasVoted) {
                   Get.snackbar(
@@ -179,7 +183,9 @@ class PojokKampungHome extends StatelessWidget {
                               DateTime.tryParse(item['created_at']) ??
                               DateTime.now(),
                           status: item['status'] ?? 'pending',
-                          onTap: () {}, // Detail view could be added later
+                          onTap: () => Get.to(
+                            () => AspirationDetailScreen(aspiration: item),
+                          ),
                         ),
                       ),
                     ),
@@ -235,7 +241,17 @@ class AnnouncementHome extends StatelessWidget {
                   title: item['title'],
                   description: item['description'] ?? '',
                   badgeText: item['badge_text'] ?? 'Info',
-                  onTap: () {},
+                  onTap: () {
+                    KTAlertDialog.show(
+                      context,
+                      title: item['title'],
+                      content: item['description'] ?? '',
+                      confirmText: 'Tutup',
+                      confirmColor: const Color(0xFF00BA9B),
+                      showCancel: false,
+                      onConfirm: () {},
+                    );
+                  },
                 );
               },
             );
@@ -294,6 +310,7 @@ class NewsHome extends StatelessWidget {
                       DateTime.tryParse(item['created_at']) ?? DateTime.now(),
                   content: item['content'] ?? '',
                   category: item['category'] ?? 'News',
+                  onTap: () => Get.to(() => NewsDetailScreen(newsItem: item)),
                 );
               },
             );
