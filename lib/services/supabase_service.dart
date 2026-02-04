@@ -500,6 +500,24 @@ class SupabaseService {
     }
   }
 
+  Future<List<int>> getVotedPollIds() async {
+    final user = _client.auth.currentUser;
+    if (user == null) return [];
+
+    try {
+      final response = await _client
+          .from('polling_votes')
+          .select('polling_id')
+          .eq('user_id', user.id);
+
+      return (response as List).map((e) => e['polling_id'] as int).toList();
+    } catch (e) {
+      // Table might not exist or other error
+      print('Error fetching voted polls: $e');
+      return [];
+    }
+  }
+
   Future<List<Map<String, dynamic>>> getActivePolls() async {
     try {
       final response = await _client
@@ -557,33 +575,45 @@ class SupabaseService {
     }
   }
 
-  Future<void> submitVote(int optionId) async {
-    await _client.rpc('increment_vote', params: {'option_id': optionId});
-    // Note: If you don't have an RPC function, you can use update,
-    // but concurrency might be an issue. RPC is safer.
-    // For now, let's use a direct update with existing value + 1 if RPC is not an option yet.
-    // But since user provided schema without RPC, we might need to do read-update-write or just assume RPC exists.
-    // Actually, let's try a direct update but it's risky for concurrency.
-    // Better approach without RPC:
-    // await _client.from('polling_options').update({'vote_count': count + 1}).eq('id', optionId);
-    // But we need to fetch first.
+  Future<void> submitVote(int pollId, int optionId) async {
+    final user = _client.auth.currentUser;
+    if (user == null) throw Exception('Not authenticated');
 
-    // Alternative: Use a stored procedure (RPC) is best practice.
-    // Since I cannot create RPC easily from here without SQL Editor, I will assume a basic update for now
-    // or provide the RPC SQL to the user.
+    // 1. Check if already voted (Server-side check)
+    final hasVoted = await _client
+        .from('polling_votes')
+        .select()
+        .eq('user_id', user.id)
+        .eq('polling_id', pollId)
+        .maybeSingle();
 
-    // Let's implement a simple fetch-increment-update loop for now,
-    // fully aware of race conditions but acceptable for MVP.
-    final option = await _client
-        .from('polling_options')
-        .select('vote_count')
-        .eq('id', optionId)
-        .single();
-    final currentCount = option['vote_count'] as int;
-    await _client
-        .from('polling_options')
-        .update({'vote_count': currentCount + 1})
-        .eq('id', optionId);
+    if (hasVoted != null) {
+      throw Exception('Anda sudah memilih pada polling ini');
+    }
+
+    // 2. Insert vote record
+    await _client.from('polling_votes').insert({
+      'user_id': user.id,
+      'polling_id': pollId,
+      'created_at': DateTime.now().toIso8601String(),
+    });
+
+    // 3. Increment vote count
+    try {
+      await _client.rpc('increment_vote', params: {'option_id': optionId});
+    } catch (_) {
+      // Fallback if RPC doesn't exist
+      final option = await _client
+          .from('polling_options')
+          .select('vote_count')
+          .eq('id', optionId)
+          .single();
+      final currentCount = option['vote_count'] as int;
+      await _client
+          .from('polling_options')
+          .update({'vote_count': currentCount + 1})
+          .eq('id', optionId);
+    }
   }
 
   Future<void> createPoll(String question, List<String> options) async {

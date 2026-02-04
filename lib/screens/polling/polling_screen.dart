@@ -81,11 +81,14 @@ class PollingScreen extends StatelessWidget {
                       colorText: Colors.white,
                     );
                   } catch (e) {
+                    final message = e.toString().replaceAll('Exception: ', '');
                     Get.snackbar(
-                      'Error',
-                      'Gagal mengirim vote: $e',
+                      'Info',
+                      message,
                       snackPosition: SnackPosition.BOTTOM,
-                      backgroundColor: Colors.red,
+                      backgroundColor: message.contains('sudah memilih')
+                          ? Colors.orange
+                          : Colors.red,
                       colorText: Colors.white,
                     );
                   }

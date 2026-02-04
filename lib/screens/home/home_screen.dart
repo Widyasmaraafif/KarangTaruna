@@ -117,13 +117,23 @@ class PoolingHome extends StatelessWidget {
                   );
                   return;
                 }
-                await controller.votePoll(pollId, optionId);
-                Get.snackbar(
-                  'Sukses',
-                  'Terima kasih atas partisipasi Anda!',
-                  backgroundColor: Colors.green,
-                  colorText: Colors.white,
-                );
+                try {
+                  await controller.votePoll(pollId, optionId);
+                  Get.snackbar(
+                    'Sukses',
+                    'Terima kasih atas partisipasi Anda!',
+                    backgroundColor: Colors.green,
+                    colorText: Colors.white,
+                  );
+                } catch (e) {
+                  final message = e.toString().replaceAll('Exception: ', '');
+                  Get.snackbar(
+                    'Info',
+                    message,
+                    backgroundColor: Colors.orange,
+                    colorText: Colors.white,
+                  );
+                }
               },
             );
           }),

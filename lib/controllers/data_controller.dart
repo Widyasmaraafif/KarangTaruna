@@ -120,6 +120,7 @@ class DataController extends GetxController {
     // Fetch user specific data
     await fetchUserProfile();
     await fetchUserAspirations();
+    await fetchVotedPolls();
   }
 
   // --- Fetch Methods ---
@@ -223,6 +224,16 @@ class DataController extends GetxController {
     );
   }
 
+  Future<void> fetchVotedPolls() async {
+    try {
+      final ids = await _supabaseService.getVotedPollIds();
+      votedPollIds.assignAll(ids);
+      await _storage.write('votedPollIds', ids);
+    } catch (e) {
+      print("Error fetching voted polls: $e");
+    }
+  }
+
   Future<void> fetchUserProfile() async {
     try {
       isLoadingProfile.value = true;
@@ -303,7 +314,7 @@ class DataController extends GetxController {
 
   Future<void> votePoll(int pollId, int optionId) async {
     try {
-      await _supabaseService.submitVote(optionId);
+      await _supabaseService.submitVote(pollId, optionId);
 
       // Update local state
       votedPollIds.add(pollId);
@@ -425,7 +436,7 @@ class DataController extends GetxController {
       'eventReminders': true,
       'newsUpdates': false,
     });
-    
+
     privacySettings.assignAll({
       'showProfile': true,
       'showPhone': false,

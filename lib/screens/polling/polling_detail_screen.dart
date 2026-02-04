@@ -180,11 +180,16 @@ class PollingDetailScreen extends StatelessWidget {
                                 ),
                               );
                             } catch (e) {
+                              final message =
+                                  e.toString().replaceAll('Exception: ', '');
                               Get.snackbar(
-                                'Gagal',
-                                'Terjadi kesalahan saat mengirim vote',
+                                'Info',
+                                message,
                                 snackPosition: SnackPosition.BOTTOM,
-                                backgroundColor: Colors.redAccent,
+                                backgroundColor:
+                                    message.contains('sudah memilih')
+                                        ? Colors.orange
+                                        : Colors.redAccent,
                                 colorText: Colors.white,
                               );
                             }
