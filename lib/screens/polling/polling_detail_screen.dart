@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:karang_taruna/controllers/data_controller.dart';
+import 'package:intl/intl.dart';
 
-class PollingDetailScreen extends StatelessWidget {
+class PollingDetailScreen extends StatefulWidget {
   final Map<String, dynamic> poll;
 
   const PollingDetailScreen({super.key, required this.poll});
+
+  @override
+  State<PollingDetailScreen> createState() => _PollingDetailScreenState();
+}
+
+class _PollingDetailScreenState extends State<PollingDetailScreen> {
+  final _selectedOptionId = RxnInt();
+  final _isSubmitting = false.obs;
 
   @override
   Widget build(BuildContext context) {
@@ -13,11 +22,11 @@ class PollingDetailScreen extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF8F9FA), // Slightly grey background
       appBar: AppBar(
         title: const Text(
           "Detail Polling",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         ),
         centerTitle: true,
         backgroundColor: Colors.white,
@@ -31,13 +40,14 @@ class PollingDetailScreen extends StatelessWidget {
       body: Obx(() {
         // Re-fetch the specific poll data from the controller list to get updates
         final currentPoll = controller.polls.firstWhere(
-          (p) => p['id'] == poll['id'],
-          orElse: () => poll,
+          (p) => p['id'] == widget.poll['id'],
+          orElse: () => widget.poll,
         );
 
         final pollId = currentPoll['id'];
         final isVoted = controller.votedPollIds.contains(pollId);
         final title = currentPoll['title'] ?? 'No Question';
+        final description = currentPoll['description'] ?? '';
 
         final options =
             (currentPoll['polling_options'] as List<dynamic>? ?? []);
@@ -46,260 +56,408 @@ class PollingDetailScreen extends StatelessWidget {
           totalVotes += (opt['vote_count'] as num? ?? 0).toInt();
         }
 
-        return SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header Section
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF00BA9B), Color(0xFF009A8B)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF00BA9B).withValues(alpha: 0.3),
-                      blurRadius: 15,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
+        // Sort options by vote count if voted, otherwise keep original order
+        final displayOptions = List.from(options);
+        if (isVoted) {
+          displayOptions.sort((a, b) {
+            final votesA = (a['vote_count'] as num? ?? 0).toInt();
+            final votesB = (b['vote_count'] as num? ?? 0).toInt();
+            return votesB.compareTo(votesA); // Descending
+          });
+        }
+
+        return Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 24,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
+                    // Poll Question Card
+                    Container(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 20,
+                            offset: const Offset(0, 4),
                           ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
                             children: [
-                              Icon(
-                                isVoted
-                                    ? Icons.check_circle
-                                    : Icons.how_to_vote,
-                                color: Colors.white,
-                                size: 14,
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: isVoted
+                                      ? const Color(0xFFE8F5E9)
+                                      : const Color(0xFFE0F2F1),
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      isVoted
+                                          ? Icons.check_circle
+                                          : Icons.how_to_vote,
+                                      color: isVoted
+                                          ? Colors.green[700]
+                                          : const Color(0xFF00BA9B),
+                                      size: 16,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      isVoted
+                                          ? "Sudah Memilih"
+                                          : "Sedang Berjalan",
+                                      style: TextStyle(
+                                        color: isVoted
+                                            ? Colors.green[700]
+                                            : const Color(0xFF00BA9B),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
-                              const SizedBox(width: 6),
-                              Text(
-                                isVoted ? "Sudah Memilih" : "Sedang Berjalan",
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
+                              const Spacer(),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[100],
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.people_outline,
+                                      size: 16,
+                                      color: Colors.grey,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      "$totalVotes",
+                                      style: const TextStyle(
+                                        color: Colors.black87,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                        const Spacer(),
-                        const Icon(Icons.bar_chart, color: Colors.white70),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        height: 1.3,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    Text(
-                      "$totalVotes Suara Masuk",
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              Text(
-                "Pilihan Anda",
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Options List
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: options.length,
-                separatorBuilder: (context, index) =>
-                    const SizedBox(height: 16),
-                itemBuilder: (context, index) {
-                  final option = options[index];
-                  final optionId = option['id'];
-                  final label = option['label'] ?? 'Option';
-                  final votes = (option['vote_count'] as num? ?? 0).toInt();
-                  final ratio = totalVotes > 0 ? votes / totalVotes : 0.0;
-                  final percent = (ratio * 100).round();
-
-                  // Check if this specific option was the one voted for would require tracking vote ID
-                  // For now we just show results if voted
-
-                  return GestureDetector(
-                    onTap: isVoted
-                        ? null
-                        : () async {
-                            try {
-                              await controller.votePoll(pollId, optionId);
-                              Get.snackbar(
-                                'Terima Kasih!',
-                                'Suara anda telah direkam untuk "$label"',
-                                snackPosition: SnackPosition.BOTTOM,
-                                backgroundColor: const Color(0xFF00BA9B),
-                                colorText: Colors.white,
-                                margin: const EdgeInsets.all(20),
-                                borderRadius: 12,
-                                icon: const Icon(
-                                  Icons.check_circle,
-                                  color: Colors.white,
-                                ),
-                              );
-                            } catch (e) {
-                              final message =
-                                  e.toString().replaceAll('Exception: ', '');
-                              Get.snackbar(
-                                'Info',
-                                message,
-                                snackPosition: SnackPosition.BOTTOM,
-                                backgroundColor:
-                                    message.contains('sudah memilih')
-                                        ? Colors.orange
-                                        : Colors.redAccent,
-                                colorText: Colors.white,
-                              );
-                            }
-                          },
-                    child: Container(
-                      height: 60, // Fixed height for consistent look
-                      decoration: BoxDecoration(
-                        color: Colors.grey[50],
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isVoted
-                              ? Colors.grey.shade200
-                              : const Color(0xFF00BA9B).withValues(alpha: 0.3),
-                          width: 1,
-                        ),
-                      ),
-                      child: Stack(
-                        children: [
-                          // Progress Bar Background
-                          if (isVoted)
-                            AnimatedFractionallySizedBox(
-                              duration: const Duration(milliseconds: 1000),
-                              curve: Curves.easeOutExpo,
-                              widthFactor: ratio,
-                              heightFactor: 1.0,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: const Color(
-                                    0xFF00BA9B,
-                                  ).withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(15),
-                                ),
-                              ),
-                            ),
-
-                          // Content
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: Row(
-                              children: [
-                                // Radio-like indicator
-                                Container(
-                                  width: 24,
-                                  height: 24,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: isVoted
-                                          ? const Color(0xFF00BA9B)
-                                          : Colors.grey.shade400,
-                                      width: 2,
-                                    ),
-                                    color: isVoted
-                                        ? const Color(0xFF00BA9B)
-                                        : Colors.transparent,
-                                  ),
-                                  child: isVoted
-                                      ? const Icon(
-                                          Icons.check,
-                                          size: 14,
-                                          color: Colors.white,
-                                        )
-                                      : null,
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Text(
-                                    label,
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.black87,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                if (isVoted) ...[
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    "$percent%",
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                      color: Color(0xFF00BA9B),
-                                    ),
-                                  ),
-                                ],
-                              ],
+                          const SizedBox(height: 20),
+                          Text(
+                            title,
+                            style: const TextStyle(
+                              color: Colors.black87,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              height: 1.3,
+                              letterSpacing: -0.5,
                             ),
                           ),
+                          if (description.isNotEmpty) ...[
+                            const SizedBox(height: 12),
+                            Text(
+                              description,
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 15,
+                                height: 1.5,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
-                  );
-                },
-              ),
 
-              if (!isVoted) ...[
-                const SizedBox(height: 40),
-                const Center(
-                  child: Text(
-                    "Pilih salah satu opsi di atas untuk memberikan suara.",
-                    style: TextStyle(color: Colors.grey, fontSize: 13),
-                    textAlign: TextAlign.center,
+                    const SizedBox(height: 32),
+
+                    Text(
+                      isVoted ? "Hasil Voting" : "Pilihan Tersedia",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Options List
+                    ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: displayOptions.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final option = displayOptions[index];
+                        final optionId = option['id'];
+                        final label = option['label'] ?? 'Option';
+                        final votes = (option['vote_count'] as num? ?? 0)
+                            .toInt();
+                        final ratio = totalVotes > 0 ? votes / totalVotes : 0.0;
+                        final percent = (ratio * 100).toStringAsFixed(1);
+
+                        final isSelected = _selectedOptionId.value == optionId;
+
+                        return GestureDetector(
+                          onTap: isVoted
+                              ? null
+                              : () {
+                                  _selectedOptionId.value = optionId;
+                                },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            height: isVoted ? 64 : 72,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isSelected
+                                    ? const Color(0xFF00BA9B)
+                                    : Colors.transparent,
+                                width: 2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: isSelected
+                                      ? const Color(
+                                          0xFF00BA9B,
+                                        ).withValues(alpha: 0.1)
+                                      : Colors.grey.withValues(alpha: 0.05),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Stack(
+                              children: [
+                                // Progress Bar Background (Only if voted)
+                                if (isVoted)
+                                  AnimatedFractionallySizedBox(
+                                    duration: const Duration(
+                                      milliseconds: 1000,
+                                    ),
+                                    curve: Curves.easeOutExpo,
+                                    widthFactor: ratio,
+                                    heightFactor: 1.0,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: const Color(
+                                          0xFF00BA9B,
+                                        ).withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(14),
+                                      ),
+                                    ),
+                                  ),
+
+                                // Content
+                                Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      // Radio Indicator
+                                      if (!isVoted) ...[
+                                        Container(
+                                          width: 24,
+                                          height: 24,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: isSelected
+                                                  ? const Color(0xFF00BA9B)
+                                                  : Colors.grey.shade300,
+                                              width: 2,
+                                            ),
+                                            color: isSelected
+                                                ? const Color(0xFF00BA9B)
+                                                : Colors.transparent,
+                                          ),
+                                          child: isSelected
+                                              ? const Icon(
+                                                  Icons.check,
+                                                  size: 16,
+                                                  color: Colors.white,
+                                                )
+                                              : null,
+                                        ),
+                                        const SizedBox(width: 16),
+                                      ],
+
+                                      Expanded(
+                                        child: Text(
+                                          label,
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: isSelected || isVoted
+                                                ? FontWeight.w600
+                                                : FontWeight.normal,
+                                            color: Colors.black87,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+
+                                      if (isVoted) ...[
+                                        const SizedBox(width: 8),
+                                        Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.end,
+                                          children: [
+                                            Text(
+                                              "$percent%",
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                                color: Color(0xFF00BA9B),
+                                              ),
+                                            ),
+                                            Text(
+                                              "$votes Suara",
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey[600],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 100), // Space for FAB/Button
+                  ],
+                ),
+              ),
+            ),
+
+            // Bottom Action Bar
+            if (!isVoted)
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05),
+                      blurRadius: 20,
+                      offset: const Offset(0, -4),
+                    ),
+                  ],
+                ),
+                child: SafeArea(
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed:
+                          _selectedOptionId.value == null || _isSubmitting.value
+                          ? null
+                          : () async {
+                              _isSubmitting.value = true;
+                              try {
+                                await controller.votePoll(
+                                  pollId,
+                                  _selectedOptionId.value!,
+                                );
+                                Get.back(); // Close screen or stay? Stay is better to show results
+                                Get.snackbar(
+                                  'Berhasil!',
+                                  'Suara anda telah direkam',
+                                  snackPosition: SnackPosition.TOP,
+                                  backgroundColor: const Color(0xFF00BA9B),
+                                  colorText: Colors.white,
+                                  margin: const EdgeInsets.all(20),
+                                  borderRadius: 12,
+                                  icon: const Icon(
+                                    Icons.check_circle,
+                                    color: Colors.white,
+                                  ),
+                                );
+                              } catch (e) {
+                                final message = e.toString().replaceAll(
+                                  'Exception: ',
+                                  '',
+                                );
+                                Get.snackbar(
+                                  'Info',
+                                  message,
+                                  snackPosition: SnackPosition.TOP,
+                                  backgroundColor:
+                                      message.contains('sudah memilih')
+                                      ? Colors.orange
+                                      : Colors.redAccent,
+                                  colorText: Colors.white,
+                                  margin: const EdgeInsets.all(20),
+                                  borderRadius: 12,
+                                );
+                              } finally {
+                                _isSubmitting.value = false;
+                              }
+                            },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF00BA9B),
+                        disabledBackgroundColor: Colors.grey[300],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: _isSubmitting.value
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text(
+                              "Kirim Pilihan",
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                    ),
                   ),
                 ),
-              ],
-            ],
-          ),
+              ),
+          ],
         );
       }),
     );
