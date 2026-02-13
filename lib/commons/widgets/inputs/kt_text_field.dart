@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:karang_taruna/commons/styles/kt_color.dart';
 
-class KTTextField extends StatelessWidget {
+class KTTextField extends StatefulWidget {
   final TextEditingController controller;
   final String labelText;
   final String? hintText;
@@ -9,6 +9,7 @@ class KTTextField extends StatelessWidget {
   final int maxLines;
   final bool readOnly;
   final VoidCallback? onTap;
+  final bool isPassword;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
   final String? Function(String?)? validator;
@@ -26,6 +27,7 @@ class KTTextField extends StatelessWidget {
     this.maxLines = 1,
     this.readOnly = false,
     this.onTap,
+    this.isPassword = false,
     this.prefixIcon,
     this.suffixIcon,
     this.validator,
@@ -36,13 +38,26 @@ class KTTextField extends StatelessWidget {
   });
 
   @override
+  State<KTTextField> createState() => _KTTextFieldState();
+}
+
+class _KTTextFieldState extends State<KTTextField> {
+  late bool _isObscured;
+
+  @override
+  void initState() {
+    super.initState();
+    _isObscured = widget.isPassword || widget.obscureText;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          labelText,
+          widget.labelText,
           style: const TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
@@ -51,39 +66,58 @@ class KTTextField extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextFormField(
-          controller: controller,
-          keyboardType: keyboardType,
-          maxLines: maxLines,
-          readOnly: readOnly,
-          onTap: onTap,
-          validator: validator,
-          obscureText: obscureText,
-          textCapitalization: textCapitalization,
-          textInputAction: textInputAction,
-          onChanged: onChanged,
+          controller: widget.controller,
+          keyboardType: widget.keyboardType,
+          maxLines: widget.isPassword ? 1 : widget.maxLines,
+          readOnly: widget.readOnly,
+          onTap: widget.onTap,
+          validator: widget.validator,
+          obscureText: _isObscured,
+          textCapitalization: widget.textCapitalization,
+          textInputAction: widget.textInputAction,
+          onChanged: widget.onChanged,
           style: const TextStyle(fontSize: 14, color: KTColor.textPrimary),
           decoration: InputDecoration(
-            hintText: hintText,
+            hintText: widget.hintText,
             hintStyle: TextStyle(
               color: KTColor.textSecondary.withValues(alpha: 0.5),
               fontSize: 14,
             ),
-            prefixIcon: prefixIcon != null
+            prefixIcon: widget.prefixIcon != null
                 ? IconTheme(
                     data: const IconThemeData(
                       color: KTColor.iconPrimary,
                       size: 20,
                     ),
-                    child: prefixIcon!,
+                    child: widget.prefixIcon is IconData
+                        ? Icon(widget.prefixIcon as IconData)
+                        : widget.prefixIcon!,
                   )
                 : null,
-            suffixIcon: suffixIcon != null
+            suffixIcon: widget.isPassword
+                ? IconButton(
+                    icon: Icon(
+                      _isObscured
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                      color: KTColor.iconPrimary,
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      setState(() {
+                        _isObscured = !_isObscured;
+                      });
+                    },
+                  )
+                : widget.suffixIcon != null
                 ? IconTheme(
                     data: const IconThemeData(
                       color: KTColor.iconPrimary,
                       size: 20,
                     ),
-                    child: suffixIcon!,
+                    child: widget.suffixIcon is IconData
+                        ? Icon(widget.suffixIcon as IconData)
+                        : widget.suffixIcon!,
                   )
                 : null,
             border: OutlineInputBorder(

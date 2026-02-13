@@ -26,8 +26,10 @@ class ManagePollingController extends GetxController {
       Get.snackbar(
         'Error',
         'Gagal memuat data polling: $e',
+        snackPosition: SnackPosition.BOTTOM,
         backgroundColor: KTColor.error,
         colorText: Colors.white,
+        icon: const Icon(Icons.error_outline_rounded, color: Colors.white),
       );
     } finally {
       if (!silent) isLoading.value = false;
@@ -39,8 +41,10 @@ class ManagePollingController extends GetxController {
       Get.snackbar(
         'Error',
         'Pertanyaan dan minimal 2 opsi harus diisi',
+        snackPosition: SnackPosition.BOTTOM,
         backgroundColor: KTColor.warning,
         colorText: Colors.white,
+        icon: const Icon(Icons.warning_amber_rounded, color: Colors.white),
       );
       return;
     }
@@ -51,8 +55,10 @@ class ManagePollingController extends GetxController {
       Get.snackbar(
         'Error',
         'Minimal 2 opsi valid diperlukan',
+        snackPosition: SnackPosition.BOTTOM,
         backgroundColor: KTColor.warning,
         colorText: Colors.white,
+        icon: const Icon(Icons.warning_amber_rounded, color: Colors.white),
       );
       return;
     }
@@ -64,16 +70,23 @@ class ManagePollingController extends GetxController {
       Get.snackbar(
         'Sukses',
         'Polling berhasil dibuat',
+        snackPosition: SnackPosition.BOTTOM,
         backgroundColor: KTColor.success,
         colorText: Colors.white,
+        icon: const Icon(
+          Icons.check_circle_outline_rounded,
+          color: Colors.white,
+        ),
       );
       fetchPolls();
     } catch (e) {
       Get.snackbar(
         'Error',
         'Gagal membuat polling: $e',
+        snackPosition: SnackPosition.BOTTOM,
         backgroundColor: KTColor.error,
         colorText: Colors.white,
+        icon: const Icon(Icons.error_outline_rounded, color: Colors.white),
       );
     } finally {
       isLoading.value = false;
@@ -90,8 +103,10 @@ class ManagePollingController extends GetxController {
       Get.snackbar(
         'Error',
         'Pertanyaan tidak boleh kosong',
+        snackPosition: SnackPosition.BOTTOM,
         backgroundColor: KTColor.warning,
         colorText: Colors.white,
+        icon: const Icon(Icons.warning_amber_rounded, color: Colors.white),
       );
       return;
     }
@@ -100,8 +115,10 @@ class ManagePollingController extends GetxController {
       Get.snackbar(
         'Error',
         'Minimal 2 opsi diperlukan',
+        snackPosition: SnackPosition.BOTTOM,
         backgroundColor: KTColor.warning,
         colorText: Colors.white,
+        icon: const Icon(Icons.warning_amber_rounded, color: Colors.white),
       );
       return;
     }
@@ -118,16 +135,23 @@ class ManagePollingController extends GetxController {
       Get.snackbar(
         'Sukses',
         'Polling berhasil diperbarui',
+        snackPosition: SnackPosition.BOTTOM,
         backgroundColor: KTColor.success,
         colorText: Colors.white,
+        icon: const Icon(
+          Icons.check_circle_outline_rounded,
+          color: Colors.white,
+        ),
       );
       fetchPolls();
     } catch (e) {
       Get.snackbar(
         'Error',
         'Gagal memperbarui polling: $e',
+        snackPosition: SnackPosition.BOTTOM,
         backgroundColor: KTColor.error,
         colorText: Colors.white,
+        icon: const Icon(Icons.error_outline_rounded, color: Colors.white),
       );
     } finally {
       isLoading.value = false;
@@ -585,7 +609,7 @@ class ManagePollingScreen extends StatelessWidget {
                             child: KTTextField(
                               controller:
                                   item['controller'] as TextEditingController,
-                              hintText: 'Opsi ${index + 1}',
+                              hintText: 'Opsi ${index + 1}', labelText: '',
                             ),
                           ),
                           if (optionControllers.length > 2)

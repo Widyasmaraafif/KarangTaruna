@@ -46,6 +46,7 @@ class _ManageAccountTransactionsScreenState
         snackPosition: SnackPosition.BOTTOM,
         backgroundColor: KTColor.error,
         colorText: Colors.white,
+        icon: const Icon(Icons.error_outline_rounded, color: Colors.white),
       );
     } finally {
       _isLoading.value = false;
@@ -196,6 +197,10 @@ class _ManageAccountTransactionsScreenState
                         snackPosition: SnackPosition.BOTTOM,
                         backgroundColor: KTColor.warning,
                         colorText: Colors.white,
+                        icon: const Icon(
+                          Icons.warning_amber_rounded,
+                          color: Colors.white,
+                        ),
                       );
                       return;
                     }
@@ -223,6 +228,10 @@ class _ManageAccountTransactionsScreenState
                         snackPosition: SnackPosition.BOTTOM,
                         backgroundColor: KTColor.success,
                         colorText: Colors.white,
+                        icon: const Icon(
+                          Icons.check_circle_outline_rounded,
+                          color: Colors.white,
+                        ),
                       );
                     } catch (e) {
                       Get.snackbar(
@@ -231,6 +240,10 @@ class _ManageAccountTransactionsScreenState
                         snackPosition: SnackPosition.BOTTOM,
                         backgroundColor: KTColor.error,
                         colorText: Colors.white,
+                        icon: const Icon(
+                          Icons.error_outline_rounded,
+                          color: Colors.white,
+                        ),
                       );
                     } finally {
                       _isSaving.value = false;
@@ -264,6 +277,10 @@ class _ManageAccountTransactionsScreenState
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: KTColor.success,
             colorText: Colors.white,
+            icon: const Icon(
+              Icons.check_circle_outline_rounded,
+              color: Colors.white,
+            ),
           );
         } catch (e) {
           Get.snackbar(
@@ -272,6 +289,7 @@ class _ManageAccountTransactionsScreenState
             snackPosition: SnackPosition.BOTTOM,
             backgroundColor: KTColor.error,
             colorText: Colors.white,
+            icon: const Icon(Icons.error_outline_rounded, color: Colors.white),
           );
         }
       },

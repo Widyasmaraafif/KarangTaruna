@@ -84,14 +84,14 @@ class ManageOrganizationFinanceScreen extends StatelessWidget {
                       controller: iconController,
                       labelText: 'Nama Icon (Material Icons)',
                       hintText: 'Contoh: account_balance',
-                      prefixIcon: Icons.emoji_symbols_rounded,
+                      prefixIcon: const Icon(Icons.emoji_symbols_rounded),
                     ),
                     const SizedBox(height: 16),
                     KTTextField(
                       controller: colorController,
                       labelText: 'Warna (Hex)',
                       hintText: 'Contoh: 0xFF00BA9B',
-                      prefixIcon: Icons.palette_rounded,
+                      prefixIcon: const Icon(Icons.palette_rounded),
                     ),
                     const SizedBox(height: 32),
                     Obx(
@@ -105,8 +105,13 @@ class ManageOrganizationFinanceScreen extends StatelessWidget {
                             Get.snackbar(
                               'Peringatan',
                               'Nama akun wajib diisi',
+                              snackPosition: SnackPosition.BOTTOM,
                               backgroundColor: KTColor.warning,
                               colorText: Colors.white,
+                              icon: const Icon(
+                                Icons.warning_amber_rounded,
+                                color: Colors.white,
+                              ),
                             );
                             return;
                           }
@@ -134,16 +139,26 @@ class ManageOrganizationFinanceScreen extends StatelessWidget {
                             Get.snackbar(
                               'Sukses',
                               'Data berhasil disimpan',
+                              snackPosition: SnackPosition.BOTTOM,
                               backgroundColor: KTColor.success,
                               colorText: Colors.white,
+                              icon: const Icon(
+                                Icons.check_circle_outline_rounded,
+                                color: Colors.white,
+                              ),
                             );
                           } catch (e) {
                             isSaving.value = false;
                             Get.snackbar(
                               'Error',
                               'Gagal menyimpan data: $e',
+                              snackPosition: SnackPosition.BOTTOM,
                               backgroundColor: KTColor.error,
                               colorText: Colors.white,
+                              icon: const Icon(
+                                Icons.error_outline_rounded,
+                                color: Colors.white,
+                              ),
                             );
                           }
                         },
@@ -175,15 +190,25 @@ class ManageOrganizationFinanceScreen extends StatelessWidget {
             Get.snackbar(
               'Sukses',
               'Akun berhasil dihapus',
+              snackPosition: SnackPosition.BOTTOM,
               backgroundColor: KTColor.success,
               colorText: Colors.white,
+              icon: const Icon(
+                Icons.check_circle_outline_rounded,
+                color: Colors.white,
+              ),
             );
           } catch (e) {
             Get.snackbar(
               'Error',
               'Gagal menghapus akun: $e',
+              snackPosition: SnackPosition.BOTTOM,
               backgroundColor: KTColor.error,
               colorText: Colors.white,
+              icon: const Icon(
+                Icons.error_outline_rounded,
+                color: Colors.white,
+              ),
             );
           }
         },
@@ -201,17 +226,7 @@ class ManageOrganizationFinanceScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: KTColor.background,
       appBar: AppBar(
-        title: const Text(
-          "Keuangan Organisasi",
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-            color: KTColor.textPrimary,
-            letterSpacing: -0.5,
-          ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
+        title: const Text('Kelola Akun Keuangan'),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),

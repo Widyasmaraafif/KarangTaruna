@@ -10,7 +10,6 @@ class NewsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Map dynamic data from API/Controller to KTPostContainer properties
     return KTPostContainer(
       imageUrl: newsItem['image_url'] ?? "https://picsum.photos/400/300",
       title: newsItem['title'] ?? 'No Title',
@@ -18,7 +17,7 @@ class NewsCard extends StatelessWidget {
       createdAt:
           DateTime.tryParse(newsItem['created_at'] ?? '') ?? DateTime.now(),
       content: newsItem['content'] ?? '',
-      category: newsItem['category'] ?? 'News',
+      category: newsItem['category'] ?? 'Berita',
       onTap: onTap,
     );
   }

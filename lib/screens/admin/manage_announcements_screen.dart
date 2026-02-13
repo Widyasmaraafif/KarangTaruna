@@ -28,15 +28,25 @@ class ManageAnnouncementsScreen extends StatelessWidget {
           Get.snackbar(
             'Sukses',
             'Pengumuman berhasil dihapus',
+            snackPosition: SnackPosition.BOTTOM,
             backgroundColor: KTColor.success,
             colorText: Colors.white,
+            icon: const Icon(
+              Icons.check_circle_outline_rounded,
+              color: Colors.white,
+            ),
           );
         } catch (e) {
           Get.snackbar(
             'Error',
             'Gagal menghapus pengumuman: $e',
+            snackPosition: SnackPosition.BOTTOM,
             backgroundColor: KTColor.error,
             colorText: Colors.white,
+            icon: const Icon(
+              Icons.error_outline_rounded,
+              color: Colors.white,
+            ),
           );
         }
       },

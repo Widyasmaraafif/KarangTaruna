@@ -41,8 +41,10 @@ class _ManagePojokKampungScreenState extends State<ManagePojokKampungScreen> {
       Get.snackbar(
         'Error',
         'Gagal memuat data Pojok Kampung: $e',
+        snackPosition: SnackPosition.BOTTOM,
         backgroundColor: KTColor.error,
         colorText: Colors.white,
+        icon: const Icon(Icons.error_outline_rounded, color: Colors.white),
       );
     } finally {
       if (!silent) _isLoading.value = false;
@@ -64,15 +66,22 @@ class _ManagePojokKampungScreenState extends State<ManagePojokKampungScreen> {
           Get.snackbar(
             'Sukses',
             'Item berhasil dihapus',
+            snackPosition: SnackPosition.BOTTOM,
             backgroundColor: KTColor.success,
             colorText: Colors.white,
+            icon: const Icon(
+              Icons.check_circle_outline_rounded,
+              color: Colors.white,
+            ),
           );
         } catch (e) {
           Get.snackbar(
             'Error',
             'Gagal menghapus item: $e',
+            snackPosition: SnackPosition.BOTTOM,
             backgroundColor: KTColor.error,
             colorText: Colors.white,
+            icon: const Icon(Icons.error_outline_rounded, color: Colors.white),
           );
         }
       },
@@ -367,8 +376,13 @@ class _ManagePojokKampungScreenState extends State<ManagePojokKampungScreen> {
                           Get.snackbar(
                             'Peringatan',
                             'Judul dan konten wajib diisi',
+                            snackPosition: SnackPosition.BOTTOM,
                             backgroundColor: KTColor.warning,
                             colorText: Colors.white,
+                            icon: const Icon(
+                              Icons.warning_amber_rounded,
+                              color: Colors.white,
+                            ),
                           );
                           return;
                         }
@@ -385,8 +399,13 @@ class _ManagePojokKampungScreenState extends State<ManagePojokKampungScreen> {
                               Get.snackbar(
                                 'Error',
                                 'Gagal mengupload gambar: $e',
+                                snackPosition: SnackPosition.BOTTOM,
                                 backgroundColor: KTColor.error,
                                 colorText: Colors.white,
+                                icon: const Icon(
+                                  Icons.error_outline_rounded,
+                                  color: Colors.white,
+                                ),
                               );
                               return;
                             }
@@ -409,8 +428,13 @@ class _ManagePojokKampungScreenState extends State<ManagePojokKampungScreen> {
                             Get.snackbar(
                               'Sukses',
                               'Data berhasil ditambahkan',
+                              snackPosition: SnackPosition.BOTTOM,
                               backgroundColor: KTColor.success,
                               colorText: Colors.white,
+                              icon: const Icon(
+                                Icons.check_circle_outline_rounded,
+                                color: Colors.white,
+                              ),
                             );
                           } else {
                             await _supabaseService.updateAspiration(
@@ -421,8 +445,13 @@ class _ManagePojokKampungScreenState extends State<ManagePojokKampungScreen> {
                             Get.snackbar(
                               'Sukses',
                               'Data berhasil diperbarui',
+                              snackPosition: SnackPosition.BOTTOM,
                               backgroundColor: KTColor.success,
                               colorText: Colors.white,
+                              icon: const Icon(
+                                Icons.check_circle_outline_rounded,
+                                color: Colors.white,
+                              ),
                             );
                           }
 
@@ -433,8 +462,13 @@ class _ManagePojokKampungScreenState extends State<ManagePojokKampungScreen> {
                           Get.snackbar(
                             'Error',
                             'Gagal menyimpan data: $e',
+                            snackPosition: SnackPosition.BOTTOM,
                             backgroundColor: KTColor.error,
                             colorText: Colors.white,
+                            icon: const Icon(
+                              Icons.error_outline_rounded,
+                              color: Colors.white,
+                            ),
                           );
                         }
                       },
@@ -456,20 +490,11 @@ class _ManagePojokKampungScreenState extends State<ManagePojokKampungScreen> {
     return Scaffold(
       backgroundColor: KTColor.background,
       appBar: AppBar(
-        title: const Text(
-          "Kelola Pojok Kampung",
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-            color: KTColor.textPrimary,
-            letterSpacing: -0.5,
-          ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
+        title: const Text('Kelola Pojok Kampung'),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          color: KTColor.textPrimary,
           onPressed: () => Get.back(),
         ),
       ),

@@ -52,6 +52,8 @@ class DataController extends GetxController {
   final RxBool isLoadingFinanceAccounts = false.obs;
   final RxBool isLoadingAspirations = false.obs;
   final RxBool isLoadingProfile = false.obs;
+  final RxBool isLoadingNews = false.obs;
+  final RxBool isLoadingAnnouncements = false.obs;
 
   @override
   void onInit() {

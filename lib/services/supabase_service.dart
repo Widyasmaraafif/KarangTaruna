@@ -332,8 +332,24 @@ class SupabaseService {
     return imageUrl;
   }
 
+  Future<String> uploadEventImage(File file) async {
+    final fileExt = file.path.split('.').last;
+    final fileName = 'events/${DateTime.now().millisecondsSinceEpoch}.$fileExt';
+
+    await _client.storage
+        .from('news_images')
+        .upload(fileName, file, fileOptions: const FileOptions(upsert: true));
+
+    final imageUrl = _client.storage.from('news_images').getPublicUrl(fileName);
+    return imageUrl;
+  }
+
   // --- Profile ---
   // Mendapatkan semua profil user (untuk admin)
+  Future<List<Map<String, dynamic>>> getUsers() async {
+    return getAllProfiles();
+  }
+
   Future<List<Map<String, dynamic>>> getAllProfiles() async {
     final response = await _client
         .from('profiles')

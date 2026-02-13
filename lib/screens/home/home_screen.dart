@@ -5,6 +5,7 @@ import 'package:karang_taruna/commons/widgets/buttons/button_fitur.dart';
 import 'package:karang_taruna/commons/widgets/containers/announcement_card.dart';
 import 'package:karang_taruna/commons/widgets/containers/aspiration_card.dart';
 import 'package:karang_taruna/commons/widgets/containers/banner.dart';
+import 'package:karang_taruna/commons/widgets/containers/news_card.dart';
 import 'package:karang_taruna/commons/widgets/containers/pooling_card.dart';
 import 'package:karang_taruna/commons/widgets/containers/post_container.dart';
 import 'package:karang_taruna/commons/widgets/texts/section_heading.dart';
@@ -292,38 +293,24 @@ class NewsHome extends StatelessWidget {
             titleColor: Colors.white,
             onPressed: () => Get.to(() => const NewsScreen()),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Obx(() {
             if (controller.news.isEmpty) {
-              return const Text(
-                'Tidak ada berita',
-                style: TextStyle(color: Colors.white),
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Text(
+                    "Belum ada berita",
+                    style: TextStyle(color: KTColor.textSecondary),
+                  ),
+                ),
               );
             }
-
-            // Using ListView for 1 card per row to avoid overflow
-            return ListView.separated(
-              shrinkWrap: true,
-              padding: EdgeInsets.zero,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: controller.news.length > 2
-                  ? 2
-                  : controller.news.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 16),
-              itemBuilder: (context, index) {
-                final item = controller.news[index];
-                return KTPostContainer(
-                  imageUrl:
-                      item['image_url'] ?? "https://picsum.photos/400/300",
-                  title: item['title'],
-                  author: item['author'] ?? 'Admin',
-                  createdAt:
-                      DateTime.tryParse(item['created_at']) ?? DateTime.now(),
-                  content: item['content'] ?? '',
-                  category: item['category'] ?? 'News',
-                  onTap: () => Get.to(() => NewsDetailScreen(newsItem: item)),
-                );
-              },
+            // Limit to 1 card to avoid overflow and maintain clean UI
+            final item = controller.news.first;
+            return NewsCard(
+              newsItem: item,
+              onTap: () => Get.to(() => NewsDetailScreen(newsItem: item)),
             );
           }),
         ],
@@ -341,7 +328,7 @@ class HeaderHome extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
       decoration: const BoxDecoration(
         color: KTColor.primaryLight,
         borderRadius: BorderRadius.only(
@@ -367,12 +354,12 @@ class HeaderHome extends StatelessWidget {
           }),
           const SizedBox(height: 20),
           GridView.count(
-            crossAxisCount: 5, // Returned to 5 columns
+            crossAxisCount: 5,
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 10,
-            crossAxisSpacing: 10,
-            childAspectRatio: 0.85, // Adjusted for smaller buttons
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 8,
+            childAspectRatio: 0.82, // More compact
             children: [
               KTButtonFitur(
                 icon: Icons.people_rounded,

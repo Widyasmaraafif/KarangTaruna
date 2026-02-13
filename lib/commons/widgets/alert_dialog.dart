@@ -79,14 +79,16 @@ class KTAlertDialog extends StatelessWidget {
       actions: [
         Row(
           children: [
-            if (showCancel)
+            if (showCancel) ...[
               Expanded(
                 child: TextButton(
                   style: TextButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
+                      side: const BorderSide(color: KTColor.border),
                     ),
+                    backgroundColor: Colors.white,
                   ),
                   onPressed: () {
                     Navigator.pop(context);
@@ -96,21 +98,22 @@ class KTAlertDialog extends StatelessWidget {
                     cancelText,
                     style: const TextStyle(
                       color: KTColor.textSecondary,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
               ),
-            if (showCancel) const SizedBox(width: 12),
+              const SizedBox(width: 12),
+            ],
             Expanded(
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: confirmColor ?? Colors.red,
-                  foregroundColor: Colors.white,
-                  elevation: 0,
                   padding: const EdgeInsets.symmetric(vertical: 12),
+                  backgroundColor: confirmColor ?? KTColor.primary,
+                  elevation: 0,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
                 onPressed: () {
@@ -120,8 +123,9 @@ class KTAlertDialog extends StatelessWidget {
                 child: Text(
                   confirmText,
                   style: const TextStyle(
-                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
                     fontSize: 14,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),

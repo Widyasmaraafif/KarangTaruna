@@ -17,6 +17,38 @@ class _PollingDetailScreenState extends State<PollingDetailScreen> {
   final _selectedOptionId = RxnInt();
   final _isSubmitting = false.obs;
 
+  Future<void> _submitVote(int pollId, DataController controller) async {
+    _isSubmitting.value = true;
+    try {
+      await controller.votePoll(pollId, _selectedOptionId.value!);
+      Get.snackbar(
+        'Berhasil!',
+        'Suara anda telah direkam',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: KTColor.success,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(20),
+        borderRadius: 12,
+        icon: const Icon(Icons.check_circle_rounded, color: Colors.white),
+      );
+    } catch (e) {
+      final message = e.toString().replaceAll('Exception: ', '');
+      Get.snackbar(
+        'Info',
+        message,
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: message.contains('sudah memilih')
+            ? KTColor.warning
+            : KTColor.error,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(20),
+        borderRadius: 12,
+      );
+    } finally {
+      _isSubmitting.value = false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<DataController>();
@@ -377,46 +409,8 @@ class _PollingDetailScreenState extends State<PollingDetailScreen> {
                     isLoading: _isSubmitting.value,
                     onPressed: _selectedOptionId.value == null
                         ? null
-                        : () async {
-                            _isSubmitting.value = true;
-                            try {
-                              await controller.votePoll(
-                                pollId,
-                                _selectedOptionId.value!,
-                              );
-                              Get.snackbar(
-                                'Berhasil!',
-                                'Suara anda telah direkam',
-                                snackPosition: SnackPosition.TOP,
-                                backgroundColor: KTColor.success,
-                                colorText: Colors.white,
-                                margin: const EdgeInsets.all(20),
-                                borderRadius: 12,
-                                icon: const Icon(
-                                  Icons.check_circle_rounded,
-                                  color: Colors.white,
-                                ),
-                              );
-                            } catch (e) {
-                              final message = e.toString().replaceAll(
-                                'Exception: ',
-                                '',
-                              );
-                              Get.snackbar(
-                                'Info',
-                                message,
-                                snackPosition: SnackPosition.TOP,
-                                backgroundColor:
-                                    message.contains('sudah memilih')
-                                    ? KTColor.warning
-                                    : KTColor.error,
-                                colorText: Colors.white,
-                                margin: const EdgeInsets.all(20),
-                                borderRadius: 12,
-                              );
-                            } finally {
-                              _isSubmitting.value = false;
-                            }
+                        : () {
+                            _submitVote(pollId, controller);
                           },
                   ),
                 ),

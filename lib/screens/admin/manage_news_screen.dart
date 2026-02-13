@@ -31,15 +31,22 @@ class ManageNewsScreen extends StatelessWidget {
           Get.snackbar(
             'Sukses',
             'Berita berhasil dihapus',
+            snackPosition: SnackPosition.BOTTOM,
             backgroundColor: KTColor.success,
             colorText: Colors.white,
+            icon: const Icon(
+              Icons.check_circle_outline_rounded,
+              color: Colors.white,
+            ),
           );
         } catch (e) {
           Get.snackbar(
             'Error',
             'Gagal menghapus berita: $e',
+            snackPosition: SnackPosition.BOTTOM,
             backgroundColor: KTColor.error,
             colorText: Colors.white,
+            icon: const Icon(Icons.error_outline_rounded, color: Colors.white),
           );
         }
       },
@@ -220,8 +227,13 @@ class ManageNewsScreen extends StatelessWidget {
                             Get.snackbar(
                               'Sukses',
                               'Berita berhasil ditambahkan',
+                              snackPosition: SnackPosition.BOTTOM,
                               backgroundColor: KTColor.success,
                               colorText: Colors.white,
+                              icon: const Icon(
+                                Icons.check_circle_outline_rounded,
+                                color: Colors.white,
+                              ),
                             );
                           } else {
                             await supabaseService.updateNews(news['id'], data);
@@ -229,8 +241,13 @@ class ManageNewsScreen extends StatelessWidget {
                             Get.snackbar(
                               'Sukses',
                               'Berita berhasil diperbarui',
+                              snackPosition: SnackPosition.BOTTOM,
                               backgroundColor: KTColor.success,
                               colorText: Colors.white,
+                              icon: const Icon(
+                                Icons.check_circle_outline_rounded,
+                                color: Colors.white,
+                              ),
                             );
                           }
 
@@ -240,8 +257,13 @@ class ManageNewsScreen extends StatelessWidget {
                           Get.snackbar(
                             'Error',
                             'Gagal menyimpan berita: $e',
+                            snackPosition: SnackPosition.BOTTOM,
                             backgroundColor: KTColor.error,
                             colorText: Colors.white,
+                            icon: const Icon(
+                              Icons.error_outline_rounded,
+                              color: Colors.white,
+                            ),
                           );
                         }
                       },

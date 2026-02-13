@@ -40,7 +40,14 @@ class _ManageFinanceScreenState extends State<ManageFinanceScreen> {
       _bills.assignAll(results[0] as List<Map<String, dynamic>>);
       _users.assignAll(results[1] as List<Map<String, dynamic>>);
     } catch (e) {
-      Get.snackbar('Error', 'Gagal memuat data keuangan: $e');
+      Get.snackbar(
+        'Error',
+        'Gagal memuat data keuangan: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: KTColor.error,
+        colorText: Colors.white,
+        icon: const Icon(Icons.error_outline_rounded, color: Colors.white),
+      );
     } finally {
       _isLoading.value = false;
     }
@@ -61,15 +68,22 @@ class _ManageFinanceScreenState extends State<ManageFinanceScreen> {
           Get.snackbar(
             'Sukses',
             'Tagihan berhasil dihapus',
+            snackPosition: SnackPosition.BOTTOM,
             backgroundColor: KTColor.success,
             colorText: Colors.white,
+            icon: const Icon(
+              Icons.check_circle_outline_rounded,
+              color: Colors.white,
+            ),
           );
         } catch (e) {
           Get.snackbar(
             'Error',
             'Gagal menghapus tagihan: $e',
+            snackPosition: SnackPosition.BOTTOM,
             backgroundColor: KTColor.error,
             colorText: Colors.white,
+            icon: const Icon(Icons.error_outline_rounded, color: Colors.white),
           );
         }
       },
@@ -304,8 +318,13 @@ class _ManageFinanceScreenState extends State<ManageFinanceScreen> {
                           Get.snackbar(
                             'Peringatan',
                             'Mohon lengkapi data wajib',
+                            snackPosition: SnackPosition.BOTTOM,
                             backgroundColor: KTColor.warning,
                             colorText: Colors.white,
+                            icon: const Icon(
+                              Icons.warning_amber_rounded,
+                              color: Colors.white,
+                            ),
                           );
                           return;
                         }
@@ -331,8 +350,13 @@ class _ManageFinanceScreenState extends State<ManageFinanceScreen> {
                             Get.snackbar(
                               'Sukses',
                               'Tagihan berhasil dibuat',
+                              snackPosition: SnackPosition.BOTTOM,
                               backgroundColor: KTColor.success,
                               colorText: Colors.white,
+                              icon: const Icon(
+                                Icons.check_circle_outline_rounded,
+                                color: Colors.white,
+                              ),
                             );
                           } else {
                             await _supabaseService.updateBill(bill['id'], data);
@@ -340,8 +364,13 @@ class _ManageFinanceScreenState extends State<ManageFinanceScreen> {
                             Get.snackbar(
                               'Sukses',
                               'Tagihan berhasil diperbarui',
+                              snackPosition: SnackPosition.BOTTOM,
                               backgroundColor: KTColor.success,
                               colorText: Colors.white,
+                              icon: const Icon(
+                                Icons.check_circle_outline_rounded,
+                                color: Colors.white,
+                              ),
                             );
                           }
 
@@ -352,8 +381,13 @@ class _ManageFinanceScreenState extends State<ManageFinanceScreen> {
                           Get.snackbar(
                             'Error',
                             'Gagal menyimpan tagihan: $e',
+                            snackPosition: SnackPosition.BOTTOM,
                             backgroundColor: KTColor.error,
                             colorText: Colors.white,
+                            icon: const Icon(
+                              Icons.error_outline_rounded,
+                              color: Colors.white,
+                            ),
                           );
                         }
                       },

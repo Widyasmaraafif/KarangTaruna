@@ -32,7 +32,14 @@ class _ManageMembersScreenState extends State<ManageMembersScreen> {
       _members.assignAll(members);
       _filteredMembers.assignAll(members);
     } catch (e) {
-      Get.snackbar('Error', 'Gagal memuat anggota: $e');
+      Get.snackbar(
+        'Error',
+        'Gagal memuat anggota: $e',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: KTColor.error,
+        colorText: Colors.white,
+        icon: const Icon(Icons.error_outline_rounded, color: Colors.white),
+      );
     } finally {
       _isLoading.value = false;
     }
@@ -59,17 +66,7 @@ class _ManageMembersScreenState extends State<ManageMembersScreen> {
     return Scaffold(
       backgroundColor: KTColor.background,
       appBar: AppBar(
-        title: const Text(
-          "Kelola Anggota",
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-            color: KTColor.textPrimary,
-            letterSpacing: -0.5,
-          ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
+        title: const Text('Kelola Anggota'),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
@@ -93,7 +90,7 @@ class _ManageMembersScreenState extends State<ManageMembersScreen> {
               controller: _searchController,
               hintText: 'Cari anggota...',
               prefixIcon: const Icon(Icons.search_rounded, size: 20),
-              onChanged: _filterMembers,
+              onChanged: _filterMembers, labelText: '',
             ),
           ),
           Expanded(

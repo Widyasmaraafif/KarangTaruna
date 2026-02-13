@@ -58,15 +58,22 @@ class _ManageGalleryScreenState extends State<ManageGalleryScreen> {
           Get.snackbar(
             'Sukses',
             'Foto berhasil dihapus',
+            snackPosition: SnackPosition.BOTTOM,
             backgroundColor: KTColor.success,
             colorText: Colors.white,
+            icon: const Icon(
+              Icons.check_circle_outline_rounded,
+              color: Colors.white,
+            ),
           );
         } catch (e) {
           Get.snackbar(
             'Error',
             'Gagal menghapus foto: $e',
+            snackPosition: SnackPosition.BOTTOM,
             backgroundColor: KTColor.error,
             colorText: Colors.white,
+            icon: const Icon(Icons.error_outline_rounded, color: Colors.white),
           );
         }
       },
@@ -215,8 +222,13 @@ class _ManageGalleryScreenState extends State<ManageGalleryScreen> {
                           Get.snackbar(
                             'Sukses',
                             'Foto berhasil ditambahkan',
+                            snackPosition: SnackPosition.BOTTOM,
                             backgroundColor: KTColor.success,
                             colorText: Colors.white,
+                            icon: const Icon(
+                              Icons.check_circle_outline_rounded,
+                              color: Colors.white,
+                            ),
                           );
 
                           await _fetchGallery(silent: true);
@@ -226,8 +238,13 @@ class _ManageGalleryScreenState extends State<ManageGalleryScreen> {
                           Get.snackbar(
                             'Error',
                             'Gagal menyimpan foto: $e',
+                            snackPosition: SnackPosition.BOTTOM,
                             backgroundColor: KTColor.error,
                             colorText: Colors.white,
+                            icon: const Icon(
+                              Icons.error_outline_rounded,
+                              color: Colors.white,
+                            ),
                           );
                         }
                       },

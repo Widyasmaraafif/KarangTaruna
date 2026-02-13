@@ -31,15 +31,22 @@ class ManageEventsScreen extends StatelessWidget {
           Get.snackbar(
             'Sukses',
             'Event berhasil dihapus',
+            snackPosition: SnackPosition.BOTTOM,
             backgroundColor: KTColor.success,
             colorText: Colors.white,
+            icon: const Icon(
+              Icons.check_circle_outline_rounded,
+              color: Colors.white,
+            ),
           );
         } catch (e) {
           Get.snackbar(
             'Error',
             'Gagal menghapus event: $e',
+            snackPosition: SnackPosition.BOTTOM,
             backgroundColor: KTColor.error,
             colorText: Colors.white,
+            icon: const Icon(Icons.error_outline_rounded, color: Colors.white),
           );
         }
       },
@@ -182,14 +189,14 @@ class ManageEventsScreen extends StatelessWidget {
                     controller: locationController,
                     labelText: 'Lokasi',
                     hintText: 'Masukkan lokasi event',
-                    prefixIcon: Icons.location_on_rounded,
+                    prefixIcon: const Icon(Icons.location_on_rounded),
                   ),
                   const SizedBox(height: 16),
                   KTTextField(
                     controller: dateController,
                     labelText: 'Tanggal',
                     hintText: 'YYYY-MM-DD',
-                    prefixIcon: Icons.calendar_today_rounded,
+                    prefixIcon: const Icon(Icons.calendar_today_rounded),
                     readOnly: true,
                     onTap: () async {
                       final pickedDate = await showDatePicker(
@@ -263,8 +270,13 @@ class ManageEventsScreen extends StatelessWidget {
                             Get.snackbar(
                               'Sukses',
                               'Event berhasil dibuat',
+                              snackPosition: SnackPosition.BOTTOM,
                               backgroundColor: KTColor.success,
                               colorText: Colors.white,
+                              icon: const Icon(
+                                Icons.check_circle_outline_rounded,
+                                color: Colors.white,
+                              ),
                             );
                           } else {
                             await supabaseService.updateEvent(
@@ -275,8 +287,13 @@ class ManageEventsScreen extends StatelessWidget {
                             Get.snackbar(
                               'Sukses',
                               'Event berhasil diperbarui',
+                              snackPosition: SnackPosition.BOTTOM,
                               backgroundColor: KTColor.success,
                               colorText: Colors.white,
+                              icon: const Icon(
+                                Icons.check_circle_outline_rounded,
+                                color: Colors.white,
+                              ),
                             );
                           }
 
@@ -286,8 +303,13 @@ class ManageEventsScreen extends StatelessWidget {
                           Get.snackbar(
                             'Error',
                             'Gagal menyimpan event: $e',
+                            snackPosition: SnackPosition.BOTTOM,
                             backgroundColor: KTColor.error,
                             colorText: Colors.white,
+                            icon: const Icon(
+                              Icons.error_outline_rounded,
+                              color: Colors.white,
+                            ),
                           );
                         }
                       },

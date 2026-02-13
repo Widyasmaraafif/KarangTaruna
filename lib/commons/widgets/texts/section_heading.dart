@@ -28,7 +28,7 @@ class KTSectionHeading extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: titleColor ?? KTColor.textPrimary,
-              fontSize: 13, // Reduced from 14
+              fontSize: 12, // Reduced from 13
               fontWeight: FontWeight.w800,
               letterSpacing: -0.4,
             ),
@@ -43,7 +43,7 @@ class KTSectionHeading extends StatelessWidget {
                 color:
                     buttonColor ??
                     (titleColor?.withValues(alpha: 0.8) ?? KTColor.primary),
-                fontSize: 10, // Reduced from 12
+                fontSize: 9, // Reduced from 10
                 fontWeight: FontWeight.w600,
               ),
             ),

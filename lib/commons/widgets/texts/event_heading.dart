@@ -18,37 +18,48 @@ class KTEventHeader extends StatelessWidget {
     return GestureDetector(
       onTap: onToggle,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: KTColor.primaryLight.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(12),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: KTColor.primary.withValues(alpha: 0.2),
+            color: isExpanded
+                ? KTColor.primary.withValues(alpha: 0.3)
+                : KTColor.border.withValues(alpha: 0.5),
             width: 1,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: KTColor.shadow.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(6),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: KTColor.primary,
-                borderRadius: BorderRadius.circular(8),
+                color: isExpanded
+                    ? KTColor.primary
+                    : KTColor.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.event_note_rounded,
                 size: 16,
-                color: Colors.white,
+                color: isExpanded ? Colors.white : KTColor.primary,
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 title,
-                style: const TextStyle(
+                style: TextStyle(
                   color: KTColor.textPrimary,
                   fontSize: 13,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: isExpanded ? FontWeight.w800 : FontWeight.w700,
                   letterSpacing: -0.3,
                 ),
               ),
@@ -57,8 +68,8 @@ class KTEventHeader extends StatelessWidget {
               isExpanded
                   ? Icons.keyboard_arrow_up_rounded
                   : Icons.keyboard_arrow_down_rounded,
-              size: 20,
-              color: KTColor.primary,
+              size: 22,
+              color: isExpanded ? KTColor.primary : KTColor.iconPrimary,
             ),
           ],
         ),

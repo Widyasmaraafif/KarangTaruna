@@ -74,13 +74,16 @@ class ProfileScreen extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
               decoration: const BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.vertical(bottom: Radius.circular(32)),
+                borderRadius: BorderRadius.vertical(
+                  bottom: Radius.circular(32),
+                ),
               ),
               child: Obx(() {
                 final profile = controller.userProfile;
                 final name = profile['full_name'] ?? 'User';
                 final role = profile['role'] ?? 'Anggota Karang Taruna';
-                final avatarUrl = profile['avatar_url'] ??
+                final avatarUrl =
+                    profile['avatar_url'] ??
                     'https://ui-avatars.com/api/?name=${Uri.encodeComponent(name)}&background=random';
 
                 return Column(
@@ -90,14 +93,17 @@ class ProfileScreen extends StatelessWidget {
                       height: 80,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(color: KTColor.primary.withOpacity(0.1), width: 3),
-                          boxShadow: [
-                            BoxShadow(
-                              color: KTColor.shadow.withOpacity(0.1),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
+                        border: Border.all(
+                          color: KTColor.primary.withOpacity(0.1),
+                          width: 3,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: KTColor.shadow.withOpacity(0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                         image: DecorationImage(
                           image: NetworkImage(avatarUrl),
                           fit: BoxFit.cover,
@@ -117,7 +123,10 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: KTColor.primary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
@@ -136,7 +145,7 @@ class ProfileScreen extends StatelessWidget {
                 );
               }),
             ),
-            
+
             Padding(
               padding: const EdgeInsets.all(24),
               child: Column(
@@ -157,7 +166,7 @@ class ProfileScreen extends StatelessWidget {
                     title: 'Data Pribadi',
                     onTap: () => Get.to(() => const PersonalDataScreen()),
                   ),
-                  
+
                   const SizedBox(height: 24),
                   const Text(
                     "Keamanan & Pengaturan",
@@ -172,14 +181,15 @@ class ProfileScreen extends StatelessWidget {
                   KTProfileMenuTile(
                     icon: Icons.notifications_none_rounded,
                     title: 'Notifikasi',
-                    onTap: () => Get.to(() => const NotificationSettingsScreen()),
+                    onTap: () =>
+                        Get.to(() => const NotificationSettingsScreen()),
                   ),
                   KTProfileMenuTile(
                     icon: Icons.security_rounded,
                     title: 'Privasi',
                     onTap: () => Get.to(() => const PrivacySettingsScreen()),
                   ),
-                  
+
                   const SizedBox(height: 24),
                   const Text(
                     "Lainnya",
@@ -201,7 +211,7 @@ class ProfileScreen extends StatelessWidget {
                     title: 'Tentang Aplikasi',
                     onTap: () => Get.to(() => const AboutAppScreen()),
                   ),
-                  
+
                   // Admin Menu (Conditional)
                   Obx(() {
                     if (controller.userProfile['role'] == 'admin') {
@@ -222,7 +232,8 @@ class ProfileScreen extends StatelessWidget {
                           KTProfileMenuTile(
                             icon: Icons.admin_panel_settings_outlined,
                             title: 'Dashboard Admin',
-                            onTap: () => Get.to(() => const AdminDashboardScreen()),
+                            onTap: () =>
+                                Get.to(() => const AdminDashboardScreen()),
                           ),
                         ],
                       );
@@ -237,3 +248,4 @@ class ProfileScreen extends StatelessWidget {
       ),
     );
   }
+}
