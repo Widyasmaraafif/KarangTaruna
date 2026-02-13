@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../../commons/styles/kt_color.dart';
 
 class SingleManagementPage extends StatelessWidget {
   final Map<String, dynamic> member;
@@ -13,17 +14,16 @@ class SingleManagementPage extends StatelessWidget {
     final avatarUrl = member['avatar_url'];
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: KTColor.background,
       appBar: AppBar(
         title: const Text(
           "Detail Pengurus",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          color: KTColor.textPrimary,
           onPressed: () => Get.back(),
         ),
       ),
@@ -36,7 +36,7 @@ class SingleManagementPage extends StatelessWidget {
                 tag: 'avatar_${member['id'] ?? name}',
                 child: CircleAvatar(
                   radius: 80,
-                  backgroundColor: Colors.grey[200],
+                  backgroundColor: KTColor.border.withOpacity(0.5),
                   backgroundImage: NetworkImage(
                     avatarUrl ??
                         'https://ui-avatars.com/api/?name=${Uri.encodeComponent(name)}&background=random',
@@ -50,7 +50,7 @@ class SingleManagementPage extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: KTColor.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
@@ -58,14 +58,14 @@ class SingleManagementPage extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
               decoration: BoxDecoration(
-                color: const Color(0xFF00BA9B).withValues(alpha: 0.1),
+                color: KTColor.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(30),
               ),
               child: Text(
                 role,
                 style: const TextStyle(
                   fontSize: 16,
-                  color: Color(0xFF00BA9B),
+                  color: KTColor.primary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -76,9 +76,16 @@ class SingleManagementPage extends StatelessWidget {
               margin: const EdgeInsets.symmetric(horizontal: 20),
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.grey[50],
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.grey[200]!),
+                border: Border.all(color: KTColor.border),
+                boxShadow: [
+                  BoxShadow(
+                    color: KTColor.shadow.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -88,7 +95,7 @@ class SingleManagementPage extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: KTColor.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -116,11 +123,11 @@ class SingleManagementPage extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: KTColor.background,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey[200]!),
+              border: Border.all(color: KTColor.border),
             ),
-            child: Icon(icon, color: Colors.blue, size: 22),
+            child: Icon(icon, color: KTColor.primary, size: 22),
           ),
           const SizedBox(width: 16),
           Column(
@@ -128,7 +135,7 @@ class SingleManagementPage extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: TextStyle(color: Colors.grey[500], fontSize: 13),
+                style: const TextStyle(color: KTColor.textSecondary, fontSize: 13),
               ),
               const SizedBox(height: 2),
               Text(
@@ -136,7 +143,7 @@ class SingleManagementPage extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+                  color: KTColor.textPrimary,
                 ),
               ),
             ],

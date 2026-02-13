@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HelpScreen extends StatelessWidget {
@@ -8,19 +9,23 @@ class HelpScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: KTColor.background,
       appBar: AppBar(
         title: const Text(
           'Bantuan',
           style: TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: KTColor.textPrimary,
+            letterSpacing: -0.5,
           ),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          color: KTColor.textPrimary,
           onPressed: () => Get.back(),
         ),
       ),
@@ -33,8 +38,9 @@ class HelpScreen extends StatelessWidget {
             'Pertanyaan Sering Diajukan (FAQ)',
             style: TextStyle(
               fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
+              fontWeight: FontWeight.w800,
+              color: KTColor.textPrimary,
+              letterSpacing: -0.5,
             ),
           ),
           const SizedBox(height: 16),
@@ -67,9 +73,9 @@ class HelpScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF00BA9B).withOpacity(0.1),
+        color: KTColor.primary.withOpacity(0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF00BA9B).withOpacity(0.3)),
+        border: Border.all(color: KTColor.primary.withOpacity(0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,10 +87,17 @@ class HelpScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: KTColor.shadow.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: const Icon(
                   Icons.support_agent,
-                  color: Color(0xFF00BA9B),
+                  color: KTColor.primary,
                   size: 24,
                 ),
               ),
@@ -96,9 +109,10 @@ class HelpScreen extends StatelessWidget {
                     Text(
                       'Butuh bantuan lebih lanjut?',
                       style: TextStyle(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w800,
                         fontSize: 16,
-                        color: Color(0xFF00BA9B),
+                        color: KTColor.primary,
+                        letterSpacing: -0.5,
                       ),
                     ),
                     SizedBox(height: 4),
@@ -106,7 +120,7 @@ class HelpScreen extends StatelessWidget {
                       'Tim kami siap membantu Anda',
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.black54,
+                        color: KTColor.textSecondary,
                       ),
                     ),
                   ],
@@ -146,26 +160,27 @@ class HelpScreen extends StatelessWidget {
   }) {
     return Material(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
-            border: Border.all(color: Colors.grey.shade300),
-            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: KTColor.border),
+            borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 20, color: Colors.black87),
+              Icon(icon, size: 20, color: KTColor.textPrimary),
               const SizedBox(width: 8),
               Text(
                 label,
                 style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+                  fontWeight: FontWeight.w700,
+                  color: KTColor.textPrimary,
+                  fontSize: 13,
                 ),
               ),
             ],
@@ -176,22 +191,24 @@ class HelpScreen extends StatelessWidget {
   }
 
   Widget _buildFaqItem(String question, String answer) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 0,
-      shape: RoundedRectangleBorder(
+      decoration: BoxDecoration(
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade200),
+        border: Border.all(color: KTColor.border),
       ),
       child: Theme(
         data: ThemeData().copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
+          iconColor: KTColor.primary,
+          collapsedIconColor: KTColor.textSecondary,
           title: Text(
             question,
             style: const TextStyle(
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
               fontSize: 14,
-              color: Colors.black87,
+              color: KTColor.textPrimary,
             ),
           ),
           children: [
@@ -201,8 +218,8 @@ class HelpScreen extends StatelessWidget {
                 answer,
                 style: const TextStyle(
                   fontSize: 13,
-                  color: Colors.black54,
-                  height: 1.5,
+                  color: KTColor.textSecondary,
+                  height: 1.6,
                 ),
               ),
             ),
@@ -218,8 +235,11 @@ class HelpScreen extends StatelessWidget {
       Get.snackbar(
         'Error',
         'Tidak dapat membuka tautan',
-        backgroundColor: Colors.red,
+        backgroundColor: KTColor.error.withOpacity(0.9),
         colorText: Colors.white,
+        margin: const EdgeInsets.all(16),
+        borderRadius: 10,
+        snackPosition: SnackPosition.BOTTOM,
       );
     }
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 
 class KTAspirationBanner extends StatelessWidget {
   final String title;
@@ -17,17 +18,22 @@ class KTAspirationBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Color(0xff79CDB0),
-        borderRadius: BorderRadius.circular(16),
+        color: KTColor.primary,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.12),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+            color: KTColor.primaryWithAlpha(0.2),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
           ),
         ],
+        gradient: const LinearGradient(
+          colors: [KTColor.primary, KTColor.primaryDark],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -42,9 +48,10 @@ class KTAspirationBanner extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: -0.2,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -53,23 +60,24 @@ class KTAspirationBanner extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.black.withValues(alpha: 0.87),
+                    fontSize: 12,
+                    color: Colors.white.withValues(alpha: 0.9),
+                    height: 1.3,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 16),
           Material(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(12),
             child: InkWell(
               onTap: onTap,
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(12),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                  vertical: 8,
+                  vertical: 10,
                   horizontal: 14,
                 ),
                 child: Row(
@@ -78,16 +86,16 @@ class KTAspirationBanner extends StatelessWidget {
                     Text(
                       actionText,
                       style: const TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF00BA9B),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: KTColor.primary,
                       ),
                     ),
                     const SizedBox(width: 6),
                     const Icon(
-                      Icons.arrow_forward_ios,
-                      size: 12,
-                      color: Color(0xFF00BA9B),
+                      Icons.arrow_forward_rounded,
+                      size: 14,
+                      color: KTColor.primary,
                     ),
                   ],
                 ),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:karang_taruna/commons/widgets/containers/aspiration_card.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 
 class AspirationDetailScreen extends StatelessWidget {
   final Map<String, dynamic> aspiration;
@@ -11,21 +11,28 @@ class AspirationDetailScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final author = aspiration['author'] ?? 'Anonim';
     final content = aspiration['content'] ?? '';
-    final createdAt = DateTime.tryParse(aspiration['created_at'] ?? '') ?? DateTime.now();
+    final createdAt =
+        DateTime.tryParse(aspiration['created_at'] ?? '') ?? DateTime.now();
     final status = aspiration['status'] ?? 'pending';
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: KTColor.background,
       appBar: AppBar(
         title: const Text(
           "Detail Aspirasi",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: KTColor.textPrimary,
+            letterSpacing: -0.5,
+          ),
         ),
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
         elevation: 0,
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          color: KTColor.textPrimary,
           onPressed: () => Get.back(),
         ),
       ),
@@ -39,9 +46,12 @@ class AspirationDetailScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: KTColor.border.withValues(alpha: 0.5),
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: KTColor.shadow.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 5),
                   ),
@@ -53,17 +63,17 @@ class AspirationDetailScreen extends StatelessWidget {
                   Row(
                     children: [
                       Container(
-                        width: 40,
-                        height: 40,
+                        width: 44,
+                        height: 44,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF00BA9B),
+                          color: KTColor.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         alignment: Alignment.center,
                         child: Text(
                           author.isNotEmpty ? author[0].toUpperCase() : '?',
                           style: const TextStyle(
-                            color: Colors.white,
+                            color: KTColor.primary,
                             fontWeight: FontWeight.bold,
                             fontSize: 18,
                           ),
@@ -79,15 +89,15 @@ class AspirationDetailScreen extends StatelessWidget {
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black87,
+                                color: KTColor.textPrimary,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               _formattedDate(createdAt),
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 12,
-                                color: Colors.grey[600],
+                                color: KTColor.textSecondary,
                               ),
                             ),
                           ],
@@ -96,13 +106,16 @@ class AspirationDetailScreen extends StatelessWidget {
                       _buildStatusBadge(status),
                     ],
                   ),
-                  const Divider(height: 30),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 20),
+                    child: Divider(height: 1),
+                  ),
                   Text(
                     content,
                     style: const TextStyle(
-                      fontSize: 16,
+                      fontSize: 15,
                       height: 1.6,
-                      color: Colors.black87,
+                      color: KTColor.textPrimary,
                     ),
                   ),
                 ],
@@ -130,17 +143,17 @@ class AspirationDetailScreen extends StatelessWidget {
     switch (status.toLowerCase()) {
       case 'approved':
       case 'disetujui':
-        color = Colors.green;
+        color = KTColor.success;
         text = 'Disetujui';
         break;
       case 'rejected':
       case 'ditolak':
-        color = Colors.red;
+        color = KTColor.error;
         text = 'Ditolak';
         break;
       case 'pending':
       default:
-        color = Colors.orange;
+        color = KTColor.warning;
         text = 'Menunggu';
         break;
     }

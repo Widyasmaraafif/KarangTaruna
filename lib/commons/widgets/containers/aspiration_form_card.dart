@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 
 class AspirationFormCard extends StatefulWidget {
   final Function(String title, String content, String category, File? image)
@@ -67,12 +68,42 @@ class _AspirationFormCardState extends State<AspirationFormCard> {
     super.dispose();
   }
 
+  InputDecoration _inputDecoration({
+    required String label,
+    required String hint,
+    required IconData icon,
+  }) {
+    return InputDecoration(
+      labelText: label,
+      hintText: hint,
+      prefixIcon: Icon(icon, color: KTColor.primary, size: 20),
+      filled: true,
+      fillColor: KTColor.background,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: KTColor.primary, width: 1.5),
+      ),
+      labelStyle: const TextStyle(color: KTColor.textSecondary, fontSize: 14),
+      hintStyle: const TextStyle(color: KTColor.textGrey, fontSize: 14),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      color: Colors.transparent,
-      margin: EdgeInsets.zero,
+    return Container(
+      decoration: BoxDecoration(
+        color: KTColor.card,
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Form(
         key: _formKey,
         child: Column(
@@ -82,13 +113,11 @@ class _AspirationFormCardState extends State<AspirationFormCard> {
             // Title Field
             TextFormField(
               controller: _titleController,
-              decoration: InputDecoration(
-                labelText: "Judul Aspirasi",
-                hintText: "Contoh: Jalan Berlubang di RT 01",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                prefixIcon: const Icon(Icons.title),
+              style: const TextStyle(fontSize: 14, color: KTColor.textPrimary),
+              decoration: _inputDecoration(
+                label: "Judul Aspirasi",
+                hint: "Contoh: Jalan Berlubang di RT 01",
+                icon: Icons.title_rounded,
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -102,12 +131,11 @@ class _AspirationFormCardState extends State<AspirationFormCard> {
             // Category Dropdown
             DropdownButtonFormField<String>(
               value: _selectedCategory,
-              decoration: InputDecoration(
-                labelText: "Kategori",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                prefixIcon: const Icon(Icons.category),
+              style: const TextStyle(fontSize: 14, color: KTColor.textPrimary),
+              decoration: _inputDecoration(
+                label: "Kategori",
+                hint: "",
+                icon: Icons.category_rounded,
               ),
               items: _categories.map((String category) {
                 return DropdownMenuItem<String>(
@@ -128,15 +156,12 @@ class _AspirationFormCardState extends State<AspirationFormCard> {
             // Content Field
             TextFormField(
               controller: _contentController,
-              decoration: InputDecoration(
-                labelText: "Isi Aspirasi",
-                hintText: "Jelaskan detail aspirasi Anda...",
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                alignLabelWithHint: true,
-                prefixIcon: const Icon(Icons.description),
-              ),
+              style: const TextStyle(fontSize: 14, color: KTColor.textPrimary),
+              decoration: _inputDecoration(
+                label: "Isi Aspirasi",
+                hint: "Jelaskan detail aspirasi Anda...",
+                icon: Icons.description_rounded,
+              ).copyWith(alignLabelWithHint: true),
               maxLines: 4,
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -156,16 +181,23 @@ class _AspirationFormCardState extends State<AspirationFormCard> {
                     borderRadius: BorderRadius.circular(12),
                     child: Image.file(
                       _selectedImage!,
-                      height: 200,
+                      height: 180,
                       width: double.infinity,
                       fit: BoxFit.cover,
                     ),
                   ),
-                  IconButton(
-                    onPressed: _removeImage,
-                    icon: const CircleAvatar(
-                      backgroundColor: Colors.white,
-                      child: Icon(Icons.close, color: Colors.red),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: GestureDetector(
+                      onTap: _removeImage,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.close_rounded, color: KTColor.error, size: 20),
+                      ),
                     ),
                   ),
                 ],
@@ -173,13 +205,16 @@ class _AspirationFormCardState extends State<AspirationFormCard> {
             else
               OutlinedButton.icon(
                 onPressed: _pickImage,
-                icon: const Icon(Icons.add_photo_alternate),
+                icon: const Icon(Icons.add_photo_alternate_rounded, size: 20),
                 label: const Text("Tambah Foto (Opsional)"),
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  foregroundColor: KTColor.primary,
+                  side: BorderSide(color: KTColor.primary.withValues(alpha: 0.3)),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
+                  textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
               ),
             const SizedBox(height: 24),
@@ -188,28 +223,29 @@ class _AspirationFormCardState extends State<AspirationFormCard> {
             ElevatedButton(
               onPressed: widget.isLoading ? null : _handleSubmit,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF00BA9B),
+                backgroundColor: KTColor.primary,
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                elevation: 2,
+                elevation: 0,
               ),
               child: widget.isLoading
                   ? const SizedBox(
                       height: 20,
                       width: 20,
                       child: CircularProgressIndicator(
-                        strokeWidth: 2,
+                        strokeWidth: 2.5,
                         color: Colors.white,
                       ),
                     )
                   : const Text(
                       "Kirim Aspirasi",
                       style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
                       ),
                     ),
             ),
@@ -219,3 +255,4 @@ class _AspirationFormCardState extends State<AspirationFormCard> {
     );
   }
 }
+

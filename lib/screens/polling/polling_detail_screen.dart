@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
+import 'package:karang_taruna/commons/widgets/buttons/kt_button.dart';
 import 'package:karang_taruna/controllers/data_controller.dart';
-import 'package:intl/intl.dart';
 
 class PollingDetailScreen extends StatefulWidget {
   final Map<String, dynamic> poll;
@@ -19,21 +20,15 @@ class _PollingDetailScreenState extends State<PollingDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<DataController>();
-    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA), // Slightly grey background
+      backgroundColor: KTColor.background,
       appBar: AppBar(
-        title: const Text(
-          "Detail Polling",
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-        ),
+        title: const Text('Detail Polling'),
         centerTitle: true,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          color: KTColor.textPrimary,
           onPressed: () => Get.back(),
         ),
       ),
@@ -83,9 +78,10 @@ class _PollingDetailScreenState extends State<PollingDetailScreen> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: KTColor.border),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
+                            color: KTColor.shadow.withOpacity(0.05),
                             blurRadius: 20,
                             offset: const Offset(0, 4),
                           ),
@@ -103,8 +99,8 @@ class _PollingDetailScreenState extends State<PollingDetailScreen> {
                                 ),
                                 decoration: BoxDecoration(
                                   color: isVoted
-                                      ? const Color(0xFFE8F5E9)
-                                      : const Color(0xFFE0F2F1),
+                                      ? KTColor.success.withOpacity(0.1)
+                                      : KTColor.primary.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(30),
                                 ),
                                 child: Row(
@@ -112,11 +108,11 @@ class _PollingDetailScreenState extends State<PollingDetailScreen> {
                                   children: [
                                     Icon(
                                       isVoted
-                                          ? Icons.check_circle
-                                          : Icons.how_to_vote,
+                                          ? Icons.check_circle_rounded
+                                          : Icons.how_to_vote_rounded,
                                       color: isVoted
-                                          ? Colors.green[700]
-                                          : const Color(0xFF00BA9B),
+                                          ? KTColor.success
+                                          : KTColor.primary,
                                       size: 16,
                                     ),
                                     const SizedBox(width: 8),
@@ -126,10 +122,10 @@ class _PollingDetailScreenState extends State<PollingDetailScreen> {
                                           : "Sedang Berjalan",
                                       style: TextStyle(
                                         color: isVoted
-                                            ? Colors.green[700]
-                                            : const Color(0xFF00BA9B),
+                                            ? KTColor.success
+                                            : KTColor.primary,
                                         fontSize: 12,
-                                        fontWeight: FontWeight.bold,
+                                        fontWeight: FontWeight.w800,
                                       ),
                                     ),
                                   ],
@@ -142,23 +138,23 @@ class _PollingDetailScreenState extends State<PollingDetailScreen> {
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.grey[100],
+                                  color: KTColor.background,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Row(
                                   children: [
                                     const Icon(
-                                      Icons.people_outline,
+                                      Icons.people_outline_rounded,
                                       size: 16,
-                                      color: Colors.grey,
+                                      color: KTColor.textSecondary,
                                     ),
                                     const SizedBox(width: 6),
                                     Text(
                                       "$totalVotes",
                                       style: const TextStyle(
-                                        color: Colors.black87,
+                                        color: KTColor.textPrimary,
                                         fontSize: 13,
-                                        fontWeight: FontWeight.w600,
+                                        fontWeight: FontWeight.w800,
                                       ),
                                     ),
                                   ],
@@ -170,9 +166,9 @@ class _PollingDetailScreenState extends State<PollingDetailScreen> {
                           Text(
                             title,
                             style: const TextStyle(
-                              color: Colors.black87,
+                              color: KTColor.textPrimary,
                               fontSize: 22,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w900,
                               height: 1.3,
                               letterSpacing: -0.5,
                             ),
@@ -181,10 +177,10 @@ class _PollingDetailScreenState extends State<PollingDetailScreen> {
                             const SizedBox(height: 12),
                             Text(
                               description,
-                              style: TextStyle(
-                                color: Colors.grey[600],
+                              style: const TextStyle(
+                                color: KTColor.textSecondary,
                                 fontSize: 15,
-                                height: 1.5,
+                                height: 1.6,
                               ),
                             ),
                           ],
@@ -198,8 +194,9 @@ class _PollingDetailScreenState extends State<PollingDetailScreen> {
                       isVoted ? "Hasil Voting" : "Pilihan Tersedia",
                       style: const TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        fontWeight: FontWeight.w800,
+                        color: KTColor.textPrimary,
+                        letterSpacing: -0.5,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -236,17 +233,15 @@ class _PollingDetailScreenState extends State<PollingDetailScreen> {
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
                                 color: isSelected
-                                    ? const Color(0xFF00BA9B)
-                                    : Colors.transparent,
+                                    ? KTColor.primary
+                                    : KTColor.border,
                                 width: 2,
                               ),
                               boxShadow: [
                                 BoxShadow(
                                   color: isSelected
-                                      ? const Color(
-                                          0xFF00BA9B,
-                                        ).withValues(alpha: 0.1)
-                                      : Colors.grey.withValues(alpha: 0.05),
+                                      ? KTColor.primary.withOpacity(0.1)
+                                      : KTColor.shadow.withOpacity(0.05),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
                                 ),
@@ -265,9 +260,7 @@ class _PollingDetailScreenState extends State<PollingDetailScreen> {
                                     heightFactor: 1.0,
                                     child: Container(
                                       decoration: BoxDecoration(
-                                        color: const Color(
-                                          0xFF00BA9B,
-                                        ).withValues(alpha: 0.1),
+                                        color: KTColor.primary.withOpacity(0.1),
                                         borderRadius: BorderRadius.circular(14),
                                       ),
                                     ),
@@ -289,17 +282,17 @@ class _PollingDetailScreenState extends State<PollingDetailScreen> {
                                             shape: BoxShape.circle,
                                             border: Border.all(
                                               color: isSelected
-                                                  ? const Color(0xFF00BA9B)
-                                                  : Colors.grey.shade300,
+                                                  ? KTColor.primary
+                                                  : KTColor.border,
                                               width: 2,
                                             ),
                                             color: isSelected
-                                                ? const Color(0xFF00BA9B)
+                                                ? KTColor.primary
                                                 : Colors.transparent,
                                           ),
                                           child: isSelected
                                               ? const Icon(
-                                                  Icons.check,
+                                                  Icons.check_rounded,
                                                   size: 16,
                                                   color: Colors.white,
                                                 )
@@ -314,9 +307,9 @@ class _PollingDetailScreenState extends State<PollingDetailScreen> {
                                           style: TextStyle(
                                             fontSize: 16,
                                             fontWeight: isSelected || isVoted
-                                                ? FontWeight.w600
-                                                : FontWeight.normal,
-                                            color: Colors.black87,
+                                                ? FontWeight.w700
+                                                : FontWeight.w500,
+                                            color: KTColor.textPrimary,
                                           ),
                                           maxLines: 2,
                                           overflow: TextOverflow.ellipsis,
@@ -334,16 +327,16 @@ class _PollingDetailScreenState extends State<PollingDetailScreen> {
                                             Text(
                                               "$percent%",
                                               style: const TextStyle(
-                                                fontWeight: FontWeight.bold,
+                                                fontWeight: FontWeight.w900,
                                                 fontSize: 16,
-                                                color: Color(0xFF00BA9B),
+                                                color: KTColor.primary,
                                               ),
                                             ),
                                             Text(
                                               "$votes Suara",
-                                              style: TextStyle(
+                                              style: const TextStyle(
                                                 fontSize: 12,
-                                                color: Colors.grey[600],
+                                                color: KTColor.textSecondary,
                                               ),
                                             ),
                                           ],
@@ -372,88 +365,59 @@ class _PollingDetailScreenState extends State<PollingDetailScreen> {
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
+                      color: KTColor.shadow.withOpacity(0.05),
                       blurRadius: 20,
                       offset: const Offset(0, -4),
                     ),
                   ],
                 ),
                 child: SafeArea(
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed:
-                          _selectedOptionId.value == null || _isSubmitting.value
-                          ? null
-                          : () async {
-                              _isSubmitting.value = true;
-                              try {
-                                await controller.votePoll(
-                                  pollId,
-                                  _selectedOptionId.value!,
-                                );
-                                Get.back(); // Close screen or stay? Stay is better to show results
-                                Get.snackbar(
-                                  'Berhasil!',
-                                  'Suara anda telah direkam',
-                                  snackPosition: SnackPosition.TOP,
-                                  backgroundColor: const Color(0xFF00BA9B),
-                                  colorText: Colors.white,
-                                  margin: const EdgeInsets.all(20),
-                                  borderRadius: 12,
-                                  icon: const Icon(
-                                    Icons.check_circle,
-                                    color: Colors.white,
-                                  ),
-                                );
-                              } catch (e) {
-                                final message = e.toString().replaceAll(
-                                  'Exception: ',
-                                  '',
-                                );
-                                Get.snackbar(
-                                  'Info',
-                                  message,
-                                  snackPosition: SnackPosition.TOP,
-                                  backgroundColor:
-                                      message.contains('sudah memilih')
-                                      ? Colors.orange
-                                      : Colors.redAccent,
-                                  colorText: Colors.white,
-                                  margin: const EdgeInsets.all(20),
-                                  borderRadius: 12,
-                                );
-                              } finally {
-                                _isSubmitting.value = false;
-                              }
-                            },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF00BA9B),
-                        disabledBackgroundColor: Colors.grey[300],
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: _isSubmitting.value
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : const Text(
-                              "Kirim Pilihan",
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                    ),
+                  child: KTButton(
+                    text: 'Kirim Pilihan',
+                    isLoading: _isSubmitting.value,
+                    onPressed: _selectedOptionId.value == null
+                        ? null
+                        : () async {
+                            _isSubmitting.value = true;
+                            try {
+                              await controller.votePoll(
+                                pollId,
+                                _selectedOptionId.value!,
+                              );
+                              Get.snackbar(
+                                'Berhasil!',
+                                'Suara anda telah direkam',
+                                snackPosition: SnackPosition.TOP,
+                                backgroundColor: KTColor.success,
+                                colorText: Colors.white,
+                                margin: const EdgeInsets.all(20),
+                                borderRadius: 12,
+                                icon: const Icon(
+                                  Icons.check_circle_rounded,
+                                  color: Colors.white,
+                                ),
+                              );
+                            } catch (e) {
+                              final message = e.toString().replaceAll(
+                                'Exception: ',
+                                '',
+                              );
+                              Get.snackbar(
+                                'Info',
+                                message,
+                                snackPosition: SnackPosition.TOP,
+                                backgroundColor:
+                                    message.contains('sudah memilih')
+                                    ? KTColor.warning
+                                    : KTColor.error,
+                                colorText: Colors.white,
+                                margin: const EdgeInsets.all(20),
+                                borderRadius: 12,
+                              );
+                            } finally {
+                              _isSubmitting.value = false;
+                            }
+                          },
                   ),
                 ),
               ),

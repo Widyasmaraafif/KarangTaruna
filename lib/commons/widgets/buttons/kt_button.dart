@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 
 class KTButton extends StatelessWidget {
   final String text;
@@ -9,6 +10,9 @@ class KTButton extends StatelessWidget {
   final double height;
   final double borderRadius;
   final bool isLoading;
+  final IconData? icon;
+  final Color? borderColor;
+  final double fontSize;
 
   const KTButton({
     super.key,
@@ -17,41 +21,71 @@ class KTButton extends StatelessWidget {
     this.backgroundColor,
     this.textColor,
     this.width,
-    this.height = 48,
-    this.borderRadius = 12,
+    this.height = 52,
+    this.borderRadius = 14,
     this.isLoading = false,
+    this.icon,
+    this.borderColor,
+    this.fontSize = 16,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isOutlined = borderColor != null;
+
     return SizedBox(
-      width: width,
+      width: width ?? double.infinity,
       height: height,
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? const Color(0xFF00BA9B),
-          foregroundColor: textColor ?? Colors.white,
+          backgroundColor: isOutlined
+              ? Colors.transparent
+              : (backgroundColor ?? KTColor.primary),
+          foregroundColor: isOutlined
+              ? (borderColor ?? KTColor.primary)
+              : (textColor ?? KTColor.textLight),
+          elevation: isOutlined ? 0 : 2,
+          shadowColor: (backgroundColor ?? KTColor.primary).withValues(
+            alpha: 0.3,
+          ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius),
+            side: isOutlined
+                ? BorderSide(color: borderColor!, width: 1.5)
+                : BorderSide.none,
           ),
-          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
         ),
         child: isLoading
-            ? const SizedBox(
-                width: 24,
-                height: 24,
+            ? SizedBox(
+                width: 20,
+                height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    isOutlined
+                        ? (borderColor ?? KTColor.primary)
+                        : (textColor ?? KTColor.textLight),
+                  ),
                 ),
               )
-            : Text(
-                text,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (icon != null) ...[
+                    Icon(icon, size: 20),
+                    const SizedBox(width: 8),
+                  ],
+                  Text(
+                    text,
+                    style: TextStyle(
+                      fontSize: fontSize,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
               ),
       ),
     );

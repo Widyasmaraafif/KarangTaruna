@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:karang_taruna/commons/widgets/containers/management_card.dart';
 import 'package:karang_taruna/controllers/data_controller.dart';
 import 'package:karang_taruna/screens/management/widgets/single_management_page.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 
 class ManagementScreen extends StatelessWidget {
   const ManagementScreen({super.key});
@@ -12,68 +13,52 @@ class ManagementScreen extends StatelessWidget {
     final controller = Get.find<DataController>();
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: KTColor.background,
       appBar: AppBar(
-        title: const Text(
-          "Pengurus",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
+        title: const Text('Manajemen Pengurus'),
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          color: KTColor.textPrimary,
           onPressed: () => Get.back(),
         ),
       ),
       body: RefreshIndicator(
         onRefresh: controller.fetchManagement,
+        color: KTColor.primary,
         child: Obx(() {
           var members = controller.management.toList();
 
-          // Fallback data if API returns empty
+          if (members.isEmpty && controller.isLoadingManagement.value) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
           if (members.isEmpty) {
-            members = [
-              {
-                'name': 'Budi Santoso',
-                'position': 'Ketua Karang Taruna',
-                'image_url':
-                    'https://ui-avatars.com/api/?name=Budi+Santoso&background=0D8ABC&color=fff',
-              },
-              {
-                'name': 'Siti Aminah',
-                'position': 'Sekretaris',
-                'image_url':
-                    'https://ui-avatars.com/api/?name=Siti+Aminah&background=random',
-              },
-              {
-                'name': 'Ahmad Rizki',
-                'position': 'Bendahara',
-                'image_url':
-                    'https://ui-avatars.com/api/?name=Ahmad+Rizki&background=random',
-              },
-              {
-                'name': 'Dewi Ratna',
-                'position': 'Koordinator Acara',
-                'image_url':
-                    'https://ui-avatars.com/api/?name=Dewi+Ratna&background=random',
-              },
-              {
-                'name': 'Rudi Hartono',
-                'position': 'Humas',
-                'image_url':
-                    'https://ui-avatars.com/api/?name=Rudi+Hartono&background=random',
-              },
-            ];
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.people_outline_rounded,
+                    size: 64,
+                    color: KTColor.border,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Belum ada data pengurus',
+                    style: TextStyle(color: KTColor.textSecondary),
+                  ),
+                ],
+              ),
+            );
           }
 
           return ListView.separated(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             itemCount: members.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            separatorBuilder: (context, index) => const SizedBox(height: 4),
             itemBuilder: (context, index) {
               final member = members[index];
-              // Data comes directly from profiles table now (flat structure)
               final name = member['full_name'] ?? 'Nama Tidak Diketahui';
               final imageUrl = member['avatar_url'];
               final role = member['role'] ?? 'Anggota';
@@ -82,7 +67,10 @@ class ManagementScreen extends StatelessWidget {
                 name: name,
                 position: role,
                 imageUrl: imageUrl,
-                onTap: () => Get.to(() => SingleManagementPage(member: member)),
+                onTap: () => Get.to(
+                  () => SingleManagementPage(member: member),
+                  transition: Transition.cupertino,
+                ),
               );
             },
           );

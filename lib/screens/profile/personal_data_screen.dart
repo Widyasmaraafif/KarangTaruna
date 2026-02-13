@@ -2,6 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
+import 'package:karang_taruna/commons/widgets/buttons/kt_button.dart';
+import 'package:karang_taruna/commons/widgets/inputs/kt_text_field.dart';
 import 'package:karang_taruna/controllers/data_controller.dart';
 import 'package:karang_taruna/services/supabase_service.dart';
 
@@ -74,7 +77,7 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
         Get.snackbar(
           'Gagal Memilih Foto',
           'Ukuran foto terlalu besar (Maksimal 2MB). Silakan pilih foto lain.',
-          backgroundColor: Colors.orange,
+          backgroundColor: KTColor.warning,
           colorText: Colors.white,
         );
         return;
@@ -103,9 +106,9 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFF00BA9B),
+              primary: KTColor.primary,
               onPrimary: Colors.white,
-              onSurface: Colors.black,
+              onSurface: KTColor.textPrimary,
             ),
           ),
           child: child!,
@@ -136,7 +139,7 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
             Get.snackbar(
               'Warning',
               'Gagal upload foto: $e. Data lain tetap disimpan.',
-              backgroundColor: Colors.orange,
+              backgroundColor: KTColor.warning,
               colorText: Colors.white,
             );
           }
@@ -155,7 +158,7 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
         Get.snackbar(
           'Sukses',
           'Data diri berhasil diperbarui',
-          backgroundColor: Colors.green,
+          backgroundColor: KTColor.success,
           colorText: Colors.white,
         );
 
@@ -169,7 +172,7 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
         Get.snackbar(
           'Error',
           'Gagal menyimpan perubahan: $e',
-          backgroundColor: Colors.red,
+          backgroundColor: KTColor.error,
           colorText: Colors.white,
         );
       } finally {
@@ -182,14 +185,27 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Data Diri"),
-        backgroundColor: const Color(0xFF00BA9B),
-        foregroundColor: Colors.white,
+        title: const Text(
+          "Data Diri",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: KTColor.textPrimary,
+            letterSpacing: -0.5,
+          ),
+        ),
+        backgroundColor: Colors.white,
         elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          color: KTColor.textPrimary,
+          onPressed: () => Get.back(),
+        ),
       ),
-      backgroundColor: Colors.grey[50],
+      backgroundColor: KTColor.background,
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
         child: Form(
           key: _formKey,
           child: Column(
@@ -210,10 +226,14 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
                         height: 120,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          border: Border.all(
-                            color: const Color(0xFF00BA9B),
-                            width: 3,
-                          ),
+                          border: Border.all(color: Colors.white, width: 4),
+                          boxShadow: [
+                            BoxShadow(
+                              color: KTColor.shadow.withValues(alpha: 0.1),
+                              blurRadius: 15,
+                              offset: const Offset(0, 5),
+                            ),
+                          ],
                           color: Colors.white,
                           image: _imageFile != null
                               ? DecorationImage(
@@ -232,14 +252,16 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
                       right: 0,
                       child: InkWell(
                         onTap: _pickImage,
+                        borderRadius: BorderRadius.circular(20),
                         child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF00BA9B),
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: KTColor.primary,
                             shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 3),
                           ),
                           child: const Icon(
-                            Icons.camera_alt,
+                            Icons.camera_alt_rounded,
                             color: Colors.white,
                             size: 20,
                           ),
@@ -257,126 +279,130 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
                 () => _buildReadOnlyField(
                   "Peran",
                   controller.userProfile['role'] ?? 'Anggota',
+                  Icons.verified_user_outlined,
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
               // Full Name
-              _buildTextField(
+              KTTextField(
                 controller: _nameController,
-                label: "Nama Lengkap",
-                icon: Icons.person_outline,
+                labelText: "Nama Lengkap",
+                prefixIcon: const Icon(Icons.person_outline_rounded),
                 validator: (v) =>
                     v == null || v.isEmpty ? 'Nama tidak boleh kosong' : null,
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
               // Gender Dropdown
-              DropdownButtonFormField<String>(
-                value: _selectedGender,
-                decoration: InputDecoration(
-                  labelText: "Jenis Kelamin",
-                  prefixIcon: const Icon(
-                    Icons.people_outline,
-                    color: Colors.grey,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Jenis Kelamin",
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                      color: KTColor.textPrimary,
+                      letterSpacing: 0.2,
+                    ),
                   ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey[300]!),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String>(
+                    value: _selectedGender,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: KTColor.textPrimary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    decoration: InputDecoration(
+                      prefixIcon: const Icon(
+                        Icons.people_outline_rounded,
+                        color: KTColor.iconPrimary,
+                        size: 20,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: KTColor.border),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: KTColor.border),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(
+                          color: KTColor.primary,
+                          width: 1.5,
+                        ),
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 'L', child: Text("Laki-laki")),
+                      DropdownMenuItem(value: 'P', child: Text("Perempuan")),
+                    ],
+                    onChanged: (val) => setState(() => _selectedGender = val),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.grey[300]!),
-                  ),
-                  filled: true,
-                  fillColor: Colors.white,
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'L', child: Text("Laki-laki")),
-                  DropdownMenuItem(value: 'P', child: Text("Perempuan")),
                 ],
-                onChanged: (val) => setState(() => _selectedGender = val),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
               // Birth Date
-              InkWell(
+              KTTextField(
+                controller: _birthDateController,
+                labelText: "Tanggal Lahir",
+                prefixIcon: const Icon(Icons.calendar_today_rounded),
+                readOnly: true,
                 onTap: () => _selectDate(context),
-                child: IgnorePointer(
-                  child: _buildTextField(
-                    controller: _birthDateController,
-                    label: "Tanggal Lahir",
-                    icon: Icons.calendar_today,
-                  ),
-                ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
               // Phone
-              _buildTextField(
+              KTTextField(
                 controller: _phoneController,
-                label: "Nomor Telepon",
-                icon: Icons.phone_outlined,
+                labelText: "Nomor Telepon",
+                prefixIcon: const Icon(Icons.phone_outlined),
                 keyboardType: TextInputType.phone,
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
               // Address
-              _buildTextField(
+              KTTextField(
                 controller: _addressController,
-                label: "Alamat",
-                icon: Icons.home_outlined,
+                labelText: "Alamat",
+                prefixIcon: const Icon(Icons.home_outlined),
                 maxLines: 2,
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
 
               // Bio
-              _buildTextField(
+              KTTextField(
                 controller: _bioController,
-                label: "Bio / Deskripsi Diri",
-                icon: Icons.info_outline,
+                labelText: "Bio / Deskripsi Diri",
+                prefixIcon: const Icon(Icons.info_outline_rounded),
                 maxLines: 3,
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 40),
 
               // Save Button
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: _isSaving ? null : _saveProfile,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF00BA9B),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 2,
-                  ),
-                  child: _isSaving
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : const Text(
-                          "Simpan Perubahan",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                ),
+              KTButton(
+                text: "Simpan Perubahan",
+                onPressed: _saveProfile,
+                isLoading: _isSaving,
+                icon: Icons.save_rounded,
               ),
               const SizedBox(height: 40),
             ],
@@ -386,71 +412,44 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
     );
   }
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    String? Function(String?)? validator,
-    TextInputType keyboardType = TextInputType.text,
-    int maxLines = 1,
-  }) {
-    return TextFormField(
-      controller: controller,
-      validator: validator,
-      keyboardType: keyboardType,
-      maxLines: maxLines,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon, color: Colors.grey),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey[300]!),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF00BA9B), width: 2),
-        ),
-        filled: true,
-        fillColor: Colors.white,
-      ),
-    );
-  }
-
-  Widget _buildReadOnlyField(String label, String value) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
-            ),
+  Widget _buildReadOnlyField(String label, String value, IconData icon) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w700,
+            color: KTColor.textPrimary,
+            letterSpacing: 0.2,
           ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 16,
-              color: Colors.black87,
-              fontWeight: FontWeight.w600,
-            ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          decoration: BoxDecoration(
+            color: KTColor.border.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: KTColor.border.withValues(alpha: 0.5)),
           ),
-        ],
-      ),
+          child: Row(
+            children: [
+              Icon(icon, size: 20, color: KTColor.textSecondary),
+              const SizedBox(width: 12),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: KTColor.textSecondary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

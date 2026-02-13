@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 
 class AboutAppScreen extends StatelessWidget {
   const AboutAppScreen({super.key});
@@ -7,16 +8,23 @@ class AboutAppScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: KTColor.background,
       appBar: AppBar(
         title: const Text(
           'Tentang Aplikasi',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: KTColor.textPrimary,
+            letterSpacing: -0.5,
+          ),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          color: KTColor.textPrimary,
           onPressed: () => Get.back(),
         ),
       ),
@@ -32,14 +40,15 @@ class AboutAppScreen extends StatelessWidget {
                 'Karang Taruna',
                 style: TextStyle(
                   fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF00BA9B),
+                  fontWeight: FontWeight.w900,
+                  color: KTColor.primary,
+                  letterSpacing: -1,
                 ),
               ),
               const SizedBox(height: 8),
               const Text(
                 'Versi 1.0.0',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
+                style: TextStyle(fontSize: 14, color: KTColor.textSecondary),
               ),
               const SizedBox(height: 32),
               const Text(
@@ -47,17 +56,17 @@ class AboutAppScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black87,
+                  fontWeight: FontWeight.w700,
+                  color: KTColor.textPrimary,
                 ),
               ),
               const SizedBox(height: 16),
               const Text(
-                'Platform terintegrasi untuk memudahkan pengelolaan kegiatan, administrasi, dan komunikasi anggota Karang Taruna. Mewujudkan organisasi yang lebih modern, transparan, dan produktif.',
+                'Platform terintegrasi untuk memudahkan pengelolaan kegiatan, administrasi, and komunikasi anggota Karang Taruna. Mewujudkan organisasi yang lebih modern, transparan, and produktif.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.black54,
+                  color: KTColor.textSecondary,
                   height: 1.5,
                 ),
               ),
@@ -66,12 +75,12 @@ class AboutAppScreen extends StatelessWidget {
               const SizedBox(height: 48),
               const Text(
                 '© 2026 Karang Taruna Digital',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+                style: TextStyle(fontSize: 12, color: KTColor.textSecondary),
               ),
               const SizedBox(height: 8),
               const Text(
                 'Dibuat dengan ❤️ untuk Pemuda Indonesia',
-                style: TextStyle(fontSize: 12, color: Colors.grey),
+                style: TextStyle(fontSize: 12, color: KTColor.textSecondary),
               ),
             ],
           ),
@@ -85,10 +94,10 @@ class AboutAppScreen extends StatelessWidget {
       width: 100,
       height: 100,
       decoration: BoxDecoration(
-        color: const Color(0xFF00BA9B).withOpacity(0.1),
+        color: KTColor.primary.withOpacity(0.1),
         shape: BoxShape.circle,
       ),
-      child: const Icon(Icons.diversity_3, size: 50, color: Color(0xFF00BA9B)),
+      child: const Icon(Icons.diversity_3, size: 50, color: KTColor.primary),
     );
   }
 
@@ -109,11 +118,15 @@ class AboutAppScreen extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 20, color: const Color(0xFF00BA9B)),
+          Icon(icon, size: 20, color: KTColor.primary),
           const SizedBox(width: 12),
           Text(
             text,
-            style: const TextStyle(fontSize: 14, color: Colors.black87),
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: KTColor.textPrimary,
+            ),
           ),
         ],
       ),

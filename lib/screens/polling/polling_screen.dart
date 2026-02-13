@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:karang_taruna/commons/widgets/containers/pooling_card.dart';
 import 'package:karang_taruna/controllers/data_controller.dart';
 import 'package:karang_taruna/screens/polling/polling_detail_screen.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 
 class PollingScreen extends StatelessWidget {
   const PollingScreen({super.key});
@@ -12,33 +13,46 @@ class PollingScreen extends StatelessWidget {
     final controller = Get.find<DataController>();
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: KTColor.background,
       appBar: AppBar(
-        title: const Text(
-          "Pooling",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
+        title: const Text('Polling'),
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          color: KTColor.textPrimary,
           onPressed: () => Get.back(),
         ),
       ),
       body: RefreshIndicator(
         onRefresh: controller.fetchPolls,
+        color: KTColor.primary,
         child: Obx(() {
           final polls = controller.polls;
 
-          if (polls.isEmpty && !controller.isLoadingPolls.value) {
-            return const Center(child: Text('Belum ada polling aktif'));
+          if (polls.isEmpty && controller.isLoadingPolls.value) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (polls.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.poll_outlined, size: 64, color: KTColor.border),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Belum ada polling aktif',
+                    style: TextStyle(color: KTColor.textSecondary),
+                  ),
+                ],
+              ),
+            );
           }
 
           return ListView.separated(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             itemCount: polls.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            separatorBuilder: (context, index) => const SizedBox(height: 4),
             itemBuilder: (context, index) {
               final poll = polls[index];
               final pollId = poll['id'];
@@ -57,15 +71,18 @@ class PollingScreen extends StatelessWidget {
                 totalVotes: totalVotes,
                 isVoted: isVoted,
                 onCardTap: () {
-                  Get.to(() => PollingDetailScreen(poll: poll));
+                  Get.to(
+                    () => PollingDetailScreen(poll: poll),
+                    transition: Transition.cupertino,
+                  );
                 },
                 onVote: (optionId, label) async {
                   if (isVoted) {
                     Get.snackbar(
                       'Info',
                       'Anda sudah memilih pada polling ini',
-                      snackPosition: SnackPosition.BOTTOM,
-                      backgroundColor: Colors.orange,
+                      snackPosition: SnackPosition.TOP,
+                      backgroundColor: KTColor.warning,
                       colorText: Colors.white,
                     );
                     return;
@@ -76,8 +93,8 @@ class PollingScreen extends StatelessWidget {
                     Get.snackbar(
                       'Vote Berhasil',
                       'Kamu memilih $label',
-                      snackPosition: SnackPosition.BOTTOM,
-                      backgroundColor: Colors.green,
+                      snackPosition: SnackPosition.TOP,
+                      backgroundColor: KTColor.success,
                       colorText: Colors.white,
                     );
                   } catch (e) {
@@ -85,10 +102,10 @@ class PollingScreen extends StatelessWidget {
                     Get.snackbar(
                       'Info',
                       message,
-                      snackPosition: SnackPosition.BOTTOM,
+                      snackPosition: SnackPosition.TOP,
                       backgroundColor: message.contains('sudah memilih')
-                          ? Colors.orange
-                          : Colors.red,
+                          ? KTColor.warning
+                          : KTColor.error,
                       colorText: Colors.white,
                     );
                   }

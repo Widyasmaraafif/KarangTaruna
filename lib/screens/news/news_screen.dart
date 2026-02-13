@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:karang_taruna/controllers/data_controller.dart';
 import 'package:karang_taruna/screens/news/widgets/news_detail_screen.dart';
 import 'package:karang_taruna/commons/widgets/containers/news_card.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 
 class NewsScreen extends StatelessWidget {
   const NewsScreen({super.key});
@@ -12,53 +13,48 @@ class NewsScreen extends StatelessWidget {
     final controller = Get.find<DataController>();
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: KTColor.background,
       appBar: AppBar(
-        title: const Text(
-          "Berita",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
+        title: const Text('Berita'),
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          color: KTColor.textPrimary,
           onPressed: () => Get.back(),
         ),
       ),
       body: RefreshIndicator(
         onRefresh: controller.fetchNews,
+        color: KTColor.primary,
         child: Obx(() {
           var newsList = controller.news.toList();
 
-          if (newsList.isEmpty) {
-            newsList = [
-              {
-                'title': 'Karang Taruna Mengadakan Lomba Futsal Antar RT',
-                'author': 'Admin',
-                'created_at': DateTime.now()
-                    .subtract(const Duration(days: 1))
-                    .toIso8601String(),
-                'content': 'Lomba futsal akan diadakan di lapangan utama...',
-                'category': 'Olahraga',
-                'image_url': 'https://picsum.photos/400/300?random=10',
-              },
-              {
-                'title': 'Penyuluhan Kesehatan Masyarakat',
-                'author': 'Dr. Budi',
-                'created_at': DateTime.now()
-                    .subtract(const Duration(days: 3))
-                    .toIso8601String(),
-                'content':
-                    'Penyuluhan kesehatan tentang pentingnya gizi seimbang...',
-                'category': 'Kesehatan',
-                'image_url': 'https://picsum.photos/400/300?random=11',
-              },
-            ];
+          if (newsList.isEmpty && !controller.isLoadingNews.value) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.newspaper_rounded,
+                    size: 64,
+                    color: KTColor.border,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Belum ada berita',
+                    style: TextStyle(color: KTColor.textSecondary),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          if (controller.isLoadingNews.value && newsList.isEmpty) {
+            return const Center(child: CircularProgressIndicator());
           }
 
           return ListView.separated(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             itemCount: newsList.length,
             separatorBuilder: (context, index) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
@@ -66,7 +62,10 @@ class NewsScreen extends StatelessWidget {
               return NewsCard(
                 newsItem: item,
                 onTap: () {
-                  Get.to(() => NewsDetailScreen(newsItem: item));
+                  Get.to(
+                    () => NewsDetailScreen(newsItem: item),
+                    transition: Transition.cupertino,
+                  );
                 },
               );
             },

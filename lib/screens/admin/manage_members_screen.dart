@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:karang_taruna/commons/widgets/inputs/kt_text_field.dart';
 import 'package:karang_taruna/services/supabase_service.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 
 class ManageMembersScreen extends StatefulWidget {
   const ManageMembersScreen({super.key});
@@ -21,167 +23,84 @@ class _ManageMembersScreenState extends State<ManageMembersScreen> {
   void initState() {
     super.initState();
     _fetchMembers();
-    _searchController.addListener(_onSearchChanged);
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  void _onSearchChanged() {
-    final query = _searchController.text.toLowerCase();
-    if (query.isEmpty) {
-      _filteredMembers.assignAll(_members);
-    } else {
-      _filteredMembers.assignAll(
-        _members.where((member) {
-          final name = (member['full_name'] ?? '').toString().toLowerCase();
-          final email = (member['email'] ?? '').toString().toLowerCase();
-          return name.contains(query) || email.contains(query);
-        }).toList(),
-      );
-    }
   }
 
   Future<void> _fetchMembers() async {
     try {
       _isLoading.value = true;
-      final members = await _supabaseService.getAllProfiles();
+      final members = await _supabaseService.getUsers();
       _members.assignAll(members);
       _filteredMembers.assignAll(members);
     } catch (e) {
-      Get.snackbar('Error', 'Gagal memuat data anggota: $e');
+      Get.snackbar('Error', 'Gagal memuat anggota: $e');
     } finally {
       _isLoading.value = false;
     }
   }
 
-  Future<void> _updateRole(String userId, String currentRole) async {
-    final List<String> roles = [
-      'Anggota',
-      'Ketua',
-      'Wakil Ketua',
-      'Sekretaris',
-      'Bendahara',
-      'Admin',
-    ];
-
-    String tempRole = currentRole;
-
-    String? selectedRole = await showDialog<String>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Ubah Role'),
-          content: StatefulBuilder(
-            builder: (context, setState) {
-              return SizedBox(
-                width: double.maxFinite,
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: roles.length,
-                  itemBuilder: (context, index) {
-                    final role = roles[index];
-                    return RadioListTile<String>(
-                      title: Text(role),
-                      value: role,
-                      groupValue: tempRole,
-                      onChanged: (value) {
-                        setState(() {
-                          tempRole = value!;
-                        });
-                      },
-                      activeColor: const Color(0xFF00BA9B),
-                    );
-                  },
-                ),
-              );
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Batal'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(tempRole),
-              child: const Text('Simpan'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (selectedRole != null && selectedRole != currentRole) {
-      try {
-        await _supabaseService.updateProfileRole(userId, selectedRole);
-        Get.snackbar(
-          'Sukses',
-          'Role berhasil diperbarui',
-          backgroundColor: Colors.green,
-          colorText: Colors.white,
-        );
-        _fetchMembers(); // Refresh list
-      } catch (e) {
-        Get.snackbar(
-          'Error',
-          'Gagal memperbarui role: $e',
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-        );
-      }
+  void _filterMembers(String query) {
+    if (query.isEmpty) {
+      _filteredMembers.assignAll(_members);
+    } else {
+      _filteredMembers.assignAll(
+        _members.where(
+          (m) =>
+              (m['full_name'] ?? '').toLowerCase().contains(
+                query.toLowerCase(),
+              ) ||
+              (m['email'] ?? '').toLowerCase().contains(query.toLowerCase()),
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: KTColor.background,
       appBar: AppBar(
         title: const Text(
-          'Kelola Anggota',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+          "Kelola Anggota",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: KTColor.textPrimary,
+            letterSpacing: -0.5,
+          ),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          color: KTColor.textPrimary,
           onPressed: () => Get.back(),
         ),
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Cari anggota...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                bottom: BorderSide(
+                  color: KTColor.border.withValues(alpha: 0.5),
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.grey.shade300),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFF00BA9B)),
-                ),
-                filled: true,
-                fillColor: Colors.grey.shade50,
               ),
+            ),
+            child: KTTextField(
+              controller: _searchController,
+              hintText: 'Cari anggota...',
+              prefixIcon: const Icon(Icons.search_rounded, size: 20),
+              onChanged: _filterMembers,
             ),
           ),
           Expanded(
             child: Obx(() {
               if (_isLoading.value) {
                 return const Center(
-                  child: CircularProgressIndicator(color: Color(0xFF00BA9B)),
+                  child: CircularProgressIndicator(color: KTColor.primary),
                 );
               }
 
@@ -191,16 +110,17 @@ class _ManageMembersScreenState extends State<ManageMembersScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        Icons.person_off_outlined,
+                        Icons.people_outline_rounded,
                         size: 64,
-                        color: Colors.grey.shade400,
+                        color: KTColor.border,
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Tidak ada anggota ditemukan',
+                        'Anggota tidak ditemukan',
                         style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 16,
+                          color: KTColor.textSecondary,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],
@@ -208,102 +128,117 @@ class _ManageMembersScreenState extends State<ManageMembersScreen> {
                 );
               }
 
-              return ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: _filteredMembers.length,
-                itemBuilder: (context, index) {
-                  final member = _filteredMembers[index];
-                  final name = member['full_name'] ?? 'User';
-                  final role = member['role'] ?? 'Anggota';
-                  final avatarUrl = member['avatar_url'];
+              return RefreshIndicator(
+                onRefresh: _fetchMembers,
+                color: KTColor.primary,
+                child: ListView.separated(
+                  padding: const EdgeInsets.all(20),
+                  itemCount: _filteredMembers.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    final member = _filteredMembers[index];
+                    final name = member['full_name'] ?? 'User';
+                    final email = member['email'] ?? '-';
+                    final role = member['role'] ?? 'anggota';
+                    final avatarUrl =
+                        member['avatar_url'] ??
+                        'https://ui-avatars.com/api/?name=${Uri.encodeComponent(name)}&background=random';
 
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 12),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: Colors.grey.shade200),
-                    ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.all(12),
-                      leading: CircleAvatar(
-                        radius: 24,
-                        backgroundColor: Colors.grey.shade200,
-                        backgroundImage: avatarUrl != null
-                            ? NetworkImage(avatarUrl)
-                            : NetworkImage(
-                                'https://ui-avatars.com/api/?name=${Uri.encodeComponent(name)}&background=random',
-                              ),
-                      ),
-                      title: Text(
-                        name,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                    return Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: KTColor.border.withValues(alpha: 0.5),
                         ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: KTColor.shadow.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Row(
                         children: [
-                          const SizedBox(height: 4),
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
-                            ),
+                            width: 52,
+                            height: 52,
                             decoration: BoxDecoration(
-                              color: _getRoleColor(role).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              role,
-                              style: TextStyle(
-                                color: _getRoleColor(role),
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: KTColor.border.withValues(alpha: 0.5),
+                                width: 2,
+                              ),
+                              image: DecorationImage(
+                                image: NetworkImage(avatarUrl),
+                                fit: BoxFit.cover,
                               ),
                             ),
                           ),
-                          if (member['phone'] != null &&
-                              member['phone'].toString().isNotEmpty) ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              member['phone'],
-                              style: TextStyle(
-                                color: Colors.grey.shade600,
-                                fontSize: 12,
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  name,
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                    color: KTColor.textPrimary,
+                                    letterSpacing: -0.3,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  email,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: KTColor.textSecondary,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: KTColor.primary.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              role.toString().toUpperCase(),
+                              style: const TextStyle(
+                                color: KTColor.primary,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.5,
                               ),
                             ),
-                          ],
+                          ),
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            size: 14,
+                            color: KTColor.textSecondary.withValues(alpha: 0.3),
+                          ),
                         ],
                       ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.edit_outlined),
-                        color: const Color(0xFF00BA9B),
-                        onPressed: () => _updateRole(member['id'], role),
-                      ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               );
             }),
           ),
         ],
       ),
     );
-  }
-
-  Color _getRoleColor(String role) {
-    switch (role.toLowerCase()) {
-      case 'admin':
-        return Colors.red;
-      case 'ketua':
-      case 'wakil ketua':
-      case 'bendahara':
-      case 'sekretaris':
-        return Colors.blue;
-      default:
-        return Colors.green;
-    }
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:karang_taruna/controllers/data_controller.dart';
 import 'package:karang_taruna/screens/gallery/widgets/gallery_detail_screen.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 
 class GalleryScreen extends StatelessWidget {
   const GalleryScreen({super.key});
@@ -11,118 +12,123 @@ class GalleryScreen extends StatelessWidget {
     final controller = Get.find<DataController>();
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: KTColor.background,
       appBar: AppBar(
-        title: const Text(
-          "Galeri",
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
+        title: const Text('Galeri'),
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          color: KTColor.textPrimary,
           onPressed: () => Get.back(),
         ),
       ),
       body: RefreshIndicator(
         onRefresh: controller.fetchGallery,
+        color: KTColor.primary,
         child: Obx(() {
           var images = controller.gallery.toList();
 
-          // Fallback data if API returns empty
+          if (images.isEmpty && controller.isLoadingGallery.value) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
           if (images.isEmpty) {
-            images = [
-              {
-                'image_url': 'https://picsum.photos/400/400?random=1',
-                'caption': 'Kegiatan 17 Agustus',
-              },
-              {
-                'image_url': 'https://picsum.photos/400/400?random=2',
-                'caption': 'Rapat Bulanan',
-              },
-              {
-                'image_url': 'https://picsum.photos/400/400?random=3',
-                'caption': 'Kerja Bakti',
-              },
-              {
-                'image_url': 'https://picsum.photos/400/400?random=4',
-                'caption': 'Pelatihan Pemuda',
-              },
-              {
-                'image_url': 'https://picsum.photos/400/400?random=5',
-                'caption': 'Buka Bersama',
-              },
-              {
-                'image_url': 'https://picsum.photos/400/400?random=6',
-                'caption': 'Olahraga Pagi',
-              },
-            ];
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.photo_library_outlined,
+                    size: 64,
+                    color: KTColor.border,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Belum ada foto galeri',
+                    style: TextStyle(color: KTColor.textSecondary),
+                  ),
+                ],
+              ),
+            );
           }
 
           return GridView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
+              crossAxisSpacing: 16,
+              mainAxisSpacing: 16,
               childAspectRatio: 1,
             ),
             itemCount: images.length,
             itemBuilder: (context, index) {
               final image = images[index];
+              final imageUrl =
+                  image['image_url'] ?? 'https://picsum.photos/400/400';
+              final caption = image['caption'] ?? '';
+
               return GestureDetector(
                 onTap: () {
                   Get.to(
                     () => GalleryDetailScreen(
-                      imageUrl:
-                          image['image_url'] ?? 'https://picsum.photos/400/400',
-                      caption: image['caption'] ?? '',
+                      imageUrl: imageUrl,
+                      caption: caption,
                     ),
-                    transition: Transition.fadeIn,
+                    transition: Transition.cupertino,
                   );
                 },
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      Hero(
-                        tag: image['image_url'] ?? 'image_$index',
-                        child: Image.network(
-                          image['image_url'] ?? 'https://picsum.photos/400/400',
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.bottomCenter,
-                              end: Alignment.topCenter,
-                              colors: [
-                                Colors.black.withValues(alpha: 0.8),
-                                Colors.transparent,
-                              ],
-                            ),
-                          ),
-                          child: Text(
-                            image['caption'] ?? '',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: KTColor.border.withOpacity(0.5)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: KTColor.shadow.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
                       ),
                     ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        Hero(
+                          tag: imageUrl,
+                          child: Image.network(imageUrl, fit: BoxFit.cover),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                                colors: [
+                                  Colors.black.withOpacity(0.8),
+                                  Colors.transparent,
+                                ],
+                              ),
+                            ),
+                            child: Text(
+                              caption,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: -0.2,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               );

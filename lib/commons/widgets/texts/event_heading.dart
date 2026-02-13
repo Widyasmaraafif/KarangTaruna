@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 
 class KTEventHeader extends StatelessWidget {
   final String title;
@@ -17,29 +18,47 @@ class KTEventHeader extends StatelessWidget {
     return GestureDetector(
       onTap: onToggle,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: Color(0xFF79CDB0),
-          borderRadius: BorderRadius.circular(20),
+          color: KTColor.primaryLight.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: KTColor.primary.withValues(alpha: 0.2),
+            width: 1,
+          ),
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              title,
-              style: TextStyle(
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: KTColor.primary,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.event_note_rounded,
+                size: 16,
                 color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
               ),
             ),
-            GestureDetector(
-              onTap: onToggle,
-              child: Icon(
-                isExpanded ? Icons.arrow_upward : Icons.arrow_downward,
-                size: 15,
-                color: Colors.white,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  color: KTColor.textPrimary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.3,
+                ),
               ),
+            ),
+            Icon(
+              isExpanded
+                  ? Icons.keyboard_arrow_up_rounded
+                  : Icons.keyboard_arrow_down_rounded,
+              size: 20,
+              color: KTColor.primary,
             ),
           ],
         ),

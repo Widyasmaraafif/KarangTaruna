@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 import 'package:karang_taruna/controllers/data_controller.dart';
 
 class NotificationSettingsScreen extends StatelessWidget {
@@ -10,16 +11,23 @@ class NotificationSettingsScreen extends StatelessWidget {
     final controller = Get.find<DataController>();
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: KTColor.background,
       appBar: AppBar(
         title: const Text(
           'Pengaturan Notifikasi',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: KTColor.textPrimary,
+            letterSpacing: -0.5,
+          ),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          color: KTColor.textPrimary,
           onPressed: () => Get.back(),
         ),
       ),
@@ -78,7 +86,7 @@ class NotificationSettingsScreen extends StatelessWidget {
       'Berhasil',
       'Pengaturan notifikasi berhasil diperbarui',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green.withOpacity(0.9),
+      backgroundColor: KTColor.success,
       colorText: Colors.white,
       margin: const EdgeInsets.all(16),
       borderRadius: 10,
@@ -95,7 +103,7 @@ class NotificationSettingsScreen extends StatelessWidget {
         style: const TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.bold,
-          color: Color(0xFF00BA9B),
+          color: KTColor.primary,
         ),
       ),
     );
@@ -108,14 +116,20 @@ class NotificationSettingsScreen extends StatelessWidget {
     required ValueChanged<bool> onChanged,
   }) {
     return SwitchListTile(
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontWeight: FontWeight.w600,
+          color: KTColor.textPrimary,
+        ),
+      ),
       subtitle: Text(
         subtitle,
-        style: const TextStyle(fontSize: 12, color: Colors.grey),
+        style: const TextStyle(fontSize: 12, color: KTColor.textSecondary),
       ),
       value: value,
       onChanged: onChanged,
-      activeColor: const Color(0xFF00BA9B),
+      activeColor: KTColor.primary,
     );
   }
 }

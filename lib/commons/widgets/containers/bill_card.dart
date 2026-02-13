@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 
 class KTBillingItem {
   final String title;
@@ -47,15 +48,15 @@ class KTBillingCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
-      margin: const EdgeInsets.only(top: 12),
+      margin: const EdgeInsets.symmetric(vertical: 6),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Color(0xff79CDB0),
+        color: KTColor.card,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
+            color: KTColor.shadowWithAlpha(0.04),
+            blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
@@ -72,19 +73,21 @@ class KTBillingCard extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.titleMedium?.copyWith(
-                    fontSize: 11,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
-                    color: Colors.black87,
+                    color: KTColor.textPrimary,
+                    letterSpacing: -0.3,
                   ),
                 ),
               ),
               const SizedBox(width: 12),
               Text(
                 formattedAmount,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  color: const Color.fromARGB(255, 255, 255, 255),
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  color: KTColor.primary,
+                  letterSpacing: -0.5,
                 ),
               ),
             ],
@@ -95,27 +98,28 @@ class KTBillingCard extends StatelessWidget {
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
             style: theme.textTheme.bodyMedium?.copyWith(
-              fontSize: 10,
-              color: Colors.grey[800],
+              fontSize: 12,
+              color: KTColor.textSecondary,
+              height: 1.3,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 14),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
                 children: [
                   const Icon(
-                    Icons.calendar_today,
+                    Icons.calendar_today_rounded,
                     size: 14,
-                    color: Colors.grey,
+                    color: KTColor.textGrey,
                   ),
                   const SizedBox(width: 6),
                   Text(
                     'Jatuh Tempo: $formattedDueDate',
                     style: theme.textTheme.bodySmall?.copyWith(
-                      fontSize: 10,
-                      color: Colors.grey[700],
+                      fontSize: 11,
+                      color: KTColor.textGrey,
                     ),
                   ),
                 ],
@@ -123,20 +127,48 @@ class KTBillingCard extends StatelessWidget {
               if (bill.isPaid)
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 2,
+                    horizontal: 10,
+                    vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.3),
+                    color: KTColor.success.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.white, width: 1),
+                    border: Border.all(
+                      color: KTColor.success.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
                   ),
-                  child: Text(
+                  child: const Text(
                     'LUNAS',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: KTColor.success,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                )
+              else
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: KTColor.error.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: KTColor.error.withValues(alpha: 0.2),
+                      width: 1,
+                    ),
+                  ),
+                  child: const Text(
+                    'BELUM BAYAR',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: KTColor.error,
+                      letterSpacing: 0.5,
                     ),
                   ),
                 ),

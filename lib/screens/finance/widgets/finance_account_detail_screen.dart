@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 import 'package:karang_taruna/services/supabase_service.dart';
 
 class FinanceAccountDetailScreen extends StatefulWidget {
@@ -29,8 +30,9 @@ class _FinanceAccountDetailScreenState
   Future<void> _fetchTransactions() async {
     _isLoading.value = true;
     try {
-      final data = await _supabaseService
-          .getFinanceTransactions(widget.account['id']);
+      final data = await _supabaseService.getFinanceTransactions(
+        widget.account['id'],
+      );
       _transactions.assignAll(data);
     } catch (e) {
       print("Error fetching transactions: $e");
@@ -89,10 +91,7 @@ class _FinanceAccountDetailScreenState
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        accountColor,
-                        accountColor.withOpacity(0.8),
-                      ],
+                      colors: [accountColor, accountColor.withOpacity(0.8)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -110,10 +109,7 @@ class _FinanceAccountDetailScreenState
                     children: [
                       const Text(
                         "Saldo Saat Ini",
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                        ),
+                        style: TextStyle(color: Colors.white70, fontSize: 14),
                       ),
                       const SizedBox(height: 8),
                       Text(
@@ -235,8 +231,10 @@ class _FinanceAccountDetailScreenState
                 const Text(
                   "Riwayat Transaksi",
                   style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: KTColor.textPrimary,
+                    letterSpacing: -0.5,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -272,7 +270,8 @@ class _FinanceAccountDetailScreenState
                     itemBuilder: (context, index) {
                       final item = _transactions[index];
                       final date = DateTime.parse(
-                          item['transaction_date'] ?? item['created_at']);
+                        item['transaction_date'] ?? item['created_at'],
+                      );
                       final amount = item['amount'] ?? 0;
                       final title = item['title'] ?? 'Transaksi';
                       final type = item['type'];
@@ -283,11 +282,13 @@ class _FinanceAccountDetailScreenState
                           color: Colors.white,
                           borderRadius: index == 0
                               ? const BorderRadius.vertical(
-                                  top: Radius.circular(12))
+                                  top: Radius.circular(12),
+                                )
                               : index == _transactions.length - 1
-                                  ? const BorderRadius.vertical(
-                                      bottom: Radius.circular(12))
-                                  : BorderRadius.zero,
+                              ? const BorderRadius.vertical(
+                                  bottom: Radius.circular(12),
+                                )
+                              : BorderRadius.zero,
                         ),
                         child: ListTile(
                           leading: Container(
@@ -321,11 +322,7 @@ class _FinanceAccountDetailScreenState
                             ),
                           ),
                           trailing: Text(
-                            "${isIncome ? '+' : '-'} ${NumberFormat.currency(
-                              locale: 'id',
-                              symbol: 'Rp ',
-                              decimalDigits: 0,
-                            ).format(amount)}",
+                            "${isIncome ? '+' : '-'} ${NumberFormat.currency(locale: 'id', symbol: 'Rp ', decimalDigits: 0).format(amount)}",
                             style: TextStyle(
                               color: isIncome ? Colors.green : Colors.red,
                               fontWeight: FontWeight.bold,

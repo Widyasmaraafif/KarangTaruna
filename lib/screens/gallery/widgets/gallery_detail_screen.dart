@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 
 class GalleryDetailScreen extends StatelessWidget {
   final String imageUrl;
@@ -19,8 +20,18 @@ class GalleryDetailScreen extends StatelessWidget {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         elevation: 0,
+        centerTitle: true,
+        title: const Text(
+          "Detail Foto",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: Colors.white,
+            letterSpacing: -0.5,
+          ),
+        ),
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => Get.back(),
         ),
       ),
@@ -35,13 +46,9 @@ class GalleryDetailScreen extends StatelessWidget {
                 fit: BoxFit.contain,
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress == null) return child;
-                  return Center(
+                  return const Center(
                     child: CircularProgressIndicator(
                       color: Colors.white,
-                      value: loadingProgress.expectedTotalBytes != null
-                          ? loadingProgress.cumulativeBytesLoaded /
-                              loadingProgress.expectedTotalBytes!
-                          : null,
                     ),
                   );
                 },
@@ -59,13 +66,13 @@ class GalleryDetailScreen extends StatelessWidget {
               left: 0,
               right: 0,
               child: Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.fromLTRB(20, 40, 20, 30),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
                     colors: [
-                      Colors.black.withValues(alpha: 0.8),
+                      Colors.black.withOpacity(0.8),
                       Colors.transparent,
                     ],
                   ),
@@ -74,8 +81,9 @@ class GalleryDetailScreen extends StatelessWidget {
                   caption,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 16,
+                    fontSize: 14,
                     fontWeight: FontWeight.w500,
+                    height: 1.5,
                   ),
                   textAlign: TextAlign.center,
                 ),

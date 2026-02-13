@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 import 'package:karang_taruna/controllers/data_controller.dart';
 
 class PrivacySettingsScreen extends StatelessWidget {
@@ -10,19 +11,23 @@ class PrivacySettingsScreen extends StatelessWidget {
     final controller = Get.find<DataController>();
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: KTColor.background,
       appBar: AppBar(
         title: const Text(
           'Pengaturan Privasi',
           style: TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: KTColor.textPrimary,
+            letterSpacing: -0.5,
           ),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          color: KTColor.textPrimary,
           onPressed: () => Get.back(),
         ),
       ),
@@ -39,7 +44,8 @@ class PrivacySettingsScreen extends StatelessWidget {
               title: 'Tampilkan Profil',
               subtitle: 'Izinkan orang lain melihat profil Anda',
               value: settings['showProfile'] ?? true,
-              onChanged: (val) => _updateSetting(controller, 'showProfile', val),
+              onChanged: (val) =>
+                  _updateSetting(controller, 'showProfile', val),
             ),
             _buildSwitchTile(
               title: 'Tampilkan Nomor HP',
@@ -59,7 +65,8 @@ class PrivacySettingsScreen extends StatelessWidget {
               title: 'Izinkan Penandaan',
               subtitle: 'Izinkan orang lain menandai Anda di foto/kegiatan',
               value: settings['allowTagging'] ?? true,
-              onChanged: (val) => _updateSetting(controller, 'allowTagging', val),
+              onChanged: (val) =>
+                  _updateSetting(controller, 'allowTagging', val),
             ),
           ],
         );
@@ -71,20 +78,24 @@ class PrivacySettingsScreen extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.1),
+        color: KTColor.primary.withOpacity(0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+        border: Border.all(color: KTColor.primary.withOpacity(0.1)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.privacy_tip_outlined, color: Colors.blue),
+          const Icon(
+            Icons.privacy_tip_outlined,
+            color: KTColor.primary,
+            size: 24,
+          ),
           const SizedBox(width: 16),
           const Expanded(
             child: Text(
               'Pengaturan ini membantu Anda mengontrol siapa yang dapat melihat informasi pribadi Anda di aplikasi Karang Taruna.',
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.black87,
+                color: KTColor.textSecondary,
                 height: 1.5,
               ),
             ),
@@ -100,7 +111,7 @@ class PrivacySettingsScreen extends StatelessWidget {
       'Berhasil',
       'Pengaturan privasi berhasil diperbarui',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.green.withOpacity(0.9),
+      backgroundColor: KTColor.success,
       colorText: Colors.white,
       margin: const EdgeInsets.all(16),
       borderRadius: 10,
@@ -116,8 +127,8 @@ class PrivacySettingsScreen extends StatelessWidget {
         title,
         style: const TextStyle(
           fontSize: 14,
-          fontWeight: FontWeight.bold,
-          color: Color(0xFF00BA9B),
+          fontWeight: FontWeight.w800,
+          color: KTColor.primary,
         ),
       ),
     );
@@ -132,15 +143,18 @@ class PrivacySettingsScreen extends StatelessWidget {
     return SwitchListTile(
       title: Text(
         title,
-        style: const TextStyle(fontWeight: FontWeight.w500),
+        style: const TextStyle(
+          fontWeight: FontWeight.w700,
+          color: KTColor.textPrimary,
+        ),
       ),
       subtitle: Text(
         subtitle,
-        style: const TextStyle(fontSize: 12, color: Colors.grey),
+        style: const TextStyle(fontSize: 12, color: KTColor.textSecondary),
       ),
       value: value,
       onChanged: onChanged,
-      activeColor: const Color(0xFF00BA9B),
+      activeColor: KTColor.primary,
     );
   }
 }

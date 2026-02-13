@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 
 class KTPollingCard extends StatelessWidget {
   final String question;
@@ -25,26 +26,26 @@ class KTPollingCard extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: KTColor.card,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: KTColor.shadowWithAlpha(0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
           ),
         ],
-        border: Border.all(color: Colors.grey.shade200),
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
         child: InkWell(
           onTap: enableHeaderTap ? onCardTap : null,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           child: Padding(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
@@ -53,31 +54,33 @@ class KTPollingCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF00BA9B).withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
+                        color: KTColor.primaryWithAlpha(0.1),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
-                        Icons.poll_outlined,
-                        color: Color(0xFF00BA9B),
-                        size: 20,
+                        Icons.poll_rounded,
+                        color: KTColor.primary,
+                        size: 24,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 14),
                     Expanded(
                       child: Text(
                         question,
                         style: theme.textTheme.titleMedium?.copyWith(
                           fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          fontWeight: FontWeight.w800,
+                          color: KTColor.textPrimary,
+                          letterSpacing: -0.4,
+                          height: 1.2,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
                 Column(
                   children: options.map((option) {
                     final optionId = option['id'];
@@ -87,23 +90,25 @@ class KTPollingCard extends StatelessWidget {
                     final ratio = totalVotes > 0 ? votes / totalVotes : 0.0;
                     final percent = (ratio * 100).round();
 
-                    // Check if this option is the winner (most votes) if voted
-                    // But for now just simple display
-                    
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: InkWell(
                         onTap: isVoted || onVote == null
                             ? null
                             : () => onVote!(optionId, label),
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(12),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                          padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: Colors.grey.shade50,
+                            color: isVoted && ratio > 0 
+                                ? KTColor.primaryWithAlpha(0.05)
+                                : KTColor.background,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: Colors.grey.shade200,
+                              color: isVoted && ratio > 0
+                                  ? KTColor.primaryWithAlpha(0.2)
+                                  : Colors.transparent,
+                              width: 1.5,
                             ),
                           ),
                           child: Column(
@@ -116,8 +121,8 @@ class KTPollingCard extends StatelessWidget {
                                       label,
                                       style: theme.textTheme.bodyMedium?.copyWith(
                                         fontSize: 14,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black87,
+                                        fontWeight: FontWeight.w600,
+                                        color: KTColor.textPrimary,
                                       ),
                                     ),
                                   ),
@@ -125,34 +130,35 @@ class KTPollingCard extends StatelessWidget {
                                     const SizedBox(width: 8),
                                     Text(
                                       '$percent%',
-                                      style: theme.textTheme.bodySmall?.copyWith(
-                                        fontSize: 12,
-                                        color: const Color(0xFF00BA9B),
-                                        fontWeight: FontWeight.bold,
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        color: KTColor.primary,
+                                        fontWeight: FontWeight.w800,
                                       ),
                                     ),
                                   ],
                                 ],
                               ),
                               if (isVoted) ...[
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 10),
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(999),
                                   child: LinearProgressIndicator(
                                     value: ratio,
-                                    minHeight: 6,
-                                    backgroundColor: Colors.grey.shade200,
+                                    minHeight: 8,
+                                    backgroundColor: KTColor.primaryWithAlpha(0.1),
                                     valueColor: const AlwaysStoppedAnimation<Color>(
-                                      Color(0xFF00BA9B),
+                                      KTColor.primary,
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 4),
+                                const SizedBox(height: 6),
                                 Text(
                                   '$votes Suara',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    color: Colors.grey.shade600,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: KTColor.textGrey,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ],
@@ -163,48 +169,43 @@ class KTPollingCard extends StatelessWidget {
                     );
                   }).toList(),
                 ),
-                if (isVoted)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.check_circle, size: 16, color: Color(0xFF00BA9B)),
-                        const SizedBox(width: 4),
-                        Text(
-                          "Anda sudah memilih",
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    if (isVoted) ...[
+                      const Icon(Icons.check_circle_rounded, size: 16, color: KTColor.primary),
+                      const SizedBox(width: 6),
+                      const Text(
+                        "Anda sudah memilih",
+                        style: TextStyle(
+                          color: KTColor.primary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
                         ),
-                        const Spacer(),
-                        Text(
-                          "$totalVotes Total Suara",
-                          style: TextStyle(
-                            color: Colors.grey.shade500,
-                            fontSize: 12,
-                          ),
+                      ),
+                    ] else ...[
+                      const Icon(Icons.info_outline_rounded, size: 16, color: KTColor.textGrey),
+                      const SizedBox(width: 6),
+                      const Text(
+                        "Pilih salah satu opsi",
+                        style: TextStyle(
+                          color: KTColor.textGrey,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
                         ),
-                      ],
+                      ),
+                    ],
+                    const Spacer(),
+                    Text(
+                      "$totalVotes Total Suara",
+                      style: const TextStyle(
+                        color: KTColor.textGrey,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  )
-                else
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                         Text(
-                          "$totalVotes Total Suara",
-                          style: TextStyle(
-                            color: Colors.grey.shade500,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -213,3 +214,4 @@ class KTPollingCard extends StatelessWidget {
     );
   }
 }
+

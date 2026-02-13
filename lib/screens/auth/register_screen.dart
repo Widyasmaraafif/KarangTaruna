@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
+import 'package:karang_taruna/commons/widgets/buttons/kt_button.dart';
+import 'package:karang_taruna/commons/widgets/inputs/kt_text_field.dart';
 import 'package:karang_taruna/services/supabase_service.dart';
 import 'package:karang_taruna/navigation_menu.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -17,7 +20,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _service = SupabaseService();
-  bool _isLoading = false;
+  final _isLoading = false.obs;
 
   Future<void> _register() async {
     if (_nameController.text.isEmpty ||
@@ -26,9 +29,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       Get.snackbar(
         'Error',
         'Semua kolom harus diisi',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.1),
-        colorText: Colors.red,
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: KTColor.error,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(20),
+        borderRadius: 12,
       );
       return;
     }
@@ -37,14 +42,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
       Get.snackbar(
         'Error',
         'Password tidak cocok',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.1),
-        colorText: Colors.red,
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: KTColor.error,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(20),
+        borderRadius: 12,
       );
       return;
     }
 
-    setState(() => _isLoading = true);
+    _isLoading.value = true;
     try {
       final response = await _service.signUp(
         _emailController.text.trim(),
@@ -61,8 +68,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
             email: _emailController.text.trim(),
           );
         } catch (e) {
-          // If profile creation fails, we might still want to proceed but log it
-          // or show a warning. For now, we'll proceed as the user is created.
           debugPrint('Error creating profile: $e');
         }
 
@@ -70,40 +75,48 @@ class _RegisterScreenState extends State<RegisterScreen> {
         Get.snackbar(
           'Sukses',
           'Registrasi berhasil',
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green.withOpacity(0.1),
-          colorText: Colors.green,
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: KTColor.success,
+          colorText: Colors.white,
+          margin: const EdgeInsets.all(20),
+          borderRadius: 12,
         );
       } else {
         // Email confirmation required
-        Get.back(); // Go back to login
+        Get.back();
         Get.snackbar(
           'Registrasi Berhasil',
           'Silakan cek email Anda untuk verifikasi akun',
-          snackPosition: SnackPosition.BOTTOM,
+          snackPosition: SnackPosition.TOP,
           duration: const Duration(seconds: 5),
-          backgroundColor: Colors.blue.withOpacity(0.1),
-          colorText: Colors.blue,
+          backgroundColor: KTColor.primary,
+          colorText: Colors.white,
+          margin: const EdgeInsets.all(20),
+          borderRadius: 12,
         );
       }
     } on AuthException catch (e) {
       Get.snackbar(
         'Registrasi Gagal',
         e.message,
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.1),
-        colorText: Colors.red,
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: KTColor.error,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(20),
+        borderRadius: 12,
       );
     } catch (e) {
       Get.snackbar(
         'Error',
         'Terjadi kesalahan: $e',
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.1),
-        colorText: Colors.red,
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: KTColor.error,
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(20),
+        borderRadius: 12,
       );
     } finally {
-      if (mounted) setState(() => _isLoading = false);
+      _isLoading.value = false;
     }
   }
 
@@ -124,149 +137,79 @@ class _RegisterScreenState extends State<RegisterScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: KTColor.textPrimary, size: 20),
           onPressed: () => Get.back(),
         ),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                'Buat Akun',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF00BA9B),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'Buat Akun',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
+                    color: KTColor.textPrimary,
+                    letterSpacing: -1,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Daftar untuk bergabung dengan kami',
-                style: TextStyle(fontSize: 14, color: Colors.grey),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 32),
-              TextField(
-                controller: _nameController,
-                decoration: InputDecoration(
+                const SizedBox(height: 8),
+                const Text(
+                  'Daftar untuk bergabung dengan kami',
+                  style: TextStyle(
+                    fontSize: 14, 
+                    color: KTColor.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 48),
+                KTTextField(
+                  controller: _nameController,
                   labelText: 'Nama Lengkap',
-                  prefixIcon: const Icon(
-                    Icons.person_outline,
-                    color: Color(0xFF00BA9B),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: Color(0xFF00BA9B),
-                      width: 2,
-                    ),
-                  ),
+                  hintText: 'Masukkan nama lengkap anda',
+                  prefixIcon: Icons.person_outline_rounded,
+                  textCapitalization: TextCapitalization.words,
                 ),
-                textCapitalization: TextCapitalization.words,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _emailController,
-                decoration: InputDecoration(
+                const SizedBox(height: 20),
+                KTTextField(
+                  controller: _emailController,
                   labelText: 'Email',
-                  prefixIcon: const Icon(
-                    Icons.email_outlined,
-                    color: Color(0xFF00BA9B),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: Color(0xFF00BA9B),
-                      width: 2,
-                    ),
-                  ),
+                  hintText: 'Masukkan email anda',
+                  prefixIcon: Icons.email_outlined,
+                  keyboardType: TextInputType.emailAddress,
                 ),
-                keyboardType: TextInputType.emailAddress,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _passwordController,
-                decoration: InputDecoration(
+                const SizedBox(height: 20),
+                KTTextField(
+                  controller: _passwordController,
                   labelText: 'Password',
-                  prefixIcon: const Icon(
-                    Icons.lock_outline,
-                    color: Color(0xFF00BA9B),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: Color(0xFF00BA9B),
-                      width: 2,
-                    ),
-                  ),
+                  hintText: 'Masukkan password anda',
+                  prefixIcon: Icons.lock_outline_rounded,
+                  isPassword: true,
                 ),
-                obscureText: true,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _confirmPasswordController,
-                decoration: InputDecoration(
+                const SizedBox(height: 20),
+                KTTextField(
+                  controller: _confirmPasswordController,
                   labelText: 'Konfirmasi Password',
-                  prefixIcon: const Icon(
-                    Icons.lock_outline,
-                    color: Color(0xFF00BA9B),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                      color: Color(0xFF00BA9B),
-                      width: 2,
-                    ),
-                  ),
+                  hintText: 'Ulangi password anda',
+                  prefixIcon: Icons.lock_reset_rounded,
+                  isPassword: true,
                 ),
-                obscureText: true,
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _isLoading ? null : _register,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF00BA9B),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 2,
-                ),
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Text(
-                        'Daftar',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-              ),
-            ],
+                const SizedBox(height: 40),
+                Obx(() => KTButton(
+                  text: 'Daftar',
+                  isLoading: _isLoading.value,
+                  onPressed: _register,
+                )),
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),

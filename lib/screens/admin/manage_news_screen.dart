@@ -5,63 +5,40 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:karang_taruna/commons/widgets/alert_dialog.dart';
+import 'package:karang_taruna/commons/widgets/buttons/kt_button.dart';
+import 'package:karang_taruna/commons/widgets/inputs/kt_text_field.dart';
 import 'package:karang_taruna/controllers/data_controller.dart';
 import 'package:karang_taruna/services/supabase_service.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 
-class ManageNewsScreen extends StatefulWidget {
+class ManageNewsScreen extends StatelessWidget {
   const ManageNewsScreen({super.key});
 
-  @override
-  State<ManageNewsScreen> createState() => _ManageNewsScreenState();
-}
+  void _confirmDelete(int id) {
+    final SupabaseService supabaseService = SupabaseService();
+    final DataController dataController = Get.find<DataController>();
 
-class _ManageNewsScreenState extends State<ManageNewsScreen> {
-  final SupabaseService _supabaseService = SupabaseService();
-  final DataController _dataController = Get.find<DataController>();
-  final RxList<Map<String, dynamic>> _newsList = <Map<String, dynamic>>[].obs;
-  final RxBool _isLoading = true.obs;
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchNews();
-  }
-
-  Future<void> _fetchNews({bool silent = false}) async {
-    try {
-      if (!silent) _isLoading.value = true;
-      final news = await _supabaseService.getNews();
-      _newsList.assignAll(news);
-    } catch (e) {
-      Get.snackbar('Error', 'Gagal memuat berita: $e');
-    } finally {
-      if (!silent) _isLoading.value = false;
-    }
-  }
-
-  void _deleteNews(int id) {
     KTAlertDialog.show(
-      context,
+      Get.context!,
       title: 'Hapus Berita',
       content: 'Apakah Anda yakin ingin menghapus berita ini?',
       confirmText: 'Hapus',
-      confirmColor: Colors.red,
+      confirmColor: KTColor.error,
       onConfirm: () async {
         try {
-          await _supabaseService.deleteNews(id);
-          await _fetchNews();
-          _dataController.fetchNews(); // Update global state
+          await supabaseService.deleteNews(id);
+          dataController.fetchNews();
           Get.snackbar(
             'Sukses',
             'Berita berhasil dihapus',
-            backgroundColor: Colors.green,
+            backgroundColor: KTColor.success,
             colorText: Colors.white,
           );
         } catch (e) {
           Get.snackbar(
             'Error',
             'Gagal menghapus berita: $e',
-            backgroundColor: Colors.red,
+            backgroundColor: KTColor.error,
             colorText: Colors.white,
           );
         }
@@ -70,18 +47,18 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
   }
 
   void _showNewsForm({Map<String, dynamic>? news}) {
+    final controller = Get.find<DataController>();
+    final supabaseService = SupabaseService();
+
     final titleController = TextEditingController(text: news?['title']);
     final contentController = TextEditingController(text: news?['content']);
     final authorController = TextEditingController(
-      text:
-          news?['author'] ??
-          _dataController.userProfile['full_name'] ??
-          'Admin',
+      text: news?['author'] ?? controller.userProfile['full_name'] ?? 'Admin',
     );
 
     File? imageFile;
     String? imageUrl = news?['image_url'];
-    bool isSaving = false;
+    final isSaving = false.obs;
 
     Get.bottomSheet(
       StatefulBuilder(
@@ -90,20 +67,33 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
             padding: const EdgeInsets.all(24),
             decoration: const BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
             child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    news == null ? 'Tambah Berita' : 'Edit Berita',
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF00BA9B),
-                    ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        news == null ? 'Tambah Berita' : 'Edit Berita',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: KTColor.textPrimary,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Get.back(),
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: KTColor.textSecondary,
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 24),
                   GestureDetector(
@@ -111,9 +101,9 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
                       final picker = ImagePicker();
                       final pickedFile = await picker.pickImage(
                         source: ImageSource.gallery,
-                        maxWidth: 800,
-                        maxHeight: 600,
-                        imageQuality: 80,
+                        maxWidth: 1024,
+                        maxHeight: 1024,
+                        imageQuality: 85,
                       );
                       if (pickedFile != null) {
                         setState(() {
@@ -122,12 +112,14 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
                       }
                     },
                     child: Container(
-                      height: 150,
+                      height: 180,
                       width: double.infinity,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey.shade300),
+                        color: KTColor.background,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: KTColor.border.withValues(alpha: 0.5),
+                        ),
                         image: imageFile != null
                             ? DecorationImage(
                                 image: FileImage(imageFile!),
@@ -147,14 +139,19 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
                                 Icon(
                                   Icons.add_photo_alternate_outlined,
                                   size: 40,
-                                  color: Colors.grey.shade400,
+                                  color: KTColor.textSecondary.withValues(
+                                    alpha: 0.5,
+                                  ),
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  'Tambah Foto',
+                                  'Pilih Foto Berita',
                                   style: TextStyle(
-                                    color: Colors.grey.shade600,
-                                    fontSize: 12,
+                                    color: KTColor.textSecondary.withValues(
+                                      alpha: 0.7,
+                                    ),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ],
@@ -162,140 +159,95 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
                           : null,
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  TextField(
+                  const SizedBox(height: 20),
+                  KTTextField(
                     controller: titleController,
-                    decoration: const InputDecoration(
-                      labelText: 'Judul Berita',
-                      border: OutlineInputBorder(),
-                    ),
+                    labelText: 'Judul Berita',
+                    hintText: 'Masukkan judul berita',
                   ),
                   const SizedBox(height: 16),
-                  TextField(
+                  KTTextField(
                     controller: contentController,
-                    decoration: const InputDecoration(
-                      labelText: 'Konten',
-                      border: OutlineInputBorder(),
-                    ),
+                    labelText: 'Konten',
+                    hintText: 'Masukkan isi berita',
                     maxLines: 5,
                   ),
                   const SizedBox(height: 16),
-                  TextField(
+                  KTTextField(
                     controller: authorController,
-                    decoration: const InputDecoration(
-                      labelText: 'Penulis',
-                      border: OutlineInputBorder(),
+                    labelText: 'Penulis',
+                    hintText: 'Nama penulis',
+                  ),
+                  const SizedBox(height: 32),
+                  Obx(
+                    () => KTButton(
+                      text: news == null ? 'Publikasikan' : 'Simpan Perubahan',
+                      isLoading: isSaving.value,
+                      onPressed: () async {
+                        if (titleController.text.isEmpty ||
+                            contentController.text.isEmpty) {
+                          Get.snackbar(
+                            'Peringatan',
+                            'Judul dan konten wajib diisi',
+                            backgroundColor: KTColor.warning,
+                            colorText: Colors.white,
+                          );
+                          return;
+                        }
+
+                        isSaving.value = true;
+
+                        try {
+                          if (imageFile != null) {
+                            imageUrl = await supabaseService.uploadNewsImage(
+                              imageFile!,
+                            );
+                          }
+
+                          final data = {
+                            'title': titleController.text,
+                            'content': contentController.text,
+                            'author': authorController.text,
+                            'image_url': imageUrl,
+                            'update_at': DateTime.now().toIso8601String(),
+                          };
+
+                          if (news == null) {
+                            data['created_at'] = DateTime.now()
+                                .toIso8601String();
+                            await supabaseService.createNews(data);
+                            Get.back();
+                            Get.snackbar(
+                              'Sukses',
+                              'Berita berhasil ditambahkan',
+                              backgroundColor: KTColor.success,
+                              colorText: Colors.white,
+                            );
+                          } else {
+                            await supabaseService.updateNews(news['id'], data);
+                            Get.back();
+                            Get.snackbar(
+                              'Sukses',
+                              'Berita berhasil diperbarui',
+                              backgroundColor: KTColor.success,
+                              colorText: Colors.white,
+                            );
+                          }
+
+                          controller.fetchNews();
+                        } catch (e) {
+                          isSaving.value = false;
+                          Get.snackbar(
+                            'Error',
+                            'Gagal menyimpan berita: $e',
+                            backgroundColor: KTColor.error,
+                            colorText: Colors.white,
+                          );
+                        }
+                      },
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: isSaving
-                          ? null
-                          : () async {
-                              if (titleController.text.isEmpty ||
-                                  contentController.text.isEmpty) {
-                                Get.snackbar(
-                                  'Error',
-                                  'Judul dan konten wajib diisi',
-                                  backgroundColor: Colors.orange,
-                                  colorText: Colors.white,
-                                );
-                                return;
-                              }
-
-                              setState(() => isSaving = true);
-
-                              try {
-                                // Upload image if selected
-                                if (imageFile != null) {
-                                  try {
-                                    imageUrl = await _supabaseService
-                                        .uploadNewsImage(imageFile!);
-                                  } catch (e) {
-                                    setState(() => isSaving = false);
-                                    Get.snackbar(
-                                      'Error',
-                                      'Gagal mengupload gambar: $e',
-                                      backgroundColor: Colors.red,
-                                      colorText: Colors.white,
-                                    );
-                                    return;
-                                  }
-                                }
-
-                                final data = {
-                                  'title': titleController.text,
-                                  'content': contentController.text,
-                                  'author': authorController.text,
-                                  'image_url': imageUrl,
-                                  'update_at': DateTime.now().toIso8601String(),
-                                };
-
-                                if (news == null) {
-                                  data['created_at'] = DateTime.now()
-                                      .toIso8601String();
-                                  await _supabaseService.createNews(data);
-
-                                  Get.back(); // Close bottom sheet
-
-                                  Get.snackbar(
-                                    'Sukses',
-                                    'Berita berhasil ditambahkan',
-                                    backgroundColor: Colors.green,
-                                    colorText: Colors.white,
-                                  );
-                                } else {
-                                  await _supabaseService.updateNews(
-                                    news['id'],
-                                    data,
-                                  );
-
-                                  Get.back(); // Close bottom sheet
-
-                                  Get.snackbar(
-                                    'Sukses',
-                                    'Berita berhasil diperbarui',
-                                    backgroundColor: Colors.green,
-                                    colorText: Colors.white,
-                                  );
-                                }
-
-                                await _fetchNews(
-                                  silent: true,
-                                ); // Refresh list silently
-                                _dataController
-                                    .fetchNews(); // Update global state
-                              } catch (e) {
-                                setState(() => isSaving = false);
-                                Get.snackbar(
-                                  'Error',
-                                  'Gagal menyimpan berita: $e',
-                                  backgroundColor: Colors.red,
-                                  colorText: Colors.white,
-                                );
-                              }
-                            },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF00BA9B),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: isSaving
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : Text(news == null ? 'Publikasi' : 'Update'),
-                    ),
-                  ),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),
@@ -308,200 +260,253 @@ class _ManageNewsScreenState extends State<ManageNewsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<DataController>();
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: KTColor.background,
       appBar: AppBar(
-        title: const Text(
-          'Kelola Berita',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
+        title: const Text('Kelola Berita'),
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          color: KTColor.textPrimary,
           onPressed: () => Get.back(),
         ),
       ),
-      body: Obx(() {
-        if (_isLoading.value) {
-          return const Center(
-            child: CircularProgressIndicator(color: Color(0xFF00BA9B)),
-          );
-        }
+      body: RefreshIndicator(
+        onRefresh: controller.fetchNews,
+        color: KTColor.primary,
+        child: Obx(() {
+          if (controller.isLoadingNews.value && controller.news.isEmpty) {
+            return const Center(
+              child: CircularProgressIndicator(color: KTColor.primary),
+            );
+          }
 
-        if (_newsList.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.newspaper_outlined,
-                  size: 64,
-                  color: Colors.grey.shade400,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Belum ada berita',
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
-                ),
-              ],
-            ),
-          );
-        }
-
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: _newsList.length,
-          itemBuilder: (context, index) {
-            final news = _newsList[index];
-            final date = DateTime.parse(news['created_at']);
-
-            return Card(
-              margin: const EdgeInsets.only(bottom: 16),
-              elevation: 2,
-              shadowColor: Colors.black.withOpacity(0.1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
+          if (controller.news.isEmpty) {
+            return Center(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (news['image_url'] != null)
-                    ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(16),
-                      ),
-                      child: Image.network(
-                        news['image_url'],
-                        height: 150,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          height: 150,
-                          color: Colors.grey.shade200,
-                          child: const Icon(
-                            Icons.broken_image,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ),
-                    ),
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                news['title'],
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            PopupMenuButton(
-                              icon: const Icon(Icons.more_vert),
-                              itemBuilder: (context) => [
-                                const PopupMenuItem(
-                                  value: 'edit',
-                                  child: Row(
-                                    children: [
-                                      Icon(Icons.edit, size: 20),
-                                      SizedBox(width: 8),
-                                      Text('Edit'),
-                                    ],
-                                  ),
-                                ),
-                                const PopupMenuItem(
-                                  value: 'delete',
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.delete,
-                                        size: 20,
-                                        color: Colors.red,
-                                      ),
-                                      SizedBox(width: 8),
-                                      Text(
-                                        'Hapus',
-                                        style: TextStyle(color: Colors.red),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                              onSelected: (value) {
-                                if (value == 'edit') {
-                                  _showNewsForm(news: news);
-                                } else if (value == 'delete') {
-                                  _deleteNews(news['id']);
-                                }
-                              },
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          news['content'] ?? '',
-                          style: TextStyle(
-                            color: Colors.grey.shade600,
-                            fontSize: 14,
-                          ),
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.person_outline,
-                              size: 14,
-                              color: Colors.grey,
-                            ),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                news['author'] ?? 'Admin',
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 12,
-                                ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            const Icon(
-                              Icons.calendar_today_outlined,
-                              size: 14,
-                              color: Colors.grey,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              DateFormat('dd MMM yyyy').format(date),
-                              style: const TextStyle(
-                                color: Colors.grey,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                  Icon(Icons.article_outlined, size: 64, color: KTColor.border),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Belum ada berita',
+                    style: TextStyle(
+                      color: KTColor.textSecondary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
               ),
             );
-          },
-        );
-      }),
+          }
+
+          return ListView.separated(
+            padding: const EdgeInsets.all(20),
+            itemCount: controller.news.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            itemBuilder: (context, index) {
+              final news = controller.news[index];
+              final date =
+                  DateTime.tryParse(news['created_at'] ?? '') ?? DateTime.now();
+
+              return Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: KTColor.border.withValues(alpha: 0.5),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: KTColor.shadow.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (news['image_url'] != null)
+                      ClipRRect(
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(16),
+                        ),
+                        child: Image.network(
+                          news['image_url'],
+                          height: 160,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                                height: 160,
+                                color: KTColor.background,
+                                child: const Icon(
+                                  Icons.broken_image,
+                                  color: KTColor.border,
+                                ),
+                              ),
+                        ),
+                      ),
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  news['title'] ?? 'Tanpa Judul',
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w800,
+                                    color: KTColor.textPrimary,
+                                    letterSpacing: -0.3,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              PopupMenuButton(
+                                icon: Icon(
+                                  Icons.more_vert_rounded,
+                                  color: KTColor.textSecondary,
+                                  size: 20,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                itemBuilder: (context) => [
+                                  const PopupMenuItem(
+                                    value: 'edit',
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.edit_rounded,
+                                          size: 18,
+                                          color: KTColor.textPrimary,
+                                        ),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          'Edit',
+                                          style: TextStyle(
+                                            color: KTColor.textPrimary,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'delete',
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.delete_rounded,
+                                          size: 18,
+                                          color: KTColor.error,
+                                        ),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          'Hapus',
+                                          style: TextStyle(
+                                            color: KTColor.error,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                                onSelected: (value) {
+                                  if (value == 'edit') {
+                                    _showNewsForm(news: news);
+                                  } else if (value == 'delete') {
+                                    _confirmDelete(news['id']);
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: KTColor.background,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Icon(
+                                      Icons.person_rounded,
+                                      size: 12,
+                                      color: KTColor.textSecondary,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      news['author'] ?? 'Admin',
+                                      style: const TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                        color: KTColor.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.calendar_today_rounded,
+                                    size: 12,
+                                    color: KTColor.textSecondary.withValues(
+                                      alpha: 0.7,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    DateFormat('dd MMM yyyy').format(date),
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w500,
+                                      color: KTColor.textSecondary.withValues(
+                                        alpha: 0.7,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
+        }),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showNewsForm(),
-        backgroundColor: const Color(0xFF00BA9B),
-        child: const Icon(Icons.add, color: Colors.white),
+        backgroundColor: KTColor.primary,
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
       ),
     );
   }

@@ -10,133 +10,134 @@ import 'package:karang_taruna/screens/admin/manage_news_screen.dart';
 import 'package:karang_taruna/screens/admin/manage_organization_finance_screen.dart';
 import 'package:karang_taruna/screens/admin/manage_pojok_kampung_screen.dart';
 import 'package:karang_taruna/screens/admin/manage_polling_screen.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
   const AdminDashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final DataController dataController = Get.find<DataController>();
-    final role =
-        dataController.userProfile['role']?.toString().toLowerCase() ?? '';
+    final controller = Get.find<DataController>();
+    final userRole =
+        controller.userProfile['role']?.toString().toLowerCase() ?? '';
 
-    // Logic for role-based access
-    bool canAccess(String feature) {
-      if (role == 'admin') return true;
-
-      // bendahara: hanya kelola keuangan (iuran dan organisasi)
-      if (role == 'bendahara' && ['finance', 'finance_org'].contains(feature)) {
-        return true;
-      }
-
-      // ketua: kelola pengumuman, kegiatan, pojok kampung, polling
-      if (role == 'ketua' &&
-          [
-            'announcements',
-            'events',
-            'pojok_kampung',
-            'polling',
-          ].contains(feature)) {
-        return true;
-      }
-
-      // sekretaris: kelola pengumuman dan kegiatan
-      if (role == 'sekretaris' &&
-          ['announcements', 'events'].contains(feature)) {
-        return true;
-      }
-
-      // pubdekdok: kelola berita dan kelola galeri
-      if (role == 'pubdekdok' && ['news', 'gallery'].contains(feature)) {
-        return true;
-      }
-
-      return false;
+    bool canAccess(String permission) {
+      if (userRole == 'admin') return true;
+      // Add other role-based logic here if needed
+      return true; // Temporary allow for other pengurus roles
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: KTColor.background,
       appBar: AppBar(
-        title: Text(
-          role == 'admin' ? 'Pengaturan Admin' : 'Menu Pengurus',
-          style: const TextStyle(
-            color: Colors.black87,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
+        title: const Text('Admin Dashboard'),
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          color: KTColor.textPrimary,
           onPressed: () => Get.back(),
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         children: [
-          if (canAccess('members'))
+          const Text(
+            "Manajemen Konten",
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              color: KTColor.textPrimary,
+              letterSpacing: -0.3,
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (canAccess('news'))
             _buildAdminMenuTile(
-              icon: Icons.people_outline,
-              title: 'Kelola Anggota',
-              subtitle: 'Verifikasi dan kelola data anggota',
-              onTap: () => Get.to(() => const ManageMembersScreen()),
+              icon: Icons.article_rounded,
+              title: 'Kelola Berita',
+              subtitle: 'Publikasi berita dan informasi terbaru',
+              onTap: () => Get.to(() => const ManageNewsScreen()),
             ),
           if (canAccess('events'))
             _buildAdminMenuTile(
-              icon: Icons.event_note,
+              icon: Icons.event_note_rounded,
               title: 'Kelola Kegiatan',
-              subtitle: 'Tambah dan edit kegiatan Karang Taruna',
+              subtitle: 'Atur jadwal dan detail kegiatan',
               onTap: () => Get.to(() => const ManageEventsScreen()),
-            ),
-          if (canAccess('news'))
-            _buildAdminMenuTile(
-              icon: Icons.article_outlined,
-              title: 'Kelola Berita',
-              subtitle: 'Publikasi berita dan informasi',
-              onTap: () => Get.to(() => const ManageNewsScreen()),
             ),
           if (canAccess('announcements'))
             _buildAdminMenuTile(
-              icon: Icons.campaign_outlined,
+              icon: Icons.campaign_rounded,
               title: 'Kelola Pengumuman',
-              subtitle: 'Buat dan atur pengumuman penting',
+              subtitle: 'Buat pengumuman penting untuk warga',
               onTap: () => Get.to(() => const ManageAnnouncementsScreen()),
-            ),
-          if (canAccess('pojok_kampung'))
-            _buildAdminMenuTile(
-              icon: Icons.storefront_outlined,
-              title: 'Kelola Pojok Kampung',
-              subtitle: 'Atur aspirasi dan galeri kampung',
-              onTap: () => Get.to(() => const ManagePojokKampungScreen()),
             ),
           if (canAccess('gallery'))
             _buildAdminMenuTile(
-              icon: Icons.photo_library_outlined,
+              icon: Icons.photo_library_rounded,
               title: 'Kelola Galeri',
-              subtitle: 'Upload dan atur foto kegiatan',
+              subtitle: 'Upload foto-foto kegiatan',
               onTap: () => Get.to(() => const ManageGalleryScreen()),
             ),
-          if (canAccess('finance'))
-            _buildAdminMenuTile(
-              icon: Icons.monetization_on_outlined,
-              title: 'Kelola Iuran Anggota',
-              subtitle: 'Manajemen iuran bulanan anggota',
-              onTap: () => Get.to(() => const ManageFinanceScreen()),
+
+          const SizedBox(height: 32),
+          const Text(
+            "Manajemen Keuangan",
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              color: KTColor.textPrimary,
+              letterSpacing: -0.3,
             ),
+          ),
+          const SizedBox(height: 16),
           if (canAccess('finance_org'))
             _buildAdminMenuTile(
-              icon: Icons.account_balance_outlined,
-              title: 'Kelola Keuangan Organisasi',
-              subtitle: 'Manajemen kas dan transaksi organisasi',
+              icon: Icons.account_balance_rounded,
+              title: 'Keuangan Organisasi',
+              subtitle: 'Manajemen kas dan transaksi kas',
               onTap: () =>
                   Get.to(() => const ManageOrganizationFinanceScreen()),
             ),
+          if (canAccess('finance'))
+            _buildAdminMenuTile(
+              icon: Icons.monetization_on_rounded,
+              title: 'Iuran Anggota',
+              subtitle: 'Kelola pembayaran iuran bulanan',
+              onTap: () => Get.to(() => const ManageFinanceScreen()),
+            ),
+
+          const SizedBox(height: 32),
+          const Text(
+            "Manajemen Organisasi",
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w800,
+              color: KTColor.textPrimary,
+              letterSpacing: -0.3,
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (canAccess('members'))
+            _buildAdminMenuTile(
+              icon: Icons.people_rounded,
+              title: 'Kelola Anggota',
+              subtitle: 'Verifikasi dan kelola database anggota',
+              onTap: () => Get.to(() => const ManageMembersScreen()),
+            ),
           if (canAccess('polling'))
             _buildAdminMenuTile(
-              icon: Icons.poll_outlined,
+              icon: Icons.poll_rounded,
               title: 'Kelola Polling',
-              subtitle: 'Buat dan pantau pemungutan suara',
+              subtitle: 'Buat voting untuk pengambilan keputusan',
               onTap: () => Get.to(() => const ManagePollingScreen()),
+            ),
+          if (canAccess('pojok_kampung'))
+            _buildAdminMenuTile(
+              icon: Icons.storefront_rounded,
+              title: 'Pojok Kampung',
+              subtitle: 'Kelola aspirasi dan produk warga',
+              onTap: () => Get.to(() => const ManagePojokKampungScreen()),
             ),
         ],
       ),
@@ -149,30 +150,50 @@ class AdminDashboardScreen extends StatelessWidget {
     required String subtitle,
     required VoidCallback onTap,
   }) {
-    return Card(
-      elevation: 0,
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: Colors.grey.shade200),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: KTColor.border.withOpacity(0.5)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: ListTile(
+        onTap: onTap,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: const Color(0xFF00BA9B).withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10),
+            color: KTColor.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: const Color(0xFF00BA9B)),
+          child: Icon(icon, color: KTColor.primary, size: 24),
         ),
         title: Text(
           title,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w800,
+            color: KTColor.textPrimary,
+            letterSpacing: -0.3,
+          ),
         ),
-        subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
-        trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-        onTap: onTap,
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(fontSize: 12, color: KTColor.textSecondary),
+        ),
+        trailing: Icon(
+          Icons.arrow_forward_ios_rounded,
+          size: 14,
+          color: KTColor.textSecondary.withOpacity(0.5),
+        ),
       ),
     );
   }

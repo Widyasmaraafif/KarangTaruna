@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:karang_taruna/commons/widgets/containers/event_card.dart';
 import 'package:karang_taruna/commons/widgets/texts/event_heading.dart';
 import 'package:karang_taruna/controllers/data_controller.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 
 class EventScreen extends StatefulWidget {
   const EventScreen({super.key});
@@ -18,65 +19,82 @@ class _EventScreenState extends State<EventScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Find the controller injected in NavigationMenu
     final controller = Get.find<DataController>();
 
     return Scaffold(
+      backgroundColor: KTColor.background,
       appBar: AppBar(
-        title: const Text("Event"),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        foregroundColor: Colors.white,
+        title: const Text('Event'),
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          color: KTColor.textPrimary,
+          onPressed: () => Get.back(),
+        ),
       ),
-      backgroundColor: const Color(0xFF00BA9B),
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: controller.fetchEvents,
-          child: Obx(() {
-            // Show loading only if no data is available
-            if (controller.isLoadingEvents.value && controller.events.isEmpty) {
-              return const Center(
-                child: CircularProgressIndicator(color: Colors.white),
-              );
-            }
+      body: RefreshIndicator(
+        onRefresh: controller.fetchEvents,
+        color: KTColor.primary,
+        child: Obx(() {
+          if (controller.isLoadingEvents.value && controller.events.isEmpty) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-            final events = controller.events;
-            final upcomingEvents = _filterEvents(events, 'upcoming');
-            final ongoingEvents = _filterEvents(events, 'ongoing');
-            final completedEvents = _filterEvents(events, 'completed');
+          final events = controller.events;
+          final upcomingEvents = _filterEvents(events, 'upcoming');
+          final ongoingEvents = _filterEvents(events, 'ongoing');
+          final completedEvents = _filterEvents(events, 'completed');
 
-            return SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.only(bottom: 30),
+          if (events.isEmpty) {
+            return Center(
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  Icon(
+                    Icons.event_available_rounded,
+                    size: 64,
+                    color: KTColor.border,
+                  ),
                   const SizedBox(height: 16),
-                  _buildSection(
-                    title: 'Event Mendatang',
-                    events: upcomingEvents,
-                    isExpanded: showUpcoming,
-                    onToggle: () =>
-                        setState(() => showUpcoming = !showUpcoming),
+                  Text(
+                    'Belum ada event',
+                    style: TextStyle(color: KTColor.textSecondary),
                   ),
-                  _buildSection(
-                    title: 'Event Berjalan',
-                    events: ongoingEvents,
-                    isExpanded: showOngoing,
-                    onToggle: () => setState(() => showOngoing = !showOngoing),
-                  ),
-                  _buildSection(
-                    title: 'Event Selesai',
-                    events: completedEvents,
-                    isExpanded: showCompleted,
-                    onToggle: () =>
-                        setState(() => showCompleted = !showCompleted),
-                  ),
-                  const SizedBox(height: 10),
                 ],
               ),
             );
-          }),
-        ),
+          }
+
+          return SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            child: Column(
+              children: [
+                _buildSection(
+                  title: 'Event Mendatang',
+                  events: upcomingEvents,
+                  isExpanded: showUpcoming,
+                  onToggle: () => setState(() => showUpcoming = !showUpcoming),
+                ),
+                const SizedBox(height: 12),
+                _buildSection(
+                  title: 'Event Berjalan',
+                  events: ongoingEvents,
+                  isExpanded: showOngoing,
+                  onToggle: () => setState(() => showOngoing = !showOngoing),
+                ),
+                const SizedBox(height: 12),
+                _buildSection(
+                  title: 'Event Selesai',
+                  events: completedEvents,
+                  isExpanded: showCompleted,
+                  onToggle: () =>
+                      setState(() => showCompleted = !showCompleted),
+                ),
+              ],
+            ),
+          );
+        }),
       ),
     );
   }
@@ -117,31 +135,29 @@ class _EventScreenState extends State<EventScreen> {
     required bool isExpanded,
     required VoidCallback onToggle,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(top: 20),
-      padding: const EdgeInsets.symmetric(horizontal: 30),
-      child: Column(
-        children: [
-          KTEventHeader(
-            title: title,
-            isExpanded: isExpanded,
-            onToggle: onToggle,
-          ),
-          if (isExpanded)
-            Column(
-              children: events.isEmpty
-                  ? [
-                      const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text(
-                          "Tidak ada event",
-                          style: TextStyle(color: Colors.white70),
+    return Column(
+      children: [
+        KTEventHeader(title: title, isExpanded: isExpanded, onToggle: onToggle),
+        if (isExpanded)
+          Column(
+            children: events.isEmpty
+                ? [
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 24),
+                      child: Text(
+                        "Tidak ada event",
+                        style: TextStyle(
+                          color: KTColor.textSecondary,
+                          fontSize: 14,
                         ),
                       ),
-                    ]
-                  : events
-                        .map(
-                          (event) => KTEventCard(
+                    ),
+                  ]
+                : events
+                      .map(
+                        (event) => Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: KTEventCard(
                             title: event.title,
                             description: event.description,
                             date: event.date,
@@ -149,11 +165,11 @@ class _EventScreenState extends State<EventScreen> {
                             status: event.status,
                             location: event.location,
                           ),
-                        )
-                        .toList(),
-            ),
-        ],
-      ),
+                        ),
+                      )
+                      .toList(),
+          ),
+      ],
     );
   }
 }

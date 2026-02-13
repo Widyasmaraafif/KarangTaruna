@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:karang_taruna/commons/widgets/alert_dialog.dart';
 import 'package:karang_taruna/commons/widgets/buttons/button_fitur.dart';
 import 'package:karang_taruna/commons/widgets/containers/announcement_card.dart';
@@ -15,7 +14,6 @@ import 'package:karang_taruna/screens/aspiration/all_aspirations_screen.dart';
 import 'package:karang_taruna/screens/aspiration/aspiration_detail_screen.dart';
 import 'package:karang_taruna/screens/aspiration/aspiration_screen.dart';
 import 'package:karang_taruna/screens/event/event_screen.dart';
-import 'package:karang_taruna/screens/finance/finance_screen.dart';
 import 'package:karang_taruna/screens/gallery/gallery_screen.dart';
 import 'package:karang_taruna/screens/management/management_screen.dart';
 import 'package:karang_taruna/screens/finance/organization_finance_screen.dart';
@@ -24,6 +22,7 @@ import 'package:karang_taruna/screens/news/widgets/news_detail_screen.dart';
 import 'package:karang_taruna/screens/polling/polling_detail_screen.dart';
 import 'package:karang_taruna/screens/polling/polling_screen.dart';
 import 'package:karang_taruna/screens/settings/settings_screen.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -33,22 +32,22 @@ class HomeScreen extends StatelessWidget {
     final DataController controller = Get.find<DataController>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFF00BA9B),
+      backgroundColor: KTColor.primary,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () => controller.refreshData(),
-          color: const Color(0xFF00BA9B),
+          color: KTColor.primary,
           backgroundColor: Colors.white,
           child: SingleChildScrollView(
             padding: const EdgeInsets.only(bottom: 30),
             physics: const AlwaysScrollableScrollPhysics(),
             child: Column(
-              children: [
-                const HeaderHome(),
-                const NewsHome(),
-                const AnnouncementHome(),
-                const PojokKampungHome(),
-                const PoolingHome(),
+              children: const [
+                HeaderHome(),
+                NewsHome(),
+                AnnouncementHome(),
+                PojokKampungHome(),
+                PoolingHome(),
               ],
             ),
           ),
@@ -67,11 +66,12 @@ class PoolingHome extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.only(top: 20),
-      padding: const EdgeInsets.symmetric(horizontal: 30),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         children: [
           KTSectionHeading(
             title: "Pooling",
+            titleColor: Colors.white,
             onPressed: () => Get.to(() => const PollingScreen()),
           ),
           const SizedBox(height: 10),
@@ -112,7 +112,7 @@ class PoolingHome extends StatelessWidget {
                   Get.snackbar(
                     'Info',
                     'Anda sudah memilih pada polling ini',
-                    backgroundColor: Colors.orange,
+                    backgroundColor: KTColor.warning,
                     colorText: Colors.white,
                   );
                   return;
@@ -122,7 +122,7 @@ class PoolingHome extends StatelessWidget {
                   Get.snackbar(
                     'Sukses',
                     'Terima kasih atas partisipasi Anda!',
-                    backgroundColor: Colors.green,
+                    backgroundColor: KTColor.success,
                     colorText: Colors.white,
                   );
                 } catch (e) {
@@ -130,7 +130,7 @@ class PoolingHome extends StatelessWidget {
                   Get.snackbar(
                     'Info',
                     message,
-                    backgroundColor: Colors.orange,
+                    backgroundColor: KTColor.warning,
                     colorText: Colors.white,
                   );
                 }
@@ -152,11 +152,12 @@ class PojokKampungHome extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.only(top: 20),
-      padding: const EdgeInsets.symmetric(horizontal: 30),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         children: [
           KTSectionHeading(
             title: "Pojok Kampung",
+            titleColor: Colors.white,
             onPressed: () => Get.to(() => const AllAspirationsScreen()),
           ),
           const SizedBox(height: 10),
@@ -220,11 +221,12 @@ class AnnouncementHome extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.only(top: 20),
-      padding: const EdgeInsets.symmetric(horizontal: 30),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         children: [
           KTSectionHeading(
             title: "Pengumuman Terbaru",
+            titleColor: Colors.white,
             onPressed: () {
               Get.to(() => const AnnouncementScreen());
             },
@@ -240,6 +242,7 @@ class AnnouncementHome extends StatelessWidget {
 
             return ListView.separated(
               shrinkWrap: true,
+              padding: EdgeInsets.zero,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: controller.announcements.length > 2
                   ? 2
@@ -257,7 +260,7 @@ class AnnouncementHome extends StatelessWidget {
                       title: item['title'],
                       content: item['description'] ?? '',
                       confirmText: 'Tutup',
-                      confirmColor: const Color(0xFF00BA9B),
+                      confirmColor: KTColor.primary,
                       showCancel: false,
                       onConfirm: () {},
                     );
@@ -281,11 +284,12 @@ class NewsHome extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.only(top: 20),
-      padding: const EdgeInsets.symmetric(horizontal: 30),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         children: [
           KTSectionHeading(
             title: "Berita Terbaru",
+            titleColor: Colors.white,
             onPressed: () => Get.to(() => const NewsScreen()),
           ),
           const SizedBox(height: 10),
@@ -297,18 +301,15 @@ class NewsHome extends StatelessWidget {
               );
             }
 
-            return GridView.builder(
+            // Using ListView for 1 card per row to avoid overflow
+            return ListView.separated(
               shrinkWrap: true,
+              padding: EdgeInsets.zero,
               physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 16,
-                childAspectRatio: 9 / 11,
-              ),
               itemCount: controller.news.length > 2
                   ? 2
                   : controller.news.length,
+              separatorBuilder: (context, index) => const SizedBox(height: 16),
               itemBuilder: (context, index) {
                 final item = controller.news[index];
                 return KTPostContainer(
@@ -340,12 +341,12 @@ class HeaderHome extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.only(left: 30, right: 30, bottom: 30, top: 20),
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
       decoration: const BoxDecoration(
-        color: Color(0xff79CDB0),
+        color: KTColor.primaryLight,
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(50),
-          bottomRight: Radius.circular(50),
+          bottomLeft: Radius.circular(40),
+          bottomRight: Radius.circular(40),
         ),
       ),
       child: Column(
@@ -357,57 +358,59 @@ class HeaderHome extends StatelessWidget {
             return Text(
               'Hi, $name!',
               style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                fontWeight: FontWeight.w800,
                 color: Colors.white,
+                letterSpacing: -0.5,
               ),
             );
           }),
-          const SizedBox(height: 10),
+          const SizedBox(height: 20),
           GridView.count(
-            crossAxisCount: 5,
+            crossAxisCount: 5, // Returned to 5 columns
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            childAspectRatio: 0.85, // Adjusted for smaller buttons
             children: [
               KTButtonFitur(
-                icon: Icons.people,
+                icon: Icons.people_rounded,
                 label: "Pengurus",
                 onTap: () => Get.to(() => const ManagementScreen()),
               ),
               KTButtonFitur(
-                icon: Icons.photo_library,
+                icon: Icons.photo_library_rounded,
                 label: "Galeri",
                 onTap: () => Get.to(() => const GalleryScreen()),
               ),
               KTButtonFitur(
-                icon: Icons.attach_money,
+                icon: Icons.account_balance_wallet_rounded,
                 label: "Keuangan",
                 onTap: () => Get.to(() => const OrganizationFinanceScreen()),
               ),
               KTButtonFitur(
-                icon: Icons.event,
+                icon: Icons.event_rounded,
                 label: "Event",
                 onTap: () => Get.to(() => const EventScreen()),
               ),
               KTButtonFitur(
-                icon: Icons.newspaper,
+                icon: Icons.newspaper_rounded,
                 label: "Berita",
                 onTap: () => Get.to(() => const NewsScreen()),
               ),
               KTButtonFitur(
-                icon: Icons.people_alt,
+                icon: Icons.poll_rounded,
                 label: "Pooling",
                 onTap: () => Get.to(() => const PollingScreen()),
               ),
               KTButtonFitur(
-                icon: Icons.feedback,
+                icon: Icons.campaign_rounded,
                 label: "Aspirasi",
                 onTap: () => Get.to(() => const AllAspirationsScreen()),
               ),
               KTButtonFitur(
-                icon: Icons.settings,
+                icon: Icons.settings_rounded,
                 label: "Pengaturan",
                 onTap: () => Get.to(() => const SettingsScreen()),
               ),

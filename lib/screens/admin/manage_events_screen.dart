@@ -1,64 +1,44 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:karang_taruna/commons/widgets/alert_dialog.dart';
+import 'package:karang_taruna/commons/widgets/buttons/kt_button.dart';
+import 'package:karang_taruna/commons/widgets/inputs/kt_text_field.dart';
 import 'package:karang_taruna/controllers/data_controller.dart';
 import 'package:karang_taruna/services/supabase_service.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 
-class ManageEventsScreen extends StatefulWidget {
+class ManageEventsScreen extends StatelessWidget {
   const ManageEventsScreen({super.key});
 
-  @override
-  State<ManageEventsScreen> createState() => _ManageEventsScreenState();
-}
+  void _confirmDelete(int id) {
+    final supabaseService = SupabaseService();
+    final controller = Get.find<DataController>();
 
-class _ManageEventsScreenState extends State<ManageEventsScreen> {
-  final SupabaseService _supabaseService = SupabaseService();
-  final DataController _dataController = Get.find<DataController>();
-  final RxList<Map<String, dynamic>> _events = <Map<String, dynamic>>[].obs;
-  final RxBool _isLoading = true.obs;
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchEvents();
-  }
-
-  Future<void> _fetchEvents() async {
-    try {
-      _isLoading.value = true;
-      final events = await _supabaseService.getEvents();
-      _events.assignAll(events);
-    } catch (e) {
-      Get.snackbar('Error', 'Gagal memuat kegiatan: $e');
-    } finally {
-      _isLoading.value = false;
-    }
-  }
-
-  void _deleteEvent(int id) {
     KTAlertDialog.show(
-      context,
-      title: 'Hapus Kegiatan',
-      content: 'Apakah Anda yakin ingin menghapus kegiatan ini?',
+      Get.context!,
+      title: 'Hapus Event',
+      content: 'Apakah Anda yakin ingin menghapus event ini?',
       confirmText: 'Hapus',
-      confirmColor: Colors.red,
+      confirmColor: KTColor.error,
       onConfirm: () async {
         try {
-          await _supabaseService.deleteEvent(id);
-          await _fetchEvents();
-          _dataController.fetchEvents(); // Update global state
+          await supabaseService.deleteEvent(id);
+          controller.fetchEvents();
           Get.snackbar(
             'Sukses',
-            'Kegiatan berhasil dihapus',
-            backgroundColor: Colors.green,
+            'Event berhasil dihapus',
+            backgroundColor: KTColor.success,
             colorText: Colors.white,
           );
         } catch (e) {
           Get.snackbar(
             'Error',
-            'Gagal menghapus kegiatan: $e',
-            backgroundColor: Colors.red,
+            'Gagal menghapus event: $e',
+            backgroundColor: KTColor.error,
             colorText: Colors.white,
           );
         }
@@ -67,241 +47,258 @@ class _ManageEventsScreenState extends State<ManageEventsScreen> {
   }
 
   void _showEventForm({Map<String, dynamic>? event}) {
+    final controller = Get.find<DataController>();
+    final supabaseService = SupabaseService();
+
     final titleController = TextEditingController(text: event?['title']);
     final descriptionController = TextEditingController(
       text: event?['description'],
     );
     final locationController = TextEditingController(text: event?['location']);
     final dateController = TextEditingController(
-      text: event != null
-          ? DateFormat('yyyy-MM-dd').format(DateTime.parse(event['event_date']))
+      text: event?['date'] != null
+          ? DateFormat('yyyy-MM-dd').format(DateTime.parse(event!['date']))
           : '',
     );
-    final timeController = TextEditingController(
-      text: event != null
-          ? DateFormat('HH:mm').format(DateTime.parse(event['event_date']))
-          : '',
-    );
-    final selectedStatus = (event?['status'] ?? 'upcoming').toString().obs;
+
+    File? imageFile;
+    String? imageUrl = event?['image_url'];
+    final isSaving = false.obs;
 
     Get.bottomSheet(
-      Container(
-        padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                event == null ? 'Tambah Kegiatan' : 'Edit Kegiatan',
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF00BA9B),
-                ),
-              ),
-              const SizedBox(height: 24),
-              TextField(
-                controller: titleController,
-                decoration: const InputDecoration(
-                  labelText: 'Nama Kegiatan',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Deskripsi',
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: locationController,
-                decoration: const InputDecoration(
-                  labelText: 'Lokasi',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.location_on_outlined),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
+      StatefulBuilder(
+        builder: (context, setState) {
+          return Container(
+            padding: const EdgeInsets.all(24),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(
-                    child: TextField(
-                      controller: dateController,
-                      readOnly: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Tanggal',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.calendar_today),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        event == null ? 'Tambah Event' : 'Edit Event',
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          color: KTColor.textPrimary,
+                          letterSpacing: -0.5,
+                        ),
                       ),
-                      onTap: () async {
-                        final date = await showDatePicker(
-                          context: Get.context!,
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime.now(),
-                          lastDate: DateTime.now().add(
-                            const Duration(days: 365),
-                          ),
-                        );
-                        if (date != null) {
-                          dateController.text = DateFormat(
-                            'yyyy-MM-dd',
-                          ).format(date);
-                        }
-                      },
+                      IconButton(
+                        onPressed: () => Get.back(),
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: KTColor.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  GestureDetector(
+                    onTap: () async {
+                      final picker = ImagePicker();
+                      final pickedFile = await picker.pickImage(
+                        source: ImageSource.gallery,
+                        maxWidth: 1024,
+                        maxHeight: 1024,
+                        imageQuality: 85,
+                      );
+                      if (pickedFile != null) {
+                        setState(() {
+                          imageFile = File(pickedFile.path);
+                        });
+                      }
+                    },
+                    child: Container(
+                      height: 180,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: KTColor.background,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: KTColor.border.withValues(alpha: 0.5),
+                        ),
+                        image: imageFile != null
+                            ? DecorationImage(
+                                image: FileImage(imageFile!),
+                                fit: BoxFit.cover,
+                              )
+                            : (imageUrl != null
+                                  ? DecorationImage(
+                                      image: NetworkImage(imageUrl!),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : null),
+                      ),
+                      child: imageFile == null && imageUrl == null
+                          ? Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.add_photo_alternate_outlined,
+                                  size: 40,
+                                  color: KTColor.textSecondary.withValues(
+                                    alpha: 0.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Pilih Foto Event',
+                                  style: TextStyle(
+                                    color: KTColor.textSecondary.withValues(
+                                      alpha: 0.7,
+                                    ),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : null,
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: TextField(
-                      controller: timeController,
-                      readOnly: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Waktu',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.access_time),
-                      ),
-                      onTap: () async {
-                        final time = await showTimePicker(
-                          context: Get.context!,
-                          initialTime: TimeOfDay.now(),
-                        );
-                        if (time != null) {
-                          final now = DateTime.now();
-                          final dt = DateTime(
-                            now.year,
-                            now.month,
-                            now.day,
-                            time.hour,
-                            time.minute,
+                  const SizedBox(height: 20),
+                  KTTextField(
+                    controller: titleController,
+                    labelText: 'Nama Event',
+                    hintText: 'Masukkan nama event',
+                  ),
+                  const SizedBox(height: 16),
+                  KTTextField(
+                    controller: descriptionController,
+                    labelText: 'Deskripsi',
+                    hintText: 'Masukkan deskripsi event',
+                    maxLines: 3,
+                  ),
+                  const SizedBox(height: 16),
+                  KTTextField(
+                    controller: locationController,
+                    labelText: 'Lokasi',
+                    hintText: 'Masukkan lokasi event',
+                    prefixIcon: Icons.location_on_rounded,
+                  ),
+                  const SizedBox(height: 16),
+                  KTTextField(
+                    controller: dateController,
+                    labelText: 'Tanggal',
+                    hintText: 'YYYY-MM-DD',
+                    prefixIcon: Icons.calendar_today_rounded,
+                    readOnly: true,
+                    onTap: () async {
+                      final pickedDate = await showDatePicker(
+                        context: context,
+                        initialDate: dateController.text.isNotEmpty
+                            ? DateTime.parse(dateController.text)
+                            : DateTime.now(),
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime(2100),
+                        builder: (context, child) {
+                          return Theme(
+                            data: Theme.of(context).copyWith(
+                              colorScheme: const ColorScheme.light(
+                                primary: KTColor.primary,
+                                onPrimary: Colors.white,
+                                onSurface: KTColor.textPrimary,
+                              ),
+                            ),
+                            child: child!,
                           );
-                          timeController.text = DateFormat('HH:mm').format(dt);
+                        },
+                      );
+                      if (pickedDate != null) {
+                        dateController.text = DateFormat(
+                          'yyyy-MM-dd',
+                        ).format(pickedDate);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 32),
+                  Obx(
+                    () => KTButton(
+                      text: event == null ? 'Buat Event' : 'Simpan Perubahan',
+                      isLoading: isSaving.value,
+                      onPressed: () async {
+                        if (titleController.text.isEmpty ||
+                            dateController.text.isEmpty ||
+                            locationController.text.isEmpty) {
+                          Get.snackbar(
+                            'Peringatan',
+                            'Judul, tanggal, dan lokasi wajib diisi',
+                            backgroundColor: KTColor.warning,
+                            colorText: Colors.white,
+                          );
+                          return;
+                        }
+
+                        isSaving.value = true;
+
+                        try {
+                          if (imageFile != null) {
+                            imageUrl = await supabaseService.uploadEventImage(
+                              imageFile!,
+                            );
+                          }
+
+                          final data = {
+                            'title': titleController.text,
+                            'description': descriptionController.text,
+                            'location': locationController.text,
+                            'date': dateController.text,
+                            'image_url': imageUrl,
+                            'updated_at': DateTime.now().toIso8601String(),
+                          };
+
+                          if (event == null) {
+                            data['created_at'] = DateTime.now()
+                                .toIso8601String();
+                            await supabaseService.createEvent(data);
+                            Get.back();
+                            Get.snackbar(
+                              'Sukses',
+                              'Event berhasil dibuat',
+                              backgroundColor: KTColor.success,
+                              colorText: Colors.white,
+                            );
+                          } else {
+                            await supabaseService.updateEvent(
+                              event['id'],
+                              data,
+                            );
+                            Get.back();
+                            Get.snackbar(
+                              'Sukses',
+                              'Event berhasil diperbarui',
+                              backgroundColor: KTColor.success,
+                              colorText: Colors.white,
+                            );
+                          }
+
+                          controller.fetchEvents();
+                        } catch (e) {
+                          isSaving.value = false;
+                          Get.snackbar(
+                            'Error',
+                            'Gagal menyimpan event: $e',
+                            backgroundColor: KTColor.error,
+                            colorText: Colors.white,
+                          );
                         }
                       },
                     ),
                   ),
+                  const SizedBox(height: 20),
                 ],
               ),
-              const SizedBox(height: 16),
-              Obx(
-                () => DropdownButtonFormField<String>(
-                  value: selectedStatus.value,
-                  decoration: const InputDecoration(
-                    labelText: 'Status',
-                    border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.info_outline),
-                  ),
-                  items: const [
-                    DropdownMenuItem(
-                      value: 'upcoming',
-                      child: Text('Mendatang'),
-                    ),
-                    DropdownMenuItem(value: 'ongoing', child: Text('Berjalan')),
-                    DropdownMenuItem(
-                      value: 'completed',
-                      child: Text('Selesai'),
-                    ),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      selectedStatus.value = value;
-                    }
-                  },
-                ),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    if (titleController.text.isEmpty ||
-                        dateController.text.isEmpty ||
-                        timeController.text.isEmpty) {
-                      Get.snackbar(
-                        'Error',
-                        'Mohon lengkapi data wajib',
-                        backgroundColor: Colors.orange,
-                        colorText: Colors.white,
-                      );
-                      return;
-                    }
-
-                    try {
-                      final dateTime = DateTime.parse(
-                        '${dateController.text} ${timeController.text}',
-                      );
-
-                      if (selectedStatus.value == 'upcoming' &&
-                          dateTime.isBefore(DateTime.now())) {
-                        Get.snackbar(
-                          'Error',
-                          'Status "Mendatang" tidak valid untuk waktu yang sudah lewat',
-                          backgroundColor: Colors.orange,
-                          colorText: Colors.white,
-                        );
-                        return;
-                      }
-
-                      final data = {
-                        'title': titleController.text,
-                        'description': descriptionController.text,
-                        'location': locationController.text,
-                        'event_date': dateTime.toIso8601String(),
-                        'status': selectedStatus.value,
-                      };
-
-                      if (event == null) {
-                        await _supabaseService.createEvent(data);
-                        Get.back(); // Close bottom sheet
-                        Get.snackbar(
-                          'Sukses',
-                          'Kegiatan berhasil ditambahkan',
-                          backgroundColor: Colors.green,
-                          colorText: Colors.white,
-                        );
-                      } else {
-                        await _supabaseService.updateEvent(event['id'], data);
-                        Get.back(); // Close bottom sheet
-                        Get.snackbar(
-                          'Sukses',
-                          'Kegiatan berhasil diperbarui',
-                          backgroundColor: Colors.green,
-                          colorText: Colors.white,
-                        );
-                      }
-
-                      _fetchEvents(); // Refresh list
-                      _dataController.fetchEvents(); // Update global state
-                    } catch (e) {
-                      Get.snackbar(
-                        'Error',
-                        'Gagal menyimpan kegiatan: $e',
-                        backgroundColor: Colors.red,
-                        colorText: Colors.white,
-                      );
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF00BA9B),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: Text(event == null ? 'Simpan' : 'Update'),
-                ),
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
       isScrollControlled: true,
     );
@@ -309,210 +306,257 @@ class _ManageEventsScreenState extends State<ManageEventsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<DataController>();
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: KTColor.background,
       appBar: AppBar(
-        title: const Text(
-          'Kelola Kegiatan',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
+        title: const Text('Kelola Event'),
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          color: KTColor.textPrimary,
           onPressed: () => Get.back(),
         ),
       ),
-      body: Obx(() {
-        if (_isLoading.value) {
-          return const Center(
-            child: CircularProgressIndicator(color: Color(0xFF00BA9B)),
-          );
-        }
+      body: RefreshIndicator(
+        onRefresh: controller.fetchEvents,
+        color: KTColor.primary,
+        child: Obx(() {
+          if (controller.isLoadingEvents.value && controller.events.isEmpty) {
+            return const Center(
+              child: CircularProgressIndicator(color: KTColor.primary),
+            );
+          }
 
-        if (_events.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.event_busy, size: 64, color: Colors.grey.shade400),
-                const SizedBox(height: 16),
-                Text(
-                  'Belum ada kegiatan',
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
-                ),
-              ],
-            ),
-          );
-        }
-
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: _events.length,
-          itemBuilder: (context, index) {
-            final event = _events[index];
-            final date = DateTime.parse(event['event_date']);
-
-            return Card(
-              margin: const EdgeInsets.only(bottom: 16),
-              elevation: 2,
-              shadowColor: Colors.black.withOpacity(0.1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+          if (controller.events.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.event_available_rounded,
+                    size: 64,
+                    color: KTColor.border,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Belum ada event',
+                    style: TextStyle(
+                      color: KTColor.textSecondary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
+            );
+          }
+
+          return ListView.separated(
+            padding: const EdgeInsets.all(20),
+            itemCount: controller.events.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            itemBuilder: (context, index) {
+              final event = controller.events[index];
+              final date =
+                  DateTime.tryParse(event['date'] ?? '') ?? DateTime.now();
+
+              return Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: KTColor.border.withValues(alpha: 0.5),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: KTColor.shadow.withValues(alpha: 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF00BA9B).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Column(
-                            children: [
-                              Text(
-                                DateFormat('dd').format(date),
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF00BA9B),
+                    if (event['image_url'] != null)
+                      ClipRRect(
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(16),
+                        ),
+                        child: Image.network(
+                          event['image_url'],
+                          height: 160,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              Container(
+                                height: 160,
+                                color: KTColor.background,
+                                child: const Icon(
+                                  Icons.broken_image,
+                                  color: KTColor.border,
                                 ),
                               ),
-                              Text(
-                                DateFormat('MMM').format(date),
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF00BA9B),
+                        ),
+                      ),
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  event['title'] ?? 'Tanpa Judul',
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w800,
+                                    color: KTColor.textPrimary,
+                                    letterSpacing: -0.3,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
+                              ),
+                              PopupMenuButton(
+                                icon: Icon(
+                                  Icons.more_vert_rounded,
+                                  color: KTColor.textSecondary,
+                                  size: 20,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                itemBuilder: (context) => [
+                                  const PopupMenuItem(
+                                    value: 'edit',
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.edit_rounded,
+                                          size: 18,
+                                          color: KTColor.textPrimary,
+                                        ),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          'Edit',
+                                          style: TextStyle(
+                                            color: KTColor.textPrimary,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const PopupMenuItem(
+                                    value: 'delete',
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.delete_rounded,
+                                          size: 18,
+                                          color: KTColor.error,
+                                        ),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          'Hapus',
+                                          style: TextStyle(
+                                            color: KTColor.error,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                                onSelected: (value) {
+                                  if (value == 'edit') {
+                                    _showEventForm(event: event);
+                                  } else if (value == 'delete') {
+                                    _confirmDelete(event['id']);
+                                  }
+                                },
                               ),
                             ],
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          const SizedBox(height: 12),
+                          Row(
                             children: [
-                              Text(
-                                event['title'],
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
                               Row(
                                 children: [
-                                  const Icon(
-                                    Icons.access_time,
-                                    size: 14,
-                                    color: Colors.grey,
+                                  Icon(
+                                    Icons.calendar_today_rounded,
+                                    size: 12,
+                                    color: KTColor.textSecondary.withValues(
+                                      alpha: 0.7,
+                                    ),
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    DateFormat('HH:mm').format(date),
-                                    style: const TextStyle(
-                                      color: Colors.grey,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  const Icon(
-                                    Icons.location_on_outlined,
-                                    size: 14,
-                                    color: Colors.grey,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Expanded(
-                                    child: Text(
-                                      event['location'] ?? '-',
-                                      style: const TextStyle(
-                                        color: Colors.grey,
-                                        fontSize: 12,
+                                    DateFormat('dd MMM yyyy').format(date),
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w500,
+                                      color: KTColor.textSecondary.withValues(
+                                        alpha: 0.7,
                                       ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.location_on_rounded,
+                                      size: 12,
+                                      color: KTColor.textSecondary.withValues(
+                                        alpha: 0.7,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Expanded(
+                                      child: Text(
+                                        event['location'] ??
+                                            'Lokasi tidak ditentukan',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w500,
+                                          color: KTColor.textSecondary
+                                              .withValues(alpha: 0.7),
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
                           ),
-                        ),
-                        PopupMenuButton(
-                          icon: const Icon(Icons.more_vert),
-                          itemBuilder: (context) => [
-                            const PopupMenuItem(
-                              value: 'edit',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.edit, size: 20),
-                                  SizedBox(width: 8),
-                                  Text('Edit'),
-                                ],
-                              ),
-                            ),
-                            const PopupMenuItem(
-                              value: 'delete',
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.delete,
-                                    size: 20,
-                                    color: Colors.red,
-                                  ),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'Hapus',
-                                    style: TextStyle(color: Colors.red),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                          onSelected: (value) {
-                            if (value == 'edit') {
-                              _showEventForm(event: event);
-                            } else if (value == 'delete') {
-                              _deleteEvent(event['id']);
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                    if (event['description'] != null) ...[
-                      const SizedBox(height: 12),
-                      Text(
-                        event['description'],
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 14,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                        ],
                       ),
-                    ],
+                    ),
                   ],
                 ),
-              ),
-            );
-          },
-        );
-      }),
+              );
+            },
+          );
+        }),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showEventForm(),
-        backgroundColor: const Color(0xFF00BA9B),
-        child: const Icon(Icons.add, color: Colors.white),
+        backgroundColor: KTColor.primary,
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
       ),
     );
   }

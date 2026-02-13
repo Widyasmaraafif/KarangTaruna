@@ -2,65 +2,40 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:karang_taruna/commons/widgets/alert_dialog.dart';
+import 'package:karang_taruna/commons/widgets/buttons/kt_button.dart';
+import 'package:karang_taruna/commons/widgets/inputs/kt_text_field.dart';
 import 'package:karang_taruna/controllers/data_controller.dart';
 import 'package:karang_taruna/services/supabase_service.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 
-class ManageAnnouncementsScreen extends StatefulWidget {
+class ManageAnnouncementsScreen extends StatelessWidget {
   const ManageAnnouncementsScreen({super.key});
 
-  @override
-  State<ManageAnnouncementsScreen> createState() =>
-      _ManageAnnouncementsScreenState();
-}
+  void _deleteAnnouncement(BuildContext context, int id) {
+    final supabaseService = SupabaseService();
+    final dataController = Get.find<DataController>();
 
-class _ManageAnnouncementsScreenState extends State<ManageAnnouncementsScreen> {
-  final SupabaseService _supabaseService = SupabaseService();
-  final DataController _dataController = Get.find<DataController>();
-  final RxList<Map<String, dynamic>> _announcements =
-      <Map<String, dynamic>>[].obs;
-  final RxBool _isLoading = true.obs;
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchAnnouncements();
-  }
-
-  Future<void> _fetchAnnouncements({bool silent = false}) async {
-    try {
-      if (!silent) _isLoading.value = true;
-      final data = await _supabaseService.getAnnouncements();
-      _announcements.assignAll(data);
-    } catch (e) {
-      Get.snackbar('Error', 'Gagal memuat pengumuman: $e');
-    } finally {
-      if (!silent) _isLoading.value = false;
-    }
-  }
-
-  void _deleteAnnouncement(int id) {
     KTAlertDialog.show(
       context,
       title: 'Hapus Pengumuman',
       content: 'Apakah Anda yakin ingin menghapus pengumuman ini?',
       confirmText: 'Hapus',
-      confirmColor: Colors.red,
+      confirmColor: KTColor.error,
       onConfirm: () async {
         try {
-          await _supabaseService.deleteAnnouncement(id);
-          await _fetchAnnouncements();
-          _dataController.fetchAnnouncements(); // Update global state
+          await supabaseService.deleteAnnouncement(id);
+          await dataController.fetchAnnouncements();
           Get.snackbar(
             'Sukses',
             'Pengumuman berhasil dihapus',
-            backgroundColor: Colors.green,
+            backgroundColor: KTColor.success,
             colorText: Colors.white,
           );
         } catch (e) {
           Get.snackbar(
             'Error',
             'Gagal menghapus pengumuman: $e',
-            backgroundColor: Colors.red,
+            backgroundColor: KTColor.error,
             colorText: Colors.white,
           );
         }
@@ -69,6 +44,9 @@ class _ManageAnnouncementsScreenState extends State<ManageAnnouncementsScreen> {
   }
 
   void _showForm({Map<String, dynamic>? item}) {
+    final supabaseService = SupabaseService();
+    final dataController = Get.find<DataController>();
+
     final titleController = TextEditingController(text: item?['title']);
     final descriptionController = TextEditingController(
       text: item?['description'],
@@ -95,123 +73,93 @@ class _ManageAnnouncementsScreenState extends State<ManageAnnouncementsScreen> {
                   Text(
                     item == null ? 'Tambah Pengumuman' : 'Edit Pengumuman',
                     style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF00BA9B),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: KTColor.textPrimary,
+                      letterSpacing: -0.5,
                     ),
                   ),
                   const SizedBox(height: 24),
-                  TextField(
+                  KTTextField(
                     controller: titleController,
-                    decoration: const InputDecoration(
-                      labelText: 'Judul',
-                      border: OutlineInputBorder(),
-                    ),
+                    labelText: 'Judul',
+                    hintText: 'Masukkan judul pengumuman',
                   ),
                   const SizedBox(height: 16),
-                  TextField(
+                  KTTextField(
                     controller: descriptionController,
-                    decoration: const InputDecoration(
-                      labelText: 'Deskripsi',
-                      border: OutlineInputBorder(),
-                    ),
+                    labelText: 'Deskripsi',
+                    hintText: 'Masukkan deskripsi pengumuman',
                     maxLines: 3,
                   ),
                   const SizedBox(height: 16),
-                  TextField(
+                  KTTextField(
                     controller: badgeTextController,
-                    decoration: const InputDecoration(
-                      labelText: 'Label Badge (contoh: Info, Penting)',
-                      border: OutlineInputBorder(),
-                    ),
+                    labelText: 'Label Badge',
+                    hintText: 'contoh: Info, Penting, Update',
                   ),
                   const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: isSaving
-                          ? null
-                          : () async {
-                              if (titleController.text.isEmpty) {
-                                Get.snackbar(
-                                  'Error',
-                                  'Judul wajib diisi',
-                                  backgroundColor: Colors.orange,
-                                  colorText: Colors.white,
-                                );
-                                return;
-                              }
+                  KTButton(
+                    text: item == null ? 'Simpan' : 'Update',
+                    onPressed: () async {
+                      if (titleController.text.isEmpty) {
+                        Get.snackbar(
+                          'Error',
+                          'Judul wajib diisi',
+                          backgroundColor: KTColor.warning,
+                          colorText: Colors.white,
+                        );
+                        return;
+                      }
 
-                              setState(() => isSaving = true);
+                      setState(() => isSaving = true);
 
-                              try {
-                                final data = {
-                                  'title': titleController.text,
-                                  'description': descriptionController.text,
-                                  'badge_text': badgeTextController.text,
-                                  'updated_at': DateTime.now()
-                                      .toIso8601String(),
-                                };
+                      try {
+                        final data = {
+                          'title': titleController.text,
+                          'description': descriptionController.text,
+                          'badge_text': badgeTextController.text,
+                          'updated_at': DateTime.now().toIso8601String(),
+                        };
 
-                                if (item == null) {
-                                  data['created_at'] = DateTime.now()
-                                      .toIso8601String();
-                                  await _supabaseService.createAnnouncement(
-                                    data,
-                                  );
+                        if (item == null) {
+                          data['created_at'] = DateTime.now().toIso8601String();
+                          await supabaseService.createAnnouncement(data);
 
-                                  Get.back();
-                                  Get.snackbar(
-                                    'Sukses',
-                                    'Pengumuman berhasil ditambahkan',
-                                    backgroundColor: Colors.green,
-                                    colorText: Colors.white,
-                                  );
-                                } else {
-                                  await _supabaseService.updateAnnouncement(
-                                    item['id'],
-                                    data,
-                                  );
+                          Get.back();
+                          Get.snackbar(
+                            'Sukses',
+                            'Pengumuman berhasil ditambahkan',
+                            backgroundColor: KTColor.success,
+                            colorText: Colors.white,
+                          );
+                        } else {
+                          await supabaseService.updateAnnouncement(
+                            item['id'],
+                            data,
+                          );
 
-                                  Get.back();
-                                  Get.snackbar(
-                                    'Sukses',
-                                    'Pengumuman berhasil diperbarui',
-                                    backgroundColor: Colors.green,
-                                    colorText: Colors.white,
-                                  );
-                                }
+                          Get.back();
+                          Get.snackbar(
+                            'Sukses',
+                            'Pengumuman berhasil diperbarui',
+                            backgroundColor: KTColor.success,
+                            colorText: Colors.white,
+                          );
+                        }
 
-                                await _fetchAnnouncements(silent: true);
-                                _dataController.fetchAnnouncements();
-                              } catch (e) {
-                                setState(() => isSaving = false);
-                                Get.snackbar(
-                                  'Error',
-                                  'Gagal menyimpan: $e',
-                                  backgroundColor: Colors.red,
-                                  colorText: Colors.white,
-                                );
-                              }
-                            },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF00BA9B),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: isSaving
-                          ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2,
-                              ),
-                            )
-                          : Text(item == null ? 'Simpan' : 'Update'),
-                    ),
+                        await dataController.fetchAnnouncements();
+                      } catch (e) {
+                        setState(() => isSaving = false);
+                        Get.snackbar(
+                          'Error',
+                          'Gagal menyimpan: $e',
+                          backgroundColor: KTColor.error,
+                          colorText: Colors.white,
+                        );
+                      }
+                    },
+                    isLoading: isSaving,
                   ),
                 ],
               ),
@@ -225,165 +173,207 @@ class _ManageAnnouncementsScreenState extends State<ManageAnnouncementsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<DataController>();
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: KTColor.background,
       appBar: AppBar(
         title: const Text(
           'Kelola Pengumuman',
-          style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: KTColor.textPrimary,
+            letterSpacing: -0.5,
+          ),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => Get.back(),
         ),
       ),
-      body: Obx(() {
-        if (_isLoading.value) {
-          return const Center(
-            child: CircularProgressIndicator(color: Color(0xFF00BA9B)),
-          );
-        }
-
-        if (_announcements.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.campaign_outlined,
-                  size: 64,
-                  color: Colors.grey.shade400,
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Belum ada pengumuman',
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
-                ),
-              ],
-            ),
-          );
-        }
-
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: _announcements.length,
-          itemBuilder: (context, index) {
-            final item = _announcements[index];
-            final date = DateTime.parse(item['created_at']);
-
-            return Card(
-              margin: const EdgeInsets.only(bottom: 16),
-              elevation: 2,
-              shadowColor: Colors.black.withOpacity(0.1),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+      body: RefreshIndicator(
+        onRefresh: controller.fetchAnnouncements,
+        color: KTColor.primary,
+        child: Obx(() {
+          if (controller.announcements.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.campaign_outlined,
+                    size: 64,
+                    color: KTColor.border,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Belum ada pengumuman',
+                    style: TextStyle(
+                      color: KTColor.textSecondary,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF00BA9B).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            item['badge_text'] ?? 'Info',
-                            style: const TextStyle(
-                              color: Color(0xFF00BA9B),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            item['title'],
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        PopupMenuButton(
-                          icon: const Icon(Icons.more_vert),
-                          itemBuilder: (context) => [
-                            const PopupMenuItem(
-                              value: 'edit',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.edit, size: 20),
-                                  SizedBox(width: 8),
-                                  Text('Edit'),
-                                ],
-                              ),
-                            ),
-                            const PopupMenuItem(
-                              value: 'delete',
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.delete,
-                                    size: 20,
-                                    color: Colors.red,
-                                  ),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'Hapus',
-                                    style: TextStyle(color: Colors.red),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                          onSelected: (value) {
-                            if (value == 'edit') {
-                              _showForm(item: item);
-                            } else if (value == 'delete') {
-                              _deleteAnnouncement(item['id']);
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      item['description'] ?? '',
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      DateFormat('dd MMM yyyy, HH:mm').format(date),
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontSize: 12,
-                      ),
+            );
+          }
+
+          return ListView.separated(
+            padding: const EdgeInsets.all(20),
+            itemCount: controller.announcements.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            itemBuilder: (context, index) {
+              final item = controller.announcements[index];
+              final date = DateTime.parse(item['created_at']);
+
+              return Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: KTColor.border.withValues(alpha: 0.5),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: KTColor.shadow.withValues(alpha: 0.02),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-              ),
-            );
-          },
-        );
-      }),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: KTColor.primary.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              item['badge_text'] ?? 'Info',
+                              style: const TextStyle(
+                                color: KTColor.primary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              item['title'],
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: KTColor.textPrimary,
+                              ),
+                            ),
+                          ),
+                          PopupMenuButton(
+                            icon: Icon(
+                              Icons.more_vert_rounded,
+                              color: KTColor.textSecondary,
+                              size: 20,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            itemBuilder: (context) => [
+                              const PopupMenuItem(
+                                value: 'edit',
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.edit_rounded, size: 18),
+                                    SizedBox(width: 8),
+                                    Text('Edit'),
+                                  ],
+                                ),
+                              ),
+                              const PopupMenuItem(
+                                value: 'delete',
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.delete_rounded,
+                                      size: 18,
+                                      color: KTColor.error,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Hapus',
+                                      style: TextStyle(color: KTColor.error),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                            onSelected: (value) {
+                              if (value == 'edit') {
+                                _showForm(item: item);
+                              } else if (value == 'delete') {
+                                _deleteAnnouncement(context, item['id']);
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        item['description'] ?? '',
+                        style: const TextStyle(
+                          color: KTColor.textSecondary,
+                          fontSize: 14,
+                          height: 1.5,
+                        ),
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 12),
+                        child: Divider(height: 1),
+                      ),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.access_time_rounded,
+                            size: 14,
+                            color: KTColor.textGrey,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            DateFormat('dd MMM yyyy, HH:mm').format(date),
+                            style: const TextStyle(
+                              color: KTColor.textGrey,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        }),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showForm(),
-        backgroundColor: const Color(0xFF00BA9B),
-        child: const Icon(Icons.add, color: Colors.white),
+        backgroundColor: KTColor.primary,
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
       ),
     );
   }

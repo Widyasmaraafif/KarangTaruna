@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:karang_taruna/controllers/data_controller.dart';
 import 'package:karang_taruna/screens/finance/widgets/finance_account_detail_screen.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 
 class OrganizationFinanceScreen extends StatelessWidget {
   const OrganizationFinanceScreen({super.key});
@@ -12,30 +13,37 @@ class OrganizationFinanceScreen extends StatelessWidget {
 
     // Map string icon names to IconData
     final Map<String, IconData> iconMap = {
-      'account_balance': Icons.account_balance,
-      'sports_soccer': Icons.sports_soccer,
-      'people': Icons.people,
-      'money': Icons.attach_money,
-      'default': Icons.account_balance_wallet,
+      'account_balance': Icons.account_balance_rounded,
+      'sports_soccer': Icons.sports_soccer_rounded,
+      'people': Icons.people_rounded,
+      'money': Icons.attach_money_rounded,
+      'default': Icons.account_balance_wallet_rounded,
     };
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: KTColor.background,
       appBar: AppBar(
         title: const Text(
           "Keuangan Organisasi",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: KTColor.textPrimary,
+            letterSpacing: -0.5,
+          ),
         ),
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
         elevation: 0,
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          color: KTColor.textPrimary,
           onPressed: () => Get.back(),
         ),
       ),
       body: RefreshIndicator(
         onRefresh: controller.fetchFinanceAccounts,
+        color: KTColor.primary,
         child: Obx(() {
           if (controller.isLoadingFinanceAccounts.value &&
               controller.financeAccounts.isEmpty) {
@@ -50,12 +58,12 @@ class OrganizationFinanceScreen extends StatelessWidget {
                   Icon(
                     Icons.account_balance_wallet_outlined,
                     size: 64,
-                    color: Colors.grey[400],
+                    color: KTColor.border,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'Belum ada akun keuangan',
-                    style: TextStyle(color: Colors.grey[600]),
+                    style: TextStyle(color: KTColor.textSecondary),
                   ),
                 ],
               ),
@@ -63,12 +71,12 @@ class OrganizationFinanceScreen extends StatelessWidget {
           }
 
           return GridView.builder(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
-              childAspectRatio: 0.85,
+              childAspectRatio: 0.9,
             ),
             itemCount: controller.financeAccounts.length,
             itemBuilder: (context, index) {
@@ -85,62 +93,58 @@ class OrganizationFinanceScreen extends StatelessWidget {
                 onTap: () {
                   Get.to(
                     () => FinanceAccountDetailScreen(account: account),
-                    transition: Transition.rightToLeft,
+                    transition: Transition.cupertino,
                   );
                 },
                 child: Container(
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: KTColor.border.withOpacity(0.5)),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.1),
+                        color: KTColor.shadow,
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
                     ],
                   ),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           color: color.withOpacity(0.1),
-                          shape: BoxShape.circle,
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Icon(icon, size: 32, color: color),
+                        child: Icon(icon, color: color, size: 24),
                       ),
                       const SizedBox(height: 16),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: Text(
-                          name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+                      Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: KTColor.textPrimary,
+                          letterSpacing: -0.3,
                         ),
                       ),
-                      if (description.isNotEmpty) ...[
-                        const SizedBox(height: 8),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: Text(
-                            description,
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 12,
-                            ),
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+                      const SizedBox(height: 4),
+                      Text(
+                        description,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: KTColor.textSecondary,
+                          height: 1.3,
                         ),
-                      ],
+                      ),
                     ],
                   ),
                 ),

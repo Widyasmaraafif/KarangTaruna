@@ -6,6 +6,7 @@ import 'package:karang_taruna/commons/widgets/containers/aspiration_form_card.da
 import 'package:karang_taruna/controllers/data_controller.dart';
 import 'package:karang_taruna/screens/aspiration/aspiration_detail_screen.dart';
 import 'package:karang_taruna/services/supabase_service.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 
 class AllAspirationsScreen extends StatelessWidget {
   const AllAspirationsScreen({super.key});
@@ -76,7 +77,12 @@ class AllAspirationsScreen extends StatelessWidget {
 
                           if (dialogContext.mounted) {
                             Navigator.of(dialogContext).pop();
-                            Get.snackbar("Sukses", "Aspirasi berhasil dikirim");
+                            Get.snackbar(
+                              "Sukses",
+                              "Aspirasi berhasil dikirim",
+                              backgroundColor: KTColor.success,
+                              colorText: Colors.white,
+                            );
                             controller.fetchAspirations();
                             controller.fetchUserAspirations();
                           }
@@ -86,6 +92,8 @@ class AllAspirationsScreen extends StatelessWidget {
                             Get.snackbar(
                               "Error",
                               "Gagal mengirim aspirasi: $e",
+                              backgroundColor: KTColor.error,
+                              colorText: Colors.white,
                             );
                           }
                         }
@@ -101,34 +109,40 @@ class AllAspirationsScreen extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: KTColor.background,
       appBar: AppBar(
         title: const Text(
           "Pojok Kampung",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: KTColor.textPrimary,
+            letterSpacing: -0.5,
+          ),
         ),
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
         elevation: 0,
+        centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          color: KTColor.textPrimary,
           onPressed: () => Get.back(),
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: showAddAspirationDialog,
-        backgroundColor: const Color(0xFF00BA9B),
-        child: const Icon(Icons.add, color: Colors.white),
+        backgroundColor: KTColor.primary,
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
       ),
       body: RefreshIndicator(
         onRefresh: () => controller.fetchAspirations(),
-        color: const Color(0xFF00BA9B),
+        color: KTColor.primary,
         child: Obx(() {
           if (controller.isLoadingAspirations.value &&
               controller.allAspirations.isEmpty) {
-            return const Center(
-              child: CircularProgressIndicator(color: Color(0xFF00BA9B)),
-            );
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (controller.allAspirations.isEmpty) {
@@ -139,12 +153,15 @@ class AllAspirationsScreen extends StatelessWidget {
                   Icon(
                     Icons.feedback_outlined,
                     size: 64,
-                    color: Colors.grey[400],
+                    color: KTColor.border,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     "Belum ada aspirasi",
-                    style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                    style: TextStyle(
+                      color: KTColor.textSecondary,
+                      fontSize: 14,
+                    ),
                   ),
                 ],
               ),
@@ -154,17 +171,20 @@ class AllAspirationsScreen extends StatelessWidget {
           return ListView.separated(
             padding: const EdgeInsets.all(20),
             itemCount: controller.allAspirations.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            separatorBuilder: (context, index) => const SizedBox(height: 4),
             itemBuilder: (context, index) {
               final item = controller.allAspirations[index];
               return KTAspirationCard(
                 author: item['author'] ?? 'Anonim',
                 content: item['content'] ?? '',
                 createdAt:
-                    DateTime.tryParse(item['created_at']) ?? DateTime.now(),
+                    DateTime.tryParse(item['created_at'] ?? '') ??
+                    DateTime.now(),
                 status: item['status'],
-                onTap: () =>
-                    Get.to(() => AspirationDetailScreen(aspiration: item)),
+                onTap: () => Get.to(
+                  () => AspirationDetailScreen(aspiration: item),
+                  transition: Transition.cupertino,
+                ),
               );
             },
           );
