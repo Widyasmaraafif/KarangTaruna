@@ -24,6 +24,7 @@ class DataController extends GetxController {
   final RxList<Map<String, dynamic>> userAspirations =
       <Map<String, dynamic>>[].obs;
   final RxList<int> votedPollIds = <int>[].obs;
+  final RxMap<int, int> votedOptionByPoll = <int, int>{}.obs;
 
   // Observable single objects
   final RxMap<String, dynamic> userProfile = <String, dynamic>{}.obs;
@@ -79,6 +80,18 @@ class DataController extends GetxController {
     final storedVotedPolls = _storage.read<List>('votedPollIds');
     if (storedVotedPolls != null) {
       votedPollIds.assignAll(storedVotedPolls.cast<int>());
+    }
+
+    final storedVotedSelections = _storage.read<Map>('votedSelections');
+    if (storedVotedSelections != null) {
+      final map = Map<String, dynamic>.from(storedVotedSelections);
+      final converted = <int, int>{};
+      map.forEach((key, value) {
+        final k = int.tryParse(key) ?? -1;
+        final v = (value is int) ? value : int.tryParse(value.toString()) ?? -1;
+        if (k >= 0 && v >= 0) converted[k] = v;
+      });
+      votedOptionByPoll.assignAll(converted);
     }
 
     final storedProfile = _storage.read<Map>('userProfile');
@@ -231,6 +244,11 @@ class DataController extends GetxController {
       final ids = await _supabaseService.getVotedPollIds();
       votedPollIds.assignAll(ids);
       await _storage.write('votedPollIds', ids);
+
+      final selections = await _supabaseService.getVotedSelections();
+      votedOptionByPoll.assignAll(selections);
+      final toStore = selections.map((k, v) => MapEntry(k.toString(), v));
+      await _storage.write('votedSelections', toStore);
     } catch (e) {
       print("Error fetching voted polls: $e");
     }
@@ -321,6 +339,14 @@ class DataController extends GetxController {
       // Update local state
       votedPollIds.add(pollId);
       await _storage.write('votedPollIds', votedPollIds.toList());
+
+      votedOptionByPoll[pollId] = optionId;
+      final toStore = Map<String, int>.fromEntries(
+        votedOptionByPoll.entries.map(
+          (e) => MapEntry(e.key.toString(), e.value),
+        ),
+      );
+      await _storage.write('votedSelections', toStore);
 
       // Refresh polls to show updated counts
       await fetchPolls();

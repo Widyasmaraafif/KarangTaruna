@@ -6,6 +6,7 @@ class KTPollingCard extends StatelessWidget {
   final List<Map<String, dynamic>> options;
   final int totalVotes;
   final bool isVoted;
+  final int? selectedOptionId;
   final Function(int optionId, String label)? onVote;
   final VoidCallback? onCardTap;
   final bool enableHeaderTap;
@@ -16,6 +17,7 @@ class KTPollingCard extends StatelessWidget {
     required this.options,
     required this.totalVotes,
     this.isVoted = false,
+    this.selectedOptionId,
     this.onVote,
     this.onCardTap,
     this.enableHeaderTap = true,
@@ -84,11 +86,14 @@ class KTPollingCard extends StatelessWidget {
                 Row(
                   children: [
                     Container(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
-                        color:
-                            isVoted ? KTColor.success.withOpacity(0.1) : KTColor.primaryWithAlpha(0.1),
+                        color: isVoted
+                            ? KTColor.success.withOpacity(0.1)
+                            : KTColor.primaryWithAlpha(0.1),
                         borderRadius: BorderRadius.circular(999),
                       ),
                       child: Row(
@@ -105,7 +110,9 @@ class KTPollingCard extends StatelessWidget {
                           Text(
                             isVoted ? "Sudah Memilih" : "Sedang Berjalan",
                             style: TextStyle(
-                              color: isVoted ? KTColor.success : KTColor.primary,
+                              color: isVoted
+                                  ? KTColor.success
+                                  : KTColor.primary,
                               fontSize: 12,
                               fontWeight: FontWeight.w800,
                             ),
@@ -124,6 +131,10 @@ class KTPollingCard extends StatelessWidget {
 
                     final ratio = totalVotes > 0 ? votes / totalVotes : 0.0;
                     final percent = (ratio * 100).round();
+                    final isUserChoice =
+                        isVoted &&
+                        selectedOptionId != null &&
+                        selectedOptionId == optionId;
 
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
@@ -135,12 +146,16 @@ class KTPollingCard extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: isVoted && ratio > 0
+                            color: isUserChoice
+                                ? KTColor.success.withOpacity(0.12)
+                                : isVoted && ratio > 0
                                 ? KTColor.primaryWithAlpha(0.05)
                                 : KTColor.background,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: isVoted && ratio > 0
+                              color: isUserChoice
+                                  ? KTColor.success
+                                  : isVoted && ratio > 0
                                   ? KTColor.primaryWithAlpha(0.2)
                                   : Colors.transparent,
                               width: 1.5,
@@ -151,23 +166,35 @@ class KTPollingCard extends StatelessWidget {
                             children: [
                               Row(
                                 children: [
+                                  if (isUserChoice)
+                                    const Padding(
+                                      padding: EdgeInsets.only(right: 8),
+                                      child: Icon(
+                                        Icons.check_circle_rounded,
+                                        size: 16,
+                                        color: KTColor.success,
+                                      ),
+                                    ),
                                   Expanded(
                                     child: Text(
                                       label,
-                                      style: theme.textTheme.bodyMedium?.copyWith(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                        color: KTColor.textPrimary,
-                                      ),
+                                      style: theme.textTheme.bodyMedium
+                                          ?.copyWith(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            color: KTColor.textPrimary,
+                                          ),
                                     ),
                                   ),
                                   if (isVoted) ...[
                                     const SizedBox(width: 8),
                                     Text(
                                       '$percent%',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 13,
-                                        color: KTColor.primary,
+                                        color: isUserChoice
+                                            ? KTColor.success
+                                            : KTColor.primary,
                                         fontWeight: FontWeight.w800,
                                       ),
                                     ),
@@ -181,11 +208,13 @@ class KTPollingCard extends StatelessWidget {
                                   child: LinearProgressIndicator(
                                     value: ratio,
                                     minHeight: 8,
-                                    backgroundColor: KTColor.primaryWithAlpha(0.1),
+                                    backgroundColor: KTColor.primaryWithAlpha(
+                                      0.1,
+                                    ),
                                     valueColor:
                                         const AlwaysStoppedAnimation<Color>(
-                                      KTColor.primary,
-                                    ),
+                                          KTColor.primary,
+                                        ),
                                   ),
                                 ),
                                 const SizedBox(height: 6),
@@ -209,8 +238,11 @@ class KTPollingCard extends StatelessWidget {
                 Row(
                   children: [
                     if (isVoted) ...[
-                      const Icon(Icons.check_circle_rounded,
-                          size: 16, color: KTColor.primary),
+                      const Icon(
+                        Icons.check_circle_rounded,
+                        size: 16,
+                        color: KTColor.primary,
+                      ),
                       const SizedBox(width: 6),
                       const Text(
                         "Anda sudah memilih",
@@ -221,8 +253,11 @@ class KTPollingCard extends StatelessWidget {
                         ),
                       ),
                     ] else ...[
-                      const Icon(Icons.info_outline_rounded,
-                          size: 16, color: KTColor.textGrey),
+                      const Icon(
+                        Icons.info_outline_rounded,
+                        size: 16,
+                        color: KTColor.textGrey,
+                      ),
                       const SizedBox(width: 6),
                       const Text(
                         "Pilih salah satu opsi",

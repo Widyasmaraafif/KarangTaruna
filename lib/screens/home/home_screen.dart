@@ -109,11 +109,13 @@ class PollingHome extends StatelessWidget {
             final pollId = poll['id'];
             final hasVoted = controller.votedPollIds.contains(pollId);
 
+            final selectedByUser = controller.votedOptionByPoll[pollId];
             return KTPollingCard(
               question: poll['title'],
               options: options,
               totalVotes: totalVotes,
               isVoted: hasVoted,
+              selectedOptionId: selectedByUser,
               onCardTap: () => Get.to(() => PollingDetailScreen(poll: poll)),
               onVote: (optionId, label) async {
                 if (hasVoted) {

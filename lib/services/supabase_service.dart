@@ -534,6 +534,32 @@ class SupabaseService {
     }
   }
 
+  Future<Map<int, int>> getVotedSelections() async {
+    final user = _client.auth.currentUser;
+    if (user == null) return {};
+
+    try {
+      final response = await _client
+          .from('polling_votes')
+          .select('polling_id, option_id')
+          .eq('user_id', user.id);
+
+      final list = List<Map<String, dynamic>>.from(response as List);
+      final result = <int, int>{};
+      for (final row in list) {
+        final pid = row['polling_id'] as int?;
+        final oid = row['option_id'] as int?;
+        if (pid != null && oid != null) {
+          result[pid] = oid;
+        }
+      }
+      return result;
+    } catch (e) {
+      print('Error fetching voted selections: $e');
+      return {};
+    }
+  }
+
   Future<List<Map<String, dynamic>>> getActivePolls() async {
     try {
       final response = await _client
@@ -607,6 +633,7 @@ class SupabaseService {
     await _client.from('polling_votes').insert({
       'user_id': user.id,
       'polling_id': pollId,
+      'option_id': optionId,
       'created_at': DateTime.now().toIso8601String(),
     });
 

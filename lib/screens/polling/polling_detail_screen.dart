@@ -248,6 +248,10 @@ class _PollingDetailScreenState extends State<PollingDetailScreen> {
                             .toInt();
                         final ratio = totalVotes > 0 ? votes / totalVotes : 0.0;
                         final percent = (ratio * 100).toStringAsFixed(1);
+                        final selectedByUserId =
+                            controller.votedOptionByPoll[pollId];
+                        final isUserChoice =
+                            isVoted && selectedByUserId == optionId;
 
                         final isSelected = _selectedOptionId.value == optionId;
 
@@ -264,14 +268,16 @@ class _PollingDetailScreenState extends State<PollingDetailScreen> {
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: isSelected
+                                color: isUserChoice
+                                    ? KTColor.primary
+                                    : isSelected
                                     ? KTColor.primary
                                     : KTColor.border,
                                 width: 2,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: isSelected
+                                  color: (isUserChoice || isSelected)
                                       ? KTColor.primary.withOpacity(0.1)
                                       : KTColor.shadow.withOpacity(0.05),
                                   blurRadius: 10,
@@ -303,79 +309,115 @@ class _PollingDetailScreenState extends State<PollingDetailScreen> {
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 20,
                                   ),
-                                  child: Row(
-                                    children: [
-                                      // Radio Indicator
-                                      if (!isVoted) ...[
-                                        Container(
-                                          width: 24,
-                                          height: 24,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            border: Border.all(
-                                              color: isSelected
-                                                  ? KTColor.primary
-                                                  : KTColor.border,
-                                              width: 2,
-                                            ),
-                                            color: isSelected
-                                                ? KTColor.primary
-                                                : Colors.transparent,
-                                          ),
-                                          child: isSelected
-                                              ? const Icon(
-                                                  Icons.check_rounded,
-                                                  size: 16,
-                                                  color: Colors.white,
-                                                )
-                                              : null,
-                                        ),
-                                        const SizedBox(width: 16),
-                                      ],
-
-                                      Expanded(
-                                        child: Text(
-                                          label,
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: isSelected || isVoted
-                                                ? FontWeight.w700
-                                                : FontWeight.w500,
-                                            color: KTColor.textPrimary,
-                                          ),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-
-                                      if (isVoted) ...[
-                                        const SizedBox(width: 8),
-                                        Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.end,
+                                  child: isVoted
+                                      ? Row(
                                           children: [
-                                            Text(
-                                              "$percent%",
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w900,
-                                                fontSize: 16,
+                                            if (isUserChoice) ...[
+                                              const Icon(
+                                                Icons.check_circle_rounded,
+                                                size: 18,
                                                 color: KTColor.primary,
                                               ),
-                                            ),
-                                            Text(
-                                              "$votes Suara",
-                                              style: const TextStyle(
-                                                fontSize: 12,
-                                                color: KTColor.textSecondary,
+                                              const SizedBox(width: 8),
+                                            ],
+
+                                            Expanded(
+                                              child: Text(
+                                                label,
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight:
+                                                      isUserChoice ||
+                                                          isSelected ||
+                                                          isVoted
+                                                      ? FontWeight.w700
+                                                      : FontWeight.w500,
+                                                  color: KTColor.textPrimary,
+                                                ),
+                                                maxLines: 2,
+                                                overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
+
+                                            if (isVoted) ...[
+                                              const SizedBox(width: 8),
+                                              Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.end,
+                                                children: [
+                                                  Text(
+                                                    "$percent%",
+                                                    style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.w900,
+                                                      fontSize: 16,
+                                                      color: KTColor.primary,
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    "$votes Suara",
+                                                    style: const TextStyle(
+                                                      fontSize: 12,
+                                                      color:
+                                                          KTColor.textSecondary,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
                                           ],
+                                        )
+                                      : Center(
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              // Radio Indicator
+                                              Container(
+                                                width: 24,
+                                                height: 24,
+                                                decoration: BoxDecoration(
+                                                  shape: BoxShape.circle,
+                                                  border: Border.all(
+                                                    color: isSelected
+                                                        ? KTColor.primary
+                                                        : KTColor.border,
+                                                    width: 2,
+                                                  ),
+                                                  color: isSelected
+                                                      ? KTColor.primary
+                                                      : Colors.transparent,
+                                                ),
+                                                child: isSelected
+                                                    ? const Icon(
+                                                        Icons.check_rounded,
+                                                        size: 16,
+                                                        color: Colors.white,
+                                                      )
+                                                    : null,
+                                              ),
+                                              const SizedBox(width: 16),
+                                              Expanded(
+                                                child: Text(
+                                                  label,
+                                                  textAlign: TextAlign.center,
+                                                  style: TextStyle(
+                                                    fontSize: 16,
+                                                    fontWeight:
+                                                        isSelected || isVoted
+                                                        ? FontWeight.w700
+                                                        : FontWeight.w500,
+                                                    color: KTColor.textPrimary,
+                                                  ),
+                                                  maxLines: 2,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      ],
-                                    ],
-                                  ),
                                 ),
                               ],
                             ),
