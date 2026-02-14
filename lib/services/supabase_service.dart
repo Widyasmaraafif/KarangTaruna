@@ -595,19 +595,15 @@ class SupabaseService {
     final user = _client.auth.currentUser;
     if (user == null) throw Exception('Not authenticated');
 
-    // 1. Check if already voted (Server-side check)
     final hasVoted = await _client
         .from('polling_votes')
         .select()
         .eq('user_id', user.id)
         .eq('polling_id', pollId)
         .maybeSingle();
-
     if (hasVoted != null) {
       throw Exception('Anda sudah memilih pada polling ini');
     }
-
-    // 2. Insert vote record
     await _client.from('polling_votes').insert({
       'user_id': user.id,
       'polling_id': pollId,

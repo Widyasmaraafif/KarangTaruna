@@ -80,7 +80,42 @@ class KTPollingCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Container(
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color:
+                            isVoted ? KTColor.success.withOpacity(0.1) : KTColor.primaryWithAlpha(0.1),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            isVoted
+                                ? Icons.check_circle_rounded
+                                : Icons.how_to_vote_rounded,
+                            color: isVoted ? KTColor.success : KTColor.primary,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            isVoted ? "Sudah Memilih" : "Sedang Berjalan",
+                            style: TextStyle(
+                              color: isVoted ? KTColor.success : KTColor.primary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
                 Column(
                   children: options.map((option) {
                     final optionId = option['id'];
@@ -100,7 +135,7 @@ class KTPollingCard extends StatelessWidget {
                         child: Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: isVoted && ratio > 0 
+                            color: isVoted && ratio > 0
                                 ? KTColor.primaryWithAlpha(0.05)
                                 : KTColor.background,
                             borderRadius: BorderRadius.circular(12),
@@ -147,7 +182,8 @@ class KTPollingCard extends StatelessWidget {
                                     value: ratio,
                                     minHeight: 8,
                                     backgroundColor: KTColor.primaryWithAlpha(0.1),
-                                    valueColor: const AlwaysStoppedAnimation<Color>(
+                                    valueColor:
+                                        const AlwaysStoppedAnimation<Color>(
                                       KTColor.primary,
                                     ),
                                   ),
@@ -173,7 +209,8 @@ class KTPollingCard extends StatelessWidget {
                 Row(
                   children: [
                     if (isVoted) ...[
-                      const Icon(Icons.check_circle_rounded, size: 16, color: KTColor.primary),
+                      const Icon(Icons.check_circle_rounded,
+                          size: 16, color: KTColor.primary),
                       const SizedBox(width: 6),
                       const Text(
                         "Anda sudah memilih",
@@ -184,7 +221,8 @@ class KTPollingCard extends StatelessWidget {
                         ),
                       ),
                     ] else ...[
-                      const Icon(Icons.info_outline_rounded, size: 16, color: KTColor.textGrey),
+                      const Icon(Icons.info_outline_rounded,
+                          size: 16, color: KTColor.textGrey),
                       const SizedBox(width: 6),
                       const Text(
                         "Pilih salah satu opsi",
@@ -214,4 +252,3 @@ class KTPollingCard extends StatelessWidget {
     );
   }
 }
-

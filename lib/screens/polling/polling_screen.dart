@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:karang_taruna/commons/widgets/containers/pooling_card.dart';
+import 'package:karang_taruna/commons/widgets/containers/polling_card.dart';
 import 'package:karang_taruna/controllers/data_controller.dart';
 import 'package:karang_taruna/screens/polling/polling_detail_screen.dart';
 import 'package:karang_taruna/commons/styles/kt_color.dart';

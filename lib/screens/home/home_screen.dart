@@ -6,7 +6,7 @@ import 'package:karang_taruna/commons/widgets/containers/announcement_card.dart'
 import 'package:karang_taruna/commons/widgets/containers/aspiration_card.dart';
 import 'package:karang_taruna/commons/widgets/containers/banner.dart';
 import 'package:karang_taruna/commons/widgets/containers/news_card.dart';
-import 'package:karang_taruna/commons/widgets/containers/pooling_card.dart';
+import 'package:karang_taruna/commons/widgets/containers/polling_card.dart';
 import 'package:karang_taruna/commons/widgets/containers/post_container.dart';
 import 'package:karang_taruna/commons/widgets/texts/section_heading.dart';
 import 'package:karang_taruna/controllers/data_controller.dart';
@@ -48,7 +48,7 @@ class HomeScreen extends StatelessWidget {
                 NewsHome(),
                 AnnouncementHome(),
                 PojokKampungHome(),
-                PoolingHome(),
+                PollingHome(),
               ],
             ),
           ),
@@ -58,8 +58,8 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class PoolingHome extends StatelessWidget {
-  const PoolingHome({super.key});
+class PollingHome extends StatelessWidget {
+  const PollingHome({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +71,7 @@ class PoolingHome extends StatelessWidget {
       child: Column(
         children: [
           KTSectionHeading(
-            title: "Pooling",
+            title: "Polling",
             onPressed: () => Get.to(() => const PollingScreen()),
           ),
           const SizedBox(height: 10),
@@ -86,7 +86,15 @@ class PoolingHome extends StatelessWidget {
             }
 
             if (controller.polls.isEmpty) {
-              return const SizedBox.shrink();
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Text(
+                    'Tidak ada pooling saat ini',
+                    style: TextStyle(color: KTColor.textSecondary),
+                  ),
+                ),
+              );
             }
 
             // Get the latest active poll
@@ -302,7 +310,9 @@ class NewsHome extends StatelessWidget {
                 ),
               );
             }
-            final count = controller.news.length > 2 ? 2 : controller.news.length;
+            final count = controller.news.length > 2
+                ? 2
+                : controller.news.length;
             return ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -392,7 +402,7 @@ class HeaderHome extends StatelessWidget {
               ),
               KTButtonFitur(
                 icon: Icons.poll_rounded,
-                label: "Pooling",
+                label: "Polling",
                 onTap: () => Get.to(() => const PollingScreen()),
               ),
               KTButtonFitur(

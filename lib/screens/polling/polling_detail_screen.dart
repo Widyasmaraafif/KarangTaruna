@@ -220,7 +220,7 @@ class _PollingDetailScreenState extends State<PollingDetailScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 32),
+                    SizedBox(height: isVoted ? 32 : 56),
 
                     Text(
                       isVoted ? "Hasil Voting" : "Pilihan Tersedia",
@@ -231,7 +231,7 @@ class _PollingDetailScreenState extends State<PollingDetailScreen> {
                         letterSpacing: -0.5,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: isVoted ? 16 : 28),
 
                     // Options List
                     ListView.separated(
