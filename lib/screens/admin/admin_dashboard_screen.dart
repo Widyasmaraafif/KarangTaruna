@@ -23,8 +23,167 @@ class AdminDashboardScreen extends StatelessWidget {
 
     bool canAccess(String permission) {
       if (userRole == 'admin') return true;
-      // Add other role-based logic here if needed
-      return true; // Temporary allow for other pengurus roles
+      final Map<String, Set<String>> rolePermissions = {
+        'bendahara': {'finance', 'finance_org'},
+        'ketua': {'announcements', 'events', 'pojok_kampung', 'polling'},
+        'sekretaris': {'announcements', 'events'},
+        'pubdekdok': {'news', 'gallery'},
+      };
+      final allowed = rolePermissions[userRole] ?? {};
+      return allowed.contains(permission);
+    }
+
+    final hasContent =
+        canAccess('news') ||
+        canAccess('events') ||
+        canAccess('announcements') ||
+        canAccess('gallery');
+    final hasFinance = canAccess('finance_org') || canAccess('finance');
+    final hasOrg =
+        canAccess('members') ||
+        canAccess('polling') ||
+        canAccess('pojok_kampung');
+
+    final List<Widget> children = [];
+    if (hasContent) {
+      children.addAll([
+        const Text(
+          "Manajemen Konten",
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w800,
+            color: KTColor.textPrimary,
+            letterSpacing: -0.3,
+          ),
+        ),
+        const SizedBox(height: 16),
+      ]);
+      if (canAccess('news')) {
+        children.add(
+          _buildAdminMenuTile(
+            icon: Icons.article_rounded,
+            title: 'Kelola Berita',
+            subtitle: 'Publikasi berita dan informasi terbaru',
+            onTap: () => Get.to(() => const ManageNewsScreen()),
+          ),
+        );
+      }
+      if (canAccess('events')) {
+        children.add(
+          _buildAdminMenuTile(
+            icon: Icons.event_note_rounded,
+            title: 'Kelola Kegiatan',
+            subtitle: 'Atur jadwal dan detail kegiatan',
+            onTap: () => Get.to(() => const ManageEventsScreen()),
+          ),
+        );
+      }
+      if (canAccess('announcements')) {
+        children.add(
+          _buildAdminMenuTile(
+            icon: Icons.campaign_rounded,
+            title: 'Kelola Pengumuman',
+            subtitle: 'Buat pengumuman penting untuk warga',
+            onTap: () => Get.to(() => const ManageAnnouncementsScreen()),
+          ),
+        );
+      }
+      if (canAccess('gallery')) {
+        children.add(
+          _buildAdminMenuTile(
+            icon: Icons.photo_library_rounded,
+            title: 'Kelola Galeri',
+            subtitle: 'Upload foto-foto kegiatan',
+            onTap: () => Get.to(() => const ManageGalleryScreen()),
+          ),
+        );
+      }
+    }
+
+    if (hasFinance) {
+      if (children.isNotEmpty) {
+        children.add(const SizedBox(height: 32));
+      }
+      children.addAll([
+        const Text(
+          "Manajemen Keuangan",
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w800,
+            color: KTColor.textPrimary,
+            letterSpacing: -0.3,
+          ),
+        ),
+        const SizedBox(height: 16),
+      ]);
+      if (canAccess('finance_org')) {
+        children.add(
+          _buildAdminMenuTile(
+            icon: Icons.account_balance_rounded,
+            title: 'Keuangan Organisasi',
+            subtitle: 'Manajemen kas dan transaksi kas',
+            onTap: () => Get.to(() => const ManageOrganizationFinanceScreen()),
+          ),
+        );
+      }
+      if (canAccess('finance')) {
+        children.add(
+          _buildAdminMenuTile(
+            icon: Icons.monetization_on_rounded,
+            title: 'Iuran Anggota',
+            subtitle: 'Kelola pembayaran iuran bulanan',
+            onTap: () => Get.to(() => const ManageFinanceScreen()),
+          ),
+        );
+      }
+    }
+
+    if (hasOrg) {
+      if (children.isNotEmpty) {
+        children.add(const SizedBox(height: 32));
+      }
+      children.addAll([
+        const Text(
+          "Manajemen Organisasi",
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w800,
+            color: KTColor.textPrimary,
+            letterSpacing: -0.3,
+          ),
+        ),
+        const SizedBox(height: 16),
+      ]);
+      if (canAccess('members')) {
+        children.add(
+          _buildAdminMenuTile(
+            icon: Icons.people_rounded,
+            title: 'Kelola Anggota',
+            subtitle: 'Verifikasi dan kelola database anggota',
+            onTap: () => Get.to(() => const ManageMembersScreen()),
+          ),
+        );
+      }
+      if (canAccess('polling')) {
+        children.add(
+          _buildAdminMenuTile(
+            icon: Icons.poll_rounded,
+            title: 'Kelola Polling',
+            subtitle: 'Buat voting untuk pengambilan keputusan',
+            onTap: () => Get.to(() => const ManagePollingScreen()),
+          ),
+        );
+      }
+      if (canAccess('pojok_kampung')) {
+        children.add(
+          _buildAdminMenuTile(
+            icon: Icons.storefront_rounded,
+            title: 'Pojok Kampung',
+            subtitle: 'Kelola aspirasi dan produk warga',
+            onTap: () => Get.to(() => const ManagePojokKampungScreen()),
+          ),
+        );
+      }
     }
 
     return Scaffold(
@@ -40,106 +199,7 @@ class AdminDashboardScreen extends StatelessWidget {
       ),
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-        children: [
-          const Text(
-            "Manajemen Konten",
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
-              color: KTColor.textPrimary,
-              letterSpacing: -0.3,
-            ),
-          ),
-          const SizedBox(height: 16),
-          if (canAccess('news'))
-            _buildAdminMenuTile(
-              icon: Icons.article_rounded,
-              title: 'Kelola Berita',
-              subtitle: 'Publikasi berita dan informasi terbaru',
-              onTap: () => Get.to(() => const ManageNewsScreen()),
-            ),
-          if (canAccess('events'))
-            _buildAdminMenuTile(
-              icon: Icons.event_note_rounded,
-              title: 'Kelola Kegiatan',
-              subtitle: 'Atur jadwal dan detail kegiatan',
-              onTap: () => Get.to(() => const ManageEventsScreen()),
-            ),
-          if (canAccess('announcements'))
-            _buildAdminMenuTile(
-              icon: Icons.campaign_rounded,
-              title: 'Kelola Pengumuman',
-              subtitle: 'Buat pengumuman penting untuk warga',
-              onTap: () => Get.to(() => const ManageAnnouncementsScreen()),
-            ),
-          if (canAccess('gallery'))
-            _buildAdminMenuTile(
-              icon: Icons.photo_library_rounded,
-              title: 'Kelola Galeri',
-              subtitle: 'Upload foto-foto kegiatan',
-              onTap: () => Get.to(() => const ManageGalleryScreen()),
-            ),
-
-          const SizedBox(height: 32),
-          const Text(
-            "Manajemen Keuangan",
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
-              color: KTColor.textPrimary,
-              letterSpacing: -0.3,
-            ),
-          ),
-          const SizedBox(height: 16),
-          if (canAccess('finance_org'))
-            _buildAdminMenuTile(
-              icon: Icons.account_balance_rounded,
-              title: 'Keuangan Organisasi',
-              subtitle: 'Manajemen kas dan transaksi kas',
-              onTap: () =>
-                  Get.to(() => const ManageOrganizationFinanceScreen()),
-            ),
-          if (canAccess('finance'))
-            _buildAdminMenuTile(
-              icon: Icons.monetization_on_rounded,
-              title: 'Iuran Anggota',
-              subtitle: 'Kelola pembayaran iuran bulanan',
-              onTap: () => Get.to(() => const ManageFinanceScreen()),
-            ),
-
-          const SizedBox(height: 32),
-          const Text(
-            "Manajemen Organisasi",
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w800,
-              color: KTColor.textPrimary,
-              letterSpacing: -0.3,
-            ),
-          ),
-          const SizedBox(height: 16),
-          if (canAccess('members'))
-            _buildAdminMenuTile(
-              icon: Icons.people_rounded,
-              title: 'Kelola Anggota',
-              subtitle: 'Verifikasi dan kelola database anggota',
-              onTap: () => Get.to(() => const ManageMembersScreen()),
-            ),
-          if (canAccess('polling'))
-            _buildAdminMenuTile(
-              icon: Icons.poll_rounded,
-              title: 'Kelola Polling',
-              subtitle: 'Buat voting untuk pengambilan keputusan',
-              onTap: () => Get.to(() => const ManagePollingScreen()),
-            ),
-          if (canAccess('pojok_kampung'))
-            _buildAdminMenuTile(
-              icon: Icons.storefront_rounded,
-              title: 'Pojok Kampung',
-              subtitle: 'Kelola aspirasi dan produk warga',
-              onTap: () => Get.to(() => const ManagePojokKampungScreen()),
-            ),
-        ],
+        children: children,
       ),
     );
   }

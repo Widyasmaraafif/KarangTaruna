@@ -28,6 +28,7 @@ class KTButtonFitur extends StatelessWidget {
           decoration: BoxDecoration(
             color: KTColor.card,
             borderRadius: BorderRadius.circular(8), // Slightly smaller radius
+            border: Border.all(color: KTColor.border, width: 1),
             boxShadow: [
               BoxShadow(
                 color: KTColor.shadowWithAlpha(0.04),

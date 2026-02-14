@@ -33,7 +33,7 @@ class HomeScreen extends StatelessWidget {
     final DataController controller = Get.find<DataController>();
 
     return Scaffold(
-      backgroundColor: KTColor.primary,
+      backgroundColor: KTColor.background,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () => controller.refreshData(),
@@ -72,7 +72,6 @@ class PoolingHome extends StatelessWidget {
         children: [
           KTSectionHeading(
             title: "Pooling",
-            titleColor: Colors.white,
             onPressed: () => Get.to(() => const PollingScreen()),
           ),
           const SizedBox(height: 10),
@@ -81,7 +80,7 @@ class PoolingHome extends StatelessWidget {
               return const Center(
                 child: Padding(
                   padding: EdgeInsets.all(16.0),
-                  child: CircularProgressIndicator(color: Colors.white),
+                  child: CircularProgressIndicator(color: KTColor.primary),
                 ),
               );
             }
@@ -158,7 +157,6 @@ class PojokKampungHome extends StatelessWidget {
         children: [
           KTSectionHeading(
             title: "Pojok Kampung",
-            titleColor: Colors.white,
             onPressed: () => Get.to(() => const AllAspirationsScreen()),
           ),
           const SizedBox(height: 10),
@@ -168,7 +166,7 @@ class PojokKampungHome extends StatelessWidget {
               return const Center(
                 child: Padding(
                   padding: EdgeInsets.all(16.0),
-                  child: CircularProgressIndicator(color: Colors.white),
+                  child: CircularProgressIndicator(color: KTColor.primary),
                 ),
               );
             }
@@ -176,7 +174,7 @@ class PojokKampungHome extends StatelessWidget {
             if (controller.allAspirations.isEmpty) {
               return const Text(
                 'Belum ada aspirasi',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: KTColor.textSecondary),
               );
             }
 
@@ -227,7 +225,6 @@ class AnnouncementHome extends StatelessWidget {
         children: [
           KTSectionHeading(
             title: "Pengumuman Terbaru",
-            titleColor: Colors.white,
             onPressed: () {
               Get.to(() => const AnnouncementScreen());
             },
@@ -237,7 +234,7 @@ class AnnouncementHome extends StatelessWidget {
             if (controller.announcements.isEmpty) {
               return const Text(
                 'Tidak ada pengumuman',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: KTColor.textSecondary),
               );
             }
 
@@ -290,7 +287,6 @@ class NewsHome extends StatelessWidget {
         children: [
           KTSectionHeading(
             title: "Berita Terbaru",
-            titleColor: Colors.white,
             onPressed: () => Get.to(() => const NewsScreen()),
           ),
           const SizedBox(height: 12),
@@ -306,11 +302,19 @@ class NewsHome extends StatelessWidget {
                 ),
               );
             }
-            // Limit to 1 card to avoid overflow and maintain clean UI
-            final item = controller.news.first;
-            return NewsCard(
-              newsItem: item,
-              onTap: () => Get.to(() => NewsDetailScreen(newsItem: item)),
+            final count = controller.news.length > 2 ? 2 : controller.news.length;
+            return ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: count,
+              separatorBuilder: (context, index) => const SizedBox(height: 10),
+              itemBuilder: (context, index) {
+                final item = controller.news[index];
+                return NewsCompactCard(
+                  newsItem: item,
+                  onTap: () => Get.to(() => NewsDetailScreen(newsItem: item)),
+                );
+              },
             );
           }),
         ],
@@ -330,7 +334,7 @@ class HeaderHome extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
       decoration: const BoxDecoration(
-        color: KTColor.primaryLight,
+        color: KTColor.card,
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(40),
           bottomRight: Radius.circular(40),
@@ -347,7 +351,7 @@ class HeaderHome extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
-                color: Colors.white,
+                color: KTColor.textPrimary,
                 letterSpacing: -0.5,
               ),
             );

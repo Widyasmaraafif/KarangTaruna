@@ -26,11 +26,7 @@ class _EventScreenState extends State<EventScreen> {
       appBar: AppBar(
         title: const Text('Event'),
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          color: KTColor.textPrimary,
-          onPressed: () => Get.back(),
-        ),
+        automaticallyImplyLeading: false,
       ),
       body: RefreshIndicator(
         onRefresh: controller.fetchEvents,

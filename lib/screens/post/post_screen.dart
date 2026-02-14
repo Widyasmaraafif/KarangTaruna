@@ -109,11 +109,7 @@ class PostScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Aspirasi Saya'),
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          color: KTColor.textPrimary,
-          onPressed: () => Get.back(),
-        ),
+        automaticallyImplyLeading: false,
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddAspirationDialog(context, controller),

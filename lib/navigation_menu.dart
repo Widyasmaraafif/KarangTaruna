@@ -6,6 +6,7 @@ import 'package:karang_taruna/screens/finance/finance_screen.dart';
 import 'package:karang_taruna/screens/home/home_screen.dart';
 import 'package:karang_taruna/screens/post/post_screen.dart';
 import 'package:karang_taruna/screens/profile/profile_screen.dart';
+import 'package:karang_taruna/commons/styles/kt_color.dart';
 
 class NavigationMenu extends StatelessWidget {
   const NavigationMenu({super.key});
@@ -26,18 +27,40 @@ class NavigationMenu extends StatelessWidget {
             controller.selectedIndex.value = index;
           },
           type: BottomNavigationBarType.fixed,
-          backgroundColor: Color(0xFF00BA9B),
-          selectedItemColor: const Color.fromARGB(255, 255, 255, 255),
-          unselectedItemColor: Colors.black,
+          backgroundColor: KTColor.card,
+          elevation: 8,
+          selectedItemColor: KTColor.primary,
+          unselectedItemColor: KTColor.textGrey,
+          showUnselectedLabels: true,
+          selectedLabelStyle: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+          ),
+          unselectedLabelStyle: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+          ),
           items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.post_add), label: 'Post'),
-            BottomNavigationBarItem(icon: Icon(Icons.event), label: 'Event'),
             BottomNavigationBarItem(
-              icon: Icon(Icons.account_balance_wallet),
+              icon: Icon(Icons.home, size: 22),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.post_add, size: 22),
+              label: 'Post',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.event, size: 22),
+              label: 'Event',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.account_balance_wallet, size: 22),
               label: 'Keuangan Pribadi',
             ),
-            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person, size: 22),
+              label: 'Profile',
+            ),
           ],
         ),
       ),

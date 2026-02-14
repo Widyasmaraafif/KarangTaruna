@@ -29,6 +29,7 @@ class ProfileScreen extends StatelessWidget {
           final controller = Get.find<DataController>();
           controller.clearData();
           await SupabaseService().signOut();
+          Get.delete<DataController>(force: true);
           Get.offAll(() => const LoginScreen());
         },
       );
@@ -214,7 +215,9 @@ class ProfileScreen extends StatelessWidget {
 
                   // Admin Menu (Conditional)
                   Obx(() {
-                    if (controller.userProfile['role'] == 'admin') {
+                    final roleVal =
+                        controller.userProfile['role']?.toString().toLowerCase();
+                    if (roleVal == 'admin' || roleVal == 'ketua') {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
