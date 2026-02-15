@@ -423,7 +423,7 @@ class SupabaseService {
     await _client.from('profiles').upsert({
       'id': userId,
       'full_name': fullName,
-      'role': 'Anggota', // Default role
+      'role': 'User',
       'updated_at': DateTime.now().toIso8601String(),
     });
   }

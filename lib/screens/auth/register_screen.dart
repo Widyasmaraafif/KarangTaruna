@@ -56,11 +56,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final response = await _service.signUp(
         _emailController.text.trim(),
         _passwordController.text.trim(),
-        data: {'full_name': _nameController.text.trim()},
+        data: {'full_name': _nameController.text.trim(), 'role': 'User'},
       );
 
-      if (response.session != null) {
-        // Create profile entry
+      if (response.user != null) {
         try {
           await _service.createProfile(
             userId: response.user!.id,
@@ -70,7 +69,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         } catch (e) {
           debugPrint('Error creating profile: $e');
         }
+      }
 
+      if (response.session != null) {
         Get.offAll(() => const NavigationMenu());
         Get.snackbar(
           'Sukses',
@@ -82,7 +83,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
           borderRadius: 12,
         );
       } else {
-        // Email confirmation required
         Get.back();
         Get.snackbar(
           'Registrasi Berhasil',
@@ -137,7 +137,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: KTColor.textPrimary, size: 20),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: KTColor.textPrimary,
+            size: 20,
+          ),
           onPressed: () => Get.back(),
         ),
       ),
@@ -163,7 +167,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const Text(
                   'Daftar untuk bergabung dengan kami',
                   style: TextStyle(
-                    fontSize: 14, 
+                    fontSize: 14,
                     color: KTColor.textSecondary,
                     fontWeight: FontWeight.w500,
                   ),
@@ -202,11 +206,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   isPassword: true,
                 ),
                 const SizedBox(height: 40),
-                Obx(() => KTButton(
-                  text: 'Daftar',
-                  isLoading: _isLoading.value,
-                  onPressed: _register,
-                )),
+                Obx(
+                  () => KTButton(
+                    text: 'Daftar',
+                    isLoading: _isLoading.value,
+                    onPressed: _register,
+                  ),
+                ),
                 const SizedBox(height: 20),
               ],
             ),

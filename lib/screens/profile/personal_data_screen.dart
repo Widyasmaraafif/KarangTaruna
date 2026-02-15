@@ -278,7 +278,7 @@ class _PersonalDataScreenState extends State<PersonalDataScreen> {
               Obx(
                 () => _buildReadOnlyField(
                   "Peran",
-                  controller.userProfile['role'] ?? 'Anggota',
+                  controller.userProfile['role'] ?? 'User',
                   Icons.verified_user_outlined,
                 ),
               ),

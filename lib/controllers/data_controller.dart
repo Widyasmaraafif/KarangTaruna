@@ -267,8 +267,8 @@ class DataController extends GetxController {
               'User',
           'email': user.email,
           'avatar_url':
-              'https://ui-avatars.com/api/?name=${Uri.encodeComponent(user.email?.split('@')[0] ?? 'User')}&background=random',
-          'role': 'Anggota Karang Taruna', // Default
+                  'https://ui-avatars.com/api/?name=${Uri.encodeComponent(user.email?.split('@')[0] ?? 'User')}&background=random',
+          'role': 'User',
           'phone': '',
           'address': '',
           'birth_date': '',

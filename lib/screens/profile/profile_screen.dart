@@ -82,7 +82,7 @@ class ProfileScreen extends StatelessWidget {
               child: Obx(() {
                 final profile = controller.userProfile;
                 final name = profile['full_name'] ?? 'User';
-                final role = profile['role'] ?? 'Anggota Karang Taruna';
+                final role = profile['role'] ?? 'User';
                 final avatarUrl =
                     profile['avatar_url'] ??
                     'https://ui-avatars.com/api/?name=${Uri.encodeComponent(name)}&background=random';
