@@ -400,11 +400,14 @@ class SupabaseService {
     String? adminNote,
     String newRole = 'Anggota',
   }) async {
-    await _client.from('membership_requests').update({
-      'status': status,
-      'admin_note': adminNote,
-      'processed_at': DateTime.now().toIso8601String(),
-    }).eq('id', id);
+    await _client
+        .from('membership_requests')
+        .update({
+          'status': status,
+          'admin_note': adminNote,
+          'processed_at': DateTime.now().toIso8601String(),
+        })
+        .eq('id', id);
 
     if (status == 'approved') {
       await updateProfileRole(userId, newRole);
@@ -503,7 +506,8 @@ class SupabaseService {
           .from('profiles')
           .select()
           .neq('role', 'Anggota')
-          .neq('role', 'Admin');
+          .neq('role', 'Admin')
+          .neq('role', 'User');
 
       var members = List<Map<String, dynamic>>.from(response);
 

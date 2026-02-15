@@ -37,7 +37,7 @@ class AboutAppScreen extends StatelessWidget {
               _buildAppLogo(),
               const SizedBox(height: 24),
               const Text(
-                'Karang Taruna',
+                'Cahya Muda',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w900,
@@ -74,12 +74,12 @@ class AboutAppScreen extends StatelessWidget {
               _buildFeatureList(),
               const SizedBox(height: 48),
               const Text(
-                '© 2026 Karang Taruna Digital',
+                '© 2026 Cahya Muda',
                 style: TextStyle(fontSize: 12, color: KTColor.textSecondary),
               ),
               const SizedBox(height: 8),
               const Text(
-                'Dibuat dengan ❤️ untuk Pemuda Indonesia',
+                'Dibuat oleh Pozzy',
                 style: TextStyle(fontSize: 12, color: KTColor.textSecondary),
               ),
             ],
