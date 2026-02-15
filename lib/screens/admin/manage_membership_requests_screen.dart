@@ -14,9 +14,17 @@ class ManageMembershipRequestsScreen extends StatefulWidget {
 class _ManageMembershipRequestsScreenState
     extends State<ManageMembershipRequestsScreen> {
   final SupabaseService _supabaseService = SupabaseService();
-  final RxList<Map<String, dynamic>> _requests =
-      <Map<String, dynamic>>[].obs;
+  final RxList<Map<String, dynamic>> _requests = <Map<String, dynamic>>[].obs;
   final RxBool _isLoading = true.obs;
+  final List<String> _availableRoles = const [
+    'Anggota',
+    'Ketua',
+    'Wakil Ketua',
+    'Sekretaris',
+    'Bendahara',
+    'Admin',
+    'Pubdekdok',
+  ];
 
   @override
   void initState() {
@@ -45,8 +53,9 @@ class _ManageMembershipRequestsScreenState
 
   Future<void> _processRequest(
     Map<String, dynamic> request,
-    String status,
-  ) async {
+    String status, {
+    String? newRole,
+  }) async {
     final int id = request['id'] as int;
     final String userId = request['user_id']?.toString() ?? '';
     if (userId.isEmpty) return;
@@ -56,16 +65,18 @@ class _ManageMembershipRequestsScreenState
         id: id,
         status: status,
         userId: userId,
+        newRole: newRole ?? 'Anggota',
       );
       _requests.removeWhere((r) => r['id'] == id);
       Get.snackbar(
         'Berhasil',
         status == 'approved'
-            ? 'Pengajuan anggota disetujui dan role diubah ke Anggota'
+            ? 'Pengajuan anggota disetujui dan role anggota diperbarui'
             : 'Pengajuan anggota ditolak',
         snackPosition: SnackPosition.BOTTOM,
-        backgroundColor:
-            status == 'approved' ? KTColor.success : KTColor.warning,
+        backgroundColor: status == 'approved'
+            ? KTColor.success
+            : KTColor.warning,
         colorText: Colors.white,
         icon: Icon(
           status == 'approved'
@@ -84,6 +95,124 @@ class _ManageMembershipRequestsScreenState
         icon: const Icon(Icons.error_outline_rounded, color: Colors.white),
       );
     }
+  }
+
+  void _showApproveDialog(Map<String, dynamic> request) {
+    String selectedRole = 'Anggota';
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        bool isSubmitting = false;
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Setujui Pengajuan',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: KTColor.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Pilih peran yang akan diberikan ketika pengajuan disetujui.',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: KTColor.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 220,
+                      child: ListView.builder(
+                        itemCount: _availableRoles.length,
+                        itemBuilder: (context, index) {
+                          final role = _availableRoles[index];
+                          return RadioListTile<String>(
+                            value: role,
+                            groupValue: selectedRole,
+                            onChanged: isSubmitting
+                                ? null
+                                : (value) {
+                                    if (value == null) return;
+                                    setState(() {
+                                      selectedRole = value;
+                                    });
+                                  },
+                            title: Text(
+                              role,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: isSubmitting
+                              ? null
+                              : () => Navigator.of(dialogContext).pop(),
+                          child: const Text('Batal'),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: isSubmitting
+                              ? null
+                              : () async {
+                                  try {
+                                    setState(() {
+                                      isSubmitting = true;
+                                    });
+                                    await _processRequest(
+                                      request,
+                                      'approved',
+                                      newRole: selectedRole,
+                                    );
+                                    Navigator.of(dialogContext).pop();
+                                  } catch (_) {
+                                    setState(() {
+                                      isSubmitting = false;
+                                    });
+                                  }
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: KTColor.primary,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text('Setujui'),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -109,11 +238,7 @@ class _ManageMembershipRequestsScreenState
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.group_outlined,
-                  size: 64,
-                  color: KTColor.border,
-                ),
+                Icon(Icons.group_outlined, size: 64, color: KTColor.border),
                 const SizedBox(height: 16),
                 Text(
                   'Belum ada pengajuan anggota',
@@ -135,17 +260,16 @@ class _ManageMembershipRequestsScreenState
               final String name = request['full_name'] ?? 'User';
               final String email = request['email'] ?? '-';
               final String? reason = request['reason'] as String?;
-              final DateTime? createdAt =
-                  request['created_at'] != null
-                      ? DateTime.tryParse(
-                          request['created_at'].toString(),
-                        )
-                      : null;
+              final DateTime? createdAt = request['created_at'] != null
+                  ? DateTime.tryParse(request['created_at'].toString())
+                  : null;
 
               return Container(
                 margin: const EdgeInsets.only(bottom: 12),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
@@ -235,10 +359,7 @@ class _ManageMembershipRequestsScreenState
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         TextButton(
-                          onPressed: () => _processRequest(
-                            request,
-                            'rejected',
-                          ),
+                          onPressed: () => _processRequest(request, 'rejected'),
                           child: const Text(
                             'Tolak',
                             style: TextStyle(color: KTColor.error),
@@ -246,10 +367,7 @@ class _ManageMembershipRequestsScreenState
                         ),
                         const SizedBox(width: 8),
                         ElevatedButton(
-                          onPressed: () => _processRequest(
-                            request,
-                            'approved',
-                          ),
+                          onPressed: () => _showApproveDialog(request),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: KTColor.primary,
                             foregroundColor: Colors.white,
@@ -271,4 +389,3 @@ class _ManageMembershipRequestsScreenState
     );
   }
 }
-
