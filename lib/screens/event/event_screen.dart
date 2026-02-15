@@ -6,7 +6,9 @@ import 'package:karang_taruna/controllers/data_controller.dart';
 import 'package:karang_taruna/commons/styles/kt_color.dart';
 
 class EventScreen extends StatefulWidget {
-  const EventScreen({super.key});
+  final bool showBackButton;
+
+  const EventScreen({super.key, this.showBackButton = false});
 
   @override
   State<EventScreen> createState() => _EventScreenState();
@@ -26,11 +28,13 @@ class _EventScreenState extends State<EventScreen> {
       appBar: AppBar(
         title: const Text('Event'),
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-          color: KTColor.textPrimary,
-          onPressed: () => Get.back(),
-        ),
+        leading: widget.showBackButton
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                color: KTColor.textPrimary,
+                onPressed: () => Get.back(),
+              )
+            : null,
       ),
       body: RefreshIndicator(
         onRefresh: controller.fetchEvents,

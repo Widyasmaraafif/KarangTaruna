@@ -344,6 +344,73 @@ class SupabaseService {
     return imageUrl;
   }
 
+  // --- Membership Requests ---
+  Future<void> submitMembershipRequest({String? reason}) async {
+    final user = _client.auth.currentUser;
+    if (user == null) {
+      throw Exception('Not authenticated');
+    }
+
+    final existing = await _client
+        .from('membership_requests')
+        .select()
+        .eq('user_id', user.id)
+        .eq('status', 'pending')
+        .maybeSingle();
+
+    if (existing != null) {
+      throw Exception('Pengajuan keanggotaan Anda masih dalam proses');
+    }
+
+    final profileResponse = await _client
+        .from('profiles')
+        .select()
+        .eq('id', user.id)
+        .maybeSingle();
+
+    final fullName = profileResponse?['full_name'] ?? user.email ?? '';
+    final email = profileResponse?['email'] ?? user.email;
+
+    await _client.from('membership_requests').insert({
+      'user_id': user.id,
+      'full_name': fullName,
+      'email': email,
+      'reason': reason,
+      'status': 'pending',
+    });
+  }
+
+  Future<List<Map<String, dynamic>>> getPendingMembershipRequests() async {
+    try {
+      final response = await _client
+          .from('membership_requests')
+          .select()
+          .eq('status', 'pending')
+          .order('created_at', ascending: false);
+      return List<Map<String, dynamic>>.from(response);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  Future<void> processMembershipRequest({
+    required int id,
+    required String status,
+    required String userId,
+    String? adminNote,
+    String newRole = 'Anggota',
+  }) async {
+    await _client.from('membership_requests').update({
+      'status': status,
+      'admin_note': adminNote,
+      'processed_at': DateTime.now().toIso8601String(),
+    }).eq('id', id);
+
+    if (status == 'approved') {
+      await updateProfileRole(userId, newRole);
+    }
+  }
+
   // --- Profile ---
   // Mendapatkan semua profil user (untuk admin)
   Future<List<Map<String, dynamic>>> getUsers() async {

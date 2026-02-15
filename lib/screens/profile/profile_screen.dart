@@ -142,6 +142,195 @@ class ProfileScreen extends StatelessWidget {
                         ),
                       ),
                     ),
+                    if (role.toString().toLowerCase() == 'user') ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        'Anda belum terdaftar sebagai Anggota Cahya Muda.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: KTColor.textSecondary,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          onPressed: () {
+                            final TextEditingController reasonController =
+                                TextEditingController();
+                            showDialog(
+                              context: context,
+                              builder: (dialogContext) {
+                                bool isSubmitting = false;
+                                return StatefulBuilder(
+                                  builder: (context, setState) {
+                                    return Dialog(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(16),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(24),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            const Text(
+                                              'Ajukan Menjadi Anggota',
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w800,
+                                                color: KTColor.textPrimary,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              'Isi alasan singkat kenapa Anda ingin menjadi Anggota Cahya Muda. Pengurus akan meninjau pengajuan Anda.',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: KTColor.textSecondary,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 16),
+                                            TextField(
+                                              controller: reasonController,
+                                              maxLines: 3,
+                                              decoration: InputDecoration(
+                                                hintText:
+                                                    'Contoh: Ingin berkontribusi dalam kegiatan pemuda di lingkungan saya',
+                                                filled: true,
+                                                fillColor: KTColor.background,
+                                                border: OutlineInputBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(12),
+                                                  borderSide: BorderSide(
+                                                    color: KTColor.border
+                                                        .withOpacity(0.6),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 20),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.end,
+                                              children: [
+                                                TextButton(
+                                                  onPressed: isSubmitting
+                                                      ? null
+                                                      : () => Navigator.of(
+                                                          dialogContext,
+                                                        ).pop(),
+                                                  child: const Text('Batal'),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                ElevatedButton(
+                                                  onPressed: isSubmitting
+                                                      ? null
+                                                      : () async {
+                                                          try {
+                                                            setState(() {
+                                                              isSubmitting =
+                                                                  true;
+                                                            });
+                                                            await SupabaseService()
+                                                                .submitMembershipRequest(
+                                                                  reason:
+                                                                      reasonController
+                                                                          .text
+                                                                          .trim(),
+                                                                );
+                                                            Navigator.of(
+                                                              dialogContext,
+                                                            ).pop();
+                                                            Get.snackbar(
+                                                              'Pengajuan terkirim',
+                                                              'Permohonan Anda untuk menjadi anggota telah dikirim ke Admin.',
+                                                              snackPosition:
+                                                                  SnackPosition
+                                                                      .BOTTOM,
+                                                              backgroundColor:
+                                                                  KTColor
+                                                                      .success,
+                                                              colorText:
+                                                                  Colors.white,
+                                                              icon: const Icon(
+                                                                Icons
+                                                                    .check_circle_outline_rounded,
+                                                                color: Colors
+                                                                    .white,
+                                                              ),
+                                                            );
+                                                          } catch (e) {
+                                                            setState(() {
+                                                              isSubmitting =
+                                                                  false;
+                                                            });
+                                                            Get.snackbar(
+                                                              'Error',
+                                                              e.toString(),
+                                                              snackPosition:
+                                                                  SnackPosition
+                                                                      .BOTTOM,
+                                                              backgroundColor:
+                                                                  KTColor.error,
+                                                              colorText:
+                                                                  Colors.white,
+                                                              icon: const Icon(
+                                                                Icons
+                                                                    .error_outline_rounded,
+                                                                color: Colors
+                                                                    .white,
+                                                              ),
+                                                            );
+                                                          }
+                                                        },
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        KTColor.primary,
+                                                    foregroundColor:
+                                                        Colors.white,
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            12,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                  child: const Text(
+                                                    'Kirim Pengajuan',
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            );
+                          },
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(
+                              color: KTColor.primary.withOpacity(0.6),
+                            ),
+                            foregroundColor: KTColor.primary,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 10,
+                            ),
+                            textStyle: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          child: const Text('Ajukan Menjadi Anggota'),
+                        ),
+                      ),
+                    ],
                   ],
                 );
               }),
@@ -215,8 +404,9 @@ class ProfileScreen extends StatelessWidget {
 
                   // Admin Menu (Conditional)
                   Obx(() {
-                    final roleVal =
-                        controller.userProfile['role']?.toString().toLowerCase();
+                    final roleVal = controller.userProfile['role']
+                        ?.toString()
+                        .toLowerCase();
                     if (roleVal == 'admin' || roleVal == 'ketua') {
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

@@ -461,7 +461,8 @@ class HeaderHome extends StatelessWidget {
               KTButtonFitur(
                 icon: Icons.event_rounded,
                 label: "Event",
-                onTap: () => Get.to(() => const EventScreen()),
+                onTap: () =>
+                    Get.to(() => const EventScreen(showBackButton: true)),
               ),
               KTButtonFitur(
                 icon: Icons.newspaper_rounded,

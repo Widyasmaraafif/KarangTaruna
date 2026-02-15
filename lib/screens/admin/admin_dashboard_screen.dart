@@ -10,6 +10,7 @@ import 'package:karang_taruna/screens/admin/manage_news_screen.dart';
 import 'package:karang_taruna/screens/admin/manage_organization_finance_screen.dart';
 import 'package:karang_taruna/screens/admin/manage_pojok_kampung_screen.dart';
 import 'package:karang_taruna/screens/admin/manage_polling_screen.dart';
+import 'package:karang_taruna/screens/admin/manage_membership_requests_screen.dart';
 import 'package:karang_taruna/commons/styles/kt_color.dart';
 
 class AdminDashboardScreen extends StatelessWidget {
@@ -161,6 +162,15 @@ class AdminDashboardScreen extends StatelessWidget {
             title: 'Kelola Anggota',
             subtitle: 'Verifikasi dan kelola database anggota',
             onTap: () => Get.to(() => const ManageMembersScreen()),
+          ),
+        );
+        children.add(
+          _buildAdminMenuTile(
+            icon: Icons.how_to_reg_rounded,
+            title: 'Pengajuan Anggota',
+            subtitle: 'Tinjau permohonan menjadi anggota',
+            onTap: () =>
+                Get.to(() => const ManageMembershipRequestsScreen()),
           ),
         );
       }
