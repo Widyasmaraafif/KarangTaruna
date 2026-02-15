@@ -93,6 +93,10 @@ class _PollingDetailScreenState extends State<PollingDetailScreen> {
           });
         }
 
+        final roleVal =
+            controller.userProfile['role']?.toString().toLowerCase() ?? '';
+        final bool isGuest = roleVal.isEmpty || roleVal == 'user';
+
         return Column(
           children: [
             Expanded(
@@ -256,7 +260,7 @@ class _PollingDetailScreenState extends State<PollingDetailScreen> {
                         final isSelected = _selectedOptionId.value == optionId;
 
                         return GestureDetector(
-                          onTap: isVoted
+                          onTap: isVoted || isGuest
                               ? null
                               : () {
                                   _selectedOptionId.value = optionId;
@@ -432,7 +436,7 @@ class _PollingDetailScreenState extends State<PollingDetailScreen> {
             ),
 
             // Bottom Action Bar
-            if (!isVoted)
+            if (!isVoted && !isGuest)
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(

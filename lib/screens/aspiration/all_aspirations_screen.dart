@@ -108,6 +108,10 @@ class AllAspirationsScreen extends StatelessWidget {
       );
     }
 
+    final roleVal =
+        controller.userProfile['role']?.toString().toLowerCase() ?? '';
+    final bool isGuest = roleVal.isEmpty || roleVal == 'user';
+
     return Scaffold(
       backgroundColor: KTColor.background,
       appBar: AppBar(
@@ -129,13 +133,21 @@ class AllAspirationsScreen extends StatelessWidget {
           onPressed: () => Get.back(),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: showAddAspirationDialog,
-        backgroundColor: KTColor.primary,
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
-      ),
+      floatingActionButton: isGuest
+          ? null
+          : FloatingActionButton(
+              onPressed: showAddAspirationDialog,
+              backgroundColor: KTColor.primary,
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(
+                Icons.add_rounded,
+                color: Colors.white,
+                size: 28,
+              ),
+            ),
       body: RefreshIndicator(
         onRefresh: () => controller.fetchAspirations(),
         color: KTColor.primary,

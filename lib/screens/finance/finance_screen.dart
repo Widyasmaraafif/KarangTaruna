@@ -10,6 +10,9 @@ class FinanceScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<DataController>();
+    final roleVal =
+        controller.userProfile['role']?.toString().toLowerCase() ?? '';
+    final bool isGuest = roleVal.isEmpty || roleVal == 'user';
 
     return Scaffold(
       backgroundColor: KTColor.background,
@@ -18,7 +21,45 @@ class FinanceScreen extends StatelessWidget {
         centerTitle: true,
         automaticallyImplyLeading: false,
       ),
-      body: RefreshIndicator(
+      body: isGuest
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.block_rounded,
+                      size: 64,
+                      color: KTColor.border,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Maaf, Anda bukan Anggota Cahya Muda',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: KTColor.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Fitur keuangan anggota hanya tersedia untuk Anggota Cahya Muda.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: KTColor.textSecondary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : RefreshIndicator(
         onRefresh: controller.fetchBills,
         color: KTColor.primary,
         child: Obx(() {

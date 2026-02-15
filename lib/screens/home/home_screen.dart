@@ -210,7 +210,73 @@ class PojokKampungHome extends StatelessWidget {
                       ),
                     ),
                 KTAspirationBanner(
-                  onTap: () => Get.to(() => const AspirationScreen()),
+                  onTap: () {
+                    final roleVal =
+                        controller.userProfile['role']
+                            ?.toString()
+                            .toLowerCase() ??
+                        '';
+                    final bool isGuest = roleVal.isEmpty || roleVal == 'user';
+
+                    if (isGuest) {
+                      showDialog(
+                        context: context,
+                        builder: (dialogContext) {
+                          return Dialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.block_rounded,
+                                    size: 64,
+                                    color: KTColor.border,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  const Text(
+                                    'Maaf, Anda bukan Anggota Cahya Muda',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: KTColor.textPrimary,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Fitur aspirasi hanya dapat digunakan oleh Anggota Cahya Muda.',
+                                    textAlign: TextAlign.center,
+                                    style: TextStyle(
+                                      color: KTColor.textSecondary,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: TextButton(
+                                      onPressed: () =>
+                                          Navigator.of(dialogContext).pop(),
+                                      child: const Text('Tutup'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                      return;
+                    }
+
+                    Get.to(() => const AspirationScreen());
+                  },
                 ),
               ],
             );

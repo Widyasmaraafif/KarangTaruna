@@ -11,6 +11,9 @@ class PollingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<DataController>();
+    final roleVal =
+        controller.userProfile['role']?.toString().toLowerCase() ?? '';
+    final bool isGuest = roleVal.isEmpty || roleVal == 'user';
 
     return Scaffold(
       backgroundColor: KTColor.background,
@@ -73,12 +76,32 @@ class PollingScreen extends StatelessWidget {
                 isVoted: isVoted,
                 selectedOptionId: selectedByUser,
                 onCardTap: () {
+                  if (isGuest) {
+                    Get.snackbar(
+                      'Tidak Diizinkan',
+                      'Maaf, Anda bukan Anggota Cahya Muda',
+                      snackPosition: SnackPosition.TOP,
+                      backgroundColor: KTColor.error,
+                      colorText: Colors.white,
+                    );
+                    return;
+                  }
                   Get.to(
                     () => PollingDetailScreen(poll: poll),
                     transition: Transition.cupertino,
                   );
                 },
                 onVote: (optionId, label) async {
+                  if (isGuest) {
+                    Get.snackbar(
+                      'Tidak Diizinkan',
+                      'Maaf, Anda bukan Anggota Cahya Muda',
+                      snackPosition: SnackPosition.TOP,
+                      backgroundColor: KTColor.error,
+                      colorText: Colors.white,
+                    );
+                    return;
+                  }
                   if (isVoted) {
                     Get.snackbar(
                       'Info',

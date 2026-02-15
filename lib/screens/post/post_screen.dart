@@ -103,6 +103,9 @@ class PostScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final controller = Get.find<DataController>();
+    final roleVal =
+        controller.userProfile['role']?.toString().toLowerCase() ?? '';
+    final bool isGuest = roleVal.isEmpty || roleVal == 'user';
 
     return Scaffold(
       backgroundColor: KTColor.background,
@@ -111,14 +114,57 @@ class PostScreen extends StatelessWidget {
         centerTitle: true,
         automaticallyImplyLeading: false,
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showAddAspirationDialog(context, controller),
-        backgroundColor: KTColor.primary,
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
-      ),
-      body: RefreshIndicator(
+      floatingActionButton: isGuest
+          ? null
+          : FloatingActionButton(
+              onPressed: () => _showAddAspirationDialog(context, controller),
+              backgroundColor: KTColor.primary,
+              elevation: 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child:
+                  const Icon(Icons.add_rounded, color: Colors.white, size: 28),
+            ),
+      body: isGuest
+          ? Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.block_rounded,
+                      size: 64,
+                      color: KTColor.border,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Maaf, Anda bukan Anggota Cahya Muda',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: KTColor.textPrimary,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Fitur aspirasi hanya dapat digunakan oleh Anggota Cahya Muda.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: KTColor.textSecondary,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : RefreshIndicator(
         onRefresh: controller.fetchUserAspirations,
         color: KTColor.primary,
         child: Obx(() {
