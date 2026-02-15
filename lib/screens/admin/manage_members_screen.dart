@@ -18,6 +18,16 @@ class _ManageMembersScreenState extends State<ManageMembersScreen> {
       <Map<String, dynamic>>[].obs;
   final RxBool _isLoading = true.obs;
   final TextEditingController _searchController = TextEditingController();
+  final List<String> _availableRoles = [
+    'User',
+    'Anggota',
+    'Ketua',
+    'Wakil Ketua',
+    'Sekretaris',
+    'Bendahara',
+    'Admin',
+    'Pubdekdok',
+  ];
 
   @override
   void initState() {
@@ -59,6 +69,224 @@ class _ManageMembersScreenState extends State<ManageMembersScreen> {
         ),
       );
     }
+  }
+
+  void _showMemberDetail(Map<String, dynamic> member) {
+    final String userId = member['id']?.toString() ?? '';
+    if (userId.isEmpty) return;
+
+    String currentRole =
+        (member['role'] as String?)?.isNotEmpty == true ? member['role'] : 'User';
+    String tempRole = currentRole;
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        bool isSaving = false;
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 52,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: KTColor.border.withValues(alpha: 0.5),
+                              width: 2,
+                            ),
+                            image: DecorationImage(
+                              image: NetworkImage(
+                                member['avatar_url'] ??
+                                    'https://ui-avatars.com/api/?name=${Uri.encodeComponent(member['full_name'] ?? member['email'] ?? 'User')}&background=random',
+                              ),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                member['full_name'] ?? 'User',
+                                style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w800,
+                                  color: KTColor.textPrimary,
+                                  letterSpacing: -0.3,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                member['email'] ?? '-',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: KTColor.textSecondary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Pilih Peran',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: KTColor.textPrimary,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      height: 260,
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: _availableRoles.length,
+                        itemBuilder: (context, index) {
+                          final role = _availableRoles[index];
+                          return RadioListTile<String>(
+                            value: role,
+                            groupValue: tempRole,
+                            onChanged: (value) {
+                              if (value == null) return;
+                              setState(() {
+                                tempRole = value;
+                              });
+                            },
+                            title: Text(
+                              role,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: isSaving
+                              ? null
+                              : () {
+                                  Navigator.of(context).pop();
+                                },
+                          child: const Text('Batal'),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          onPressed: isSaving
+                              ? null
+                              : () async {
+                                  if (tempRole == currentRole) {
+                                    Navigator.of(context).pop();
+                                    return;
+                                  }
+                                  try {
+                                    setState(() {
+                                      isSaving = true;
+                                    });
+                                    await _supabaseService.updateProfileRole(
+                                      userId,
+                                      tempRole,
+                                    );
+                                    final index = _members.indexWhere(
+                                        (m) => m['id'] == member['id']);
+                                    if (index != -1) {
+                                      _members[index]['role'] = tempRole;
+                                    }
+                                    final filteredIndex =
+                                        _filteredMembers.indexWhere(
+                                            (m) => m['id'] == member['id']);
+                                    if (filteredIndex != -1) {
+                                      _filteredMembers[filteredIndex]['role'] =
+                                          tempRole;
+                                    }
+                                    Get.snackbar(
+                                      'Berhasil',
+                                      'Peran anggota berhasil diperbarui',
+                                      snackPosition: SnackPosition.BOTTOM,
+                                      backgroundColor: KTColor.success,
+                                      colorText: Colors.white,
+                                      icon: const Icon(
+                                        Icons.check_circle_outline_rounded,
+                                        color: Colors.white,
+                                      ),
+                                    );
+                                    Navigator.of(context).pop();
+                                  } catch (e) {
+                                    setState(() {
+                                      isSaving = false;
+                                    });
+                                    Get.snackbar(
+                                      'Error',
+                                      'Gagal memperbarui peran: $e',
+                                      snackPosition: SnackPosition.BOTTOM,
+                                      backgroundColor: KTColor.error,
+                                      colorText: Colors.white,
+                                      icon: const Icon(
+                                        Icons.error_outline_rounded,
+                                        color: Colors.white,
+                                      ),
+                                    );
+                                  }
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: KTColor.primary,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: isSaving
+                              ? const SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                  ),
+                                )
+                              : const Text(
+                                  'Simpan',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -142,91 +370,96 @@ class _ManageMembersScreenState extends State<ManageMembersScreen> {
                         member['avatar_url'] ??
                         'https://ui-avatars.com/api/?name=${Uri.encodeComponent(name)}&background=random';
 
-                    return Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: KTColor.border.withValues(alpha: 0.5),
+                    return InkWell(
+                      onTap: () => _showMemberDetail(member),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: KTColor.border.withValues(alpha: 0.5),
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: KTColor.shadow.withValues(alpha: 0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: KTColor.shadow.withValues(alpha: 0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 52,
-                            height: 52,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: KTColor.border.withValues(alpha: 0.5),
-                                width: 2,
-                              ),
-                              image: DecorationImage(
-                                image: NetworkImage(avatarUrl),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  name,
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w800,
-                                    color: KTColor.textPrimary,
-                                    letterSpacing: -0.3,
-                                  ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 52,
+                              height: 52,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: KTColor.border.withValues(alpha: 0.5),
+                                  width: 2,
                                 ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  email,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: KTColor.textSecondary,
-                                    fontWeight: FontWeight.w500,
-                                  ),
+                                image: DecorationImage(
+                                  image: NetworkImage(avatarUrl),
+                                  fit: BoxFit.cover,
                                 ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: KTColor.primary.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              role.toString().toUpperCase(),
-                              style: const TextStyle(
-                                color: KTColor.primary,
-                                fontSize: 9,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.5,
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Icon(
-                            Icons.arrow_forward_ios_rounded,
-                            size: 14,
-                            color: KTColor.textSecondary.withValues(alpha: 0.3),
-                          ),
-                        ],
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    name,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w800,
+                                      color: KTColor.textPrimary,
+                                      letterSpacing: -0.3,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    email,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: KTColor.textSecondary,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: KTColor.primary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                role.toString().toUpperCase(),
+                                style: const TextStyle(
+                                  color: KTColor.primary,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Icon(
+                              Icons.arrow_forward_ios_rounded,
+                              size: 14,
+                              color:
+                                  KTColor.textSecondary.withValues(alpha: 0.3),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },
