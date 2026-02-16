@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "227195299034",
+    "project_id": "karangtaruna-82460",
+    "storage_bucket": "karangtaruna-82460.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:227195299034:android:a965381d99fd96ddb071e3",
+        "android_client_info": {
+          "package_name": "com.example.karang_taruna"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgo9ZZAfG93ufaRGkNjvw6Tv7VvGh0ofQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:227195299034:android:c5c5f163b3cb6f0eb071e3",
+        "android_client_info": {
+          "package_name": "id.karangtaruna.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgo9ZZAfG93ufaRGkNjvw6Tv7VvGh0ofQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

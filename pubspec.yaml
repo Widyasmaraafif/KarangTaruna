@@ -40,6 +40,9 @@ dependencies:
   get_storage: ^2.1.1
   image_picker: ^1.2.1
   intl: ^0.20.2
+  firebase_core: ^4.4.0
+  firebase_messaging: ^16.1.1
+  flutter_local_notifications: ^20.1.0
 
 dev_dependencies:
   flutter_test:

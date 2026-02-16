@@ -4,6 +4,7 @@ import 'package:karang_taruna/commons/styles/kt_color.dart';
 import 'package:karang_taruna/commons/widgets/buttons/kt_button.dart';
 import 'package:karang_taruna/commons/widgets/inputs/kt_text_field.dart';
 import 'package:karang_taruna/services/supabase_service.dart';
+import 'package:karang_taruna/services/notification_service.dart';
 import 'package:karang_taruna/screens/auth/register_screen.dart';
 import 'package:karang_taruna/navigation_menu.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -41,6 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
         _emailController.text.trim(),
         _passwordController.text.trim(),
       );
+      await NotificationService.instance.refreshFcmTokenForCurrentUser();
       Get.offAll(() => const NavigationMenu());
     } on AuthException catch (e) {
       Get.snackbar(

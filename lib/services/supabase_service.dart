@@ -498,6 +498,18 @@ class SupabaseService {
     });
   }
 
+  Future<void> updateFcmToken(String token) async {
+    final user = _client.auth.currentUser;
+    if (user == null) return;
+
+    try {
+      await _client
+          .from('profiles')
+          .update({'fcm_token': token})
+          .eq('id', user.id);
+    } catch (_) {}
+  }
+
   // --- Management ---
   Future<List<Map<String, dynamic>>> getManagement() async {
     try {
