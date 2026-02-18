@@ -21,6 +21,7 @@ class NotificationService {
     await _configureMessaging();
     await _syncFcmTokenWithProfile();
     await subscribeToDefaultTopics();
+    await _updateAdminTopicSubscription();
 
     _initialized = true;
   }
@@ -80,6 +81,29 @@ class NotificationService {
     await SupabaseService().updateFcmToken(token);
   }
 
+  Future<void> _updateAdminTopicSubscription() async {
+    final user = Supabase.instance.client.auth.currentUser;
+    if (user == null) return;
+
+    final profile = await SupabaseService().getCurrentUserProfile();
+    final role = (profile?['role'] as String?) ?? '';
+
+    const adminRoles = [
+      'Admin',
+      'Ketua',
+      'Wakil Ketua',
+      'Sekretaris',
+      'Bendahara',
+      'Pubdekdok',
+    ];
+
+    if (adminRoles.contains(role)) {
+      await FirebaseMessaging.instance.subscribeToTopic('admin');
+    } else {
+      await FirebaseMessaging.instance.unsubscribeFromTopic('admin');
+    }
+  }
+
   Future<void> refreshFcmTokenForCurrentUser() async {
     await _syncFcmTokenWithProfile();
   }
@@ -90,5 +114,7 @@ class NotificationService {
     await FirebaseMessaging.instance.subscribeToTopic('events');
     await FirebaseMessaging.instance.subscribeToTopic('gallery');
     await FirebaseMessaging.instance.subscribeToTopic('pollings');
+    await FirebaseMessaging.instance.subscribeToTopic('aspirations');
+    await FirebaseMessaging.instance.subscribeToTopic('bills');
   }
 }

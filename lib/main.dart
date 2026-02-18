@@ -21,7 +21,7 @@ void main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    await NotificationService.instance.init();
+    NotificationService.instance.init();
   } catch (e) {
     debugPrint('Firebase/Notification init error: $e');
   }
