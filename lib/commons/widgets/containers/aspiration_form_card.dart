@@ -7,11 +7,19 @@ class AspirationFormCard extends StatefulWidget {
   final Function(String title, String content, String category, File? image)
   onSubmit;
   final bool isLoading;
+  final String? initialTitle;
+  final String? initialContent;
+  final String? initialCategory;
+  final String submitLabel;
 
   const AspirationFormCard({
     super.key,
     required this.onSubmit,
     this.isLoading = false,
+    this.initialTitle,
+    this.initialContent,
+    this.initialCategory,
+    this.submitLabel = "Kirim Aspirasi",
   });
 
   @override
@@ -34,6 +42,16 @@ class _AspirationFormCardState extends State<AspirationFormCard> {
     'Sosial',
     'Lainnya',
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController.text = widget.initialTitle ?? '';
+    _contentController.text = widget.initialContent ?? '';
+    if (widget.initialCategory != null && widget.initialCategory!.isNotEmpty) {
+      _selectedCategory = widget.initialCategory!;
+    }
+  }
 
   Future<void> _pickImage() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
@@ -196,7 +214,11 @@ class _AspirationFormCardState extends State<AspirationFormCard> {
                           color: Colors.white,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.close_rounded, color: KTColor.error, size: 20),
+                        child: const Icon(
+                          Icons.close_rounded,
+                          color: KTColor.error,
+                          size: 20,
+                        ),
                       ),
                     ),
                   ),
@@ -209,12 +231,17 @@ class _AspirationFormCardState extends State<AspirationFormCard> {
                 label: const Text("Tambah Foto (Opsional)"),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: KTColor.primary,
-                  side: BorderSide(color: KTColor.primary.withValues(alpha: 0.3)),
+                  side: BorderSide(
+                    color: KTColor.primary.withValues(alpha: 0.3),
+                  ),
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                  textStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             const SizedBox(height: 24),
@@ -240,9 +267,9 @@ class _AspirationFormCardState extends State<AspirationFormCard> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text(
-                      "Kirim Aspirasi",
-                      style: TextStyle(
+                  : Text(
+                      widget.submitLabel,
+                      style: const TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.5,
@@ -255,4 +282,3 @@ class _AspirationFormCardState extends State<AspirationFormCard> {
     );
   }
 }
-

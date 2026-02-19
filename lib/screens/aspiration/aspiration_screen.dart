@@ -32,6 +32,166 @@ class _AspirationScreenState extends State<AspirationScreen> {
     });
   }
 
+  void _showAspirationOptions(Map<String, dynamic> aspiration) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.visibility_rounded, color: KTColor.textPrimary),
+                title: const Text("Lihat detail"),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  Get.to(() => AspirationDetailScreen(aspiration: aspiration));
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.edit_rounded, color: KTColor.primary),
+                title: const Text("Edit aspirasi"),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _showEditAspirationDialog(aspiration);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete_outline_rounded, color: KTColor.error),
+                title: const Text("Hapus aspirasi"),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  _confirmDeleteAspiration(aspiration);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showEditAspirationDialog(Map<String, dynamic> aspiration) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        bool isLoading = false;
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: SingleChildScrollView(
+                  child: AspirationFormCard(
+                    isLoading: isLoading,
+                    initialTitle: aspiration['title'] ?? '',
+                    initialContent: aspiration['content'] ?? '',
+                    initialCategory: aspiration['category'] ?? 'Umum',
+                    submitLabel: "Simpan Perubahan",
+                    onSubmit: (title, content, category, image) async {
+                      setState(() => isLoading = true);
+                      try {
+                        final id = aspiration['id'] as int;
+                        String? imageUrl = aspiration['image_url'];
+                        if (image != null) {
+                          imageUrl =
+                              await _supabaseService.uploadAspirationImage(image);
+                        }
+                        await _supabaseService.updateAspiration(id, {
+                          'title': title,
+                          'content': content,
+                          'category': category,
+                          'image_url': imageUrl,
+                        });
+
+                        if (dialogContext.mounted) {
+                          Navigator.of(dialogContext).pop();
+                          Get.snackbar(
+                            "Sukses",
+                            "Aspirasi berhasil diperbarui",
+                            backgroundColor: KTColor.success,
+                            colorText: Colors.white,
+                          );
+                          _refreshAspirations();
+                        }
+                      } catch (e) {
+                        if (dialogContext.mounted) {
+                          setState(() => isLoading = false);
+                          Get.snackbar(
+                            "Error",
+                            "Gagal memperbarui aspirasi: $e",
+                            backgroundColor: KTColor.error,
+                            colorText: Colors.white,
+                          );
+                        }
+                      }
+                    },
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _confirmDeleteAspiration(Map<String, dynamic> aspiration) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Hapus Aspirasi"),
+          content: const Text(
+            "Apakah Anda yakin ingin menghapus aspirasi ini? Tindakan ini tidak dapat dibatalkan.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Batal"),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                try {
+                  final id = aspiration['id'] as int;
+                  await _supabaseService.deleteAspiration(id);
+                  Get.snackbar(
+                    "Sukses",
+                    "Aspirasi berhasil dihapus",
+                    backgroundColor: KTColor.success,
+                    colorText: Colors.white,
+                  );
+                  _refreshAspirations();
+                } catch (e) {
+                  Get.snackbar(
+                    "Error",
+                    "Gagal menghapus aspirasi: $e",
+                    backgroundColor: KTColor.error,
+                    colorText: Colors.white,
+                  );
+                }
+              },
+              child: const Text(
+                "Hapus",
+                style: TextStyle(color: KTColor.error),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showAddAspirationDialog() {
     showDialog(
       context: context,
@@ -202,8 +362,7 @@ class _AspirationScreenState extends State<AspirationScreen> {
                       ? DateTime.parse(item['created_at'])
                       : (item['created_at'] as DateTime? ?? DateTime.now()),
                   status: item['status'],
-                  onTap: () =>
-                      Get.to(() => AspirationDetailScreen(aspiration: item)),
+                  onTap: () => _showAspirationOptions(item),
                 );
               },
             );

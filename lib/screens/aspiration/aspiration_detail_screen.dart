@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:karang_taruna/commons/styles/kt_color.dart';
+import 'package:karang_taruna/commons/widgets/containers/aspiration_form_card.dart';
+import 'package:karang_taruna/services/supabase_service.dart';
 
 class AspirationDetailScreen extends StatelessWidget {
   final Map<String, dynamic> aspiration;
@@ -14,6 +16,9 @@ class AspirationDetailScreen extends StatelessWidget {
     final createdAt =
         DateTime.tryParse(aspiration['created_at'] ?? '') ?? DateTime.now();
     final status = aspiration['status'] ?? 'pending';
+    final currentUserId = SupabaseService().currentUser?.id;
+    final canManage =
+        currentUserId != null && aspiration['user_id'] == currentUserId;
 
     return Scaffold(
       backgroundColor: KTColor.background,
@@ -35,6 +40,24 @@ class AspirationDetailScreen extends StatelessWidget {
           color: KTColor.textPrimary,
           onPressed: () => Get.back(),
         ),
+        actions: canManage
+            ? [
+                IconButton(
+                  icon: const Icon(
+                    Icons.edit_rounded,
+                    color: KTColor.textPrimary,
+                  ),
+                  onPressed: () => _showEditDialog(context),
+                ),
+                IconButton(
+                  icon: const Icon(
+                    Icons.delete_outline_rounded,
+                    color: KTColor.error,
+                  ),
+                  onPressed: () => _confirmDelete(context),
+                ),
+              ]
+            : null,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -173,6 +196,121 @@ class AspirationDetailScreen extends StatelessWidget {
           fontWeight: FontWeight.w600,
         ),
       ),
+    );
+  }
+
+  void _showEditDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        bool isLoading = false;
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: SingleChildScrollView(
+                  child: AspirationFormCard(
+                    isLoading: isLoading,
+                    initialTitle: aspiration['title'] ?? '',
+                    initialContent: aspiration['content'] ?? '',
+                    initialCategory: aspiration['category'] ?? 'Umum',
+                    submitLabel: "Simpan Perubahan",
+                    onSubmit: (title, content, category, image) async {
+                      setState(() => isLoading = true);
+                      try {
+                        final id = aspiration['id'] as int;
+                        String? imageUrl = aspiration['image_url'];
+                        if (image != null) {
+                          imageUrl = await SupabaseService()
+                              .uploadAspirationImage(image);
+                        }
+                        await SupabaseService().updateAspiration(id, {
+                          'title': title,
+                          'content': content,
+                          'category': category,
+                          'image_url': imageUrl,
+                        });
+                        if (dialogContext.mounted) {
+                          Navigator.of(dialogContext).pop();
+                          Get.snackbar(
+                            "Sukses",
+                            "Aspirasi berhasil diperbarui",
+                            backgroundColor: KTColor.success,
+                            colorText: Colors.white,
+                          );
+                        }
+                      } catch (e) {
+                        if (dialogContext.mounted) {
+                          setState(() => isLoading = false);
+                          Get.snackbar(
+                            "Error",
+                            "Gagal memperbarui aspirasi: $e",
+                            backgroundColor: KTColor.error,
+                            colorText: Colors.white,
+                          );
+                        }
+                      }
+                    },
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _confirmDelete(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Hapus Aspirasi"),
+          content: const Text(
+            "Apakah Anda yakin ingin menghapus aspirasi ini? Tindakan ini tidak dapat dibatalkan.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Batal"),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                try {
+                  final id = aspiration['id'] as int;
+                  await SupabaseService().deleteAspiration(id);
+                  Get.back();
+                  Get.snackbar(
+                    "Sukses",
+                    "Aspirasi berhasil dihapus",
+                    backgroundColor: KTColor.success,
+                    colorText: Colors.white,
+                  );
+                } catch (e) {
+                  Get.snackbar(
+                    "Error",
+                    "Gagal menghapus aspirasi: $e",
+                    backgroundColor: KTColor.error,
+                    colorText: Colors.white,
+                  );
+                }
+              },
+              child: const Text(
+                "Hapus",
+                style: TextStyle(color: KTColor.error),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

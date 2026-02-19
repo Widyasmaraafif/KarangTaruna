@@ -123,8 +123,11 @@ class PostScreen extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
-              child:
-                  const Icon(Icons.add_rounded, color: Colors.white, size: 28),
+              child: const Icon(
+                Icons.add_rounded,
+                color: Colors.white,
+                size: 28,
+              ),
             ),
       body: isGuest
           ? Center(
@@ -135,11 +138,7 @@ class PostScreen extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.block_rounded,
-                      size: 64,
-                      color: KTColor.border,
-                    ),
+                    Icon(Icons.block_rounded, size: 64, color: KTColor.border),
                     const SizedBox(height: 16),
                     const Text(
                       'Maaf, Anda bukan Anggota Cahya Muda',
@@ -165,76 +164,79 @@ class PostScreen extends StatelessWidget {
               ),
             )
           : RefreshIndicator(
-        onRefresh: controller.fetchUserAspirations,
-        color: KTColor.primary,
-        child: Obx(() {
-          final aspirations = controller.userAspirations;
-          final isLoading = controller.isLoadingAspirations.value;
+              onRefresh: controller.fetchUserAspirations,
+              color: KTColor.primary,
+              child: Obx(() {
+                final aspirations = controller.userAspirations;
+                final isLoading = controller.isLoadingAspirations.value;
 
-          if (isLoading && aspirations.isEmpty) {
-            return const Center(
-              child: CircularProgressIndicator(color: KTColor.primary),
-            );
-          }
+                if (isLoading && aspirations.isEmpty) {
+                  return const Center(
+                    child: CircularProgressIndicator(color: KTColor.primary),
+                  );
+                }
 
-          if (aspirations.isEmpty) {
-            return Center(
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.campaign_outlined,
-                      size: 64,
-                      color: KTColor.border,
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      "Belum ada aspirasi yang Anda kirim",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: KTColor.textSecondary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                if (aspirations.isEmpty) {
+                  return Center(
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.campaign_outlined,
+                            size: 64,
+                            color: KTColor.border,
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            "Belum ada aspirasi yang Anda kirim",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: KTColor.textSecondary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: 200,
+                            child: KTButton(
+                              text: "Buat Aspirasi",
+                              onPressed: () =>
+                                  _showAddAspirationDialog(context, controller),
+                              icon: Icons.add_rounded,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: 200,
-                      child: KTButton(
-                        text: "Buat Aspirasi",
-                        onPressed: () =>
-                            _showAddAspirationDialog(context, controller),
-                        icon: Icons.add_rounded,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
+                  );
+                }
 
-          return ListView.separated(
-            padding: const EdgeInsets.all(20),
-            itemCount: aspirations.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 16),
-            itemBuilder: (context, index) {
-              final item = aspirations[index];
-              return KTAspirationCard(
-                author: item['author'] ?? 'User',
-                content: item['content'] ?? '',
-                createdAt:
-                    DateTime.tryParse(item['created_at']) ?? DateTime.now(),
-                status: item['status'],
-                onTap: () =>
-                    Get.to(() => AspirationDetailScreen(aspiration: item)),
-              );
-            },
-          );
-        }),
-      ),
+                return ListView.separated(
+                  padding: const EdgeInsets.all(20),
+                  itemCount: aspirations.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 16),
+                  itemBuilder: (context, index) {
+                    final item = aspirations[index];
+                    return KTAspirationCard(
+                      author: item['author'] ?? 'User',
+                      content: item['content'] ?? '',
+                      createdAt:
+                          DateTime.tryParse(item['created_at']) ??
+                          DateTime.now(),
+                      status: item['status'],
+                      onTap: () => Get.to(
+                        () => AspirationDetailScreen(aspiration: item),
+                      ),
+                    );
+                  },
+                );
+              }),
+            ),
     );
   }
 }
