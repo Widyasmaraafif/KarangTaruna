@@ -164,7 +164,7 @@ Perubahan signifikan akan diberitahukan melalui aplikasi atau saluran komunikasi
 
 Jika Anda memiliki pertanyaan, masukan, atau permintaan terkait data pribadi dan Kebijakan Privasi ini, silakan hubungi kami melalui:
 
-- Email: <email_kontak_resmi_karang_taruna@contoh.com>
+- Email: twentyruby@gmail.com
 - Atau melalui pengurus resmi Karang Taruna di lingkungan Anda
 
 Silakan sesuaikan alamat email dan detail kontak di atas dengan informasi resmi organisasi Anda sebelum membagikan atau mempublikasikan kebijakan ini.
